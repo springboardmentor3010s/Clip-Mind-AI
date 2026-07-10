@@ -73,7 +73,7 @@ export default function AdminDashboard() {
                   <td className="px-4 py-3 text-ink/60 dark:text-paper/60">{u.email}</td>
                   <td className="px-4 py-3 font-mono text-xs text-ink/60 dark:text-paper/60">{u.role}</td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide">
+                    <span className={`inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide ${u.is_active ? "text-ok" : "text-danger"}`}>
                       <span className={`h-1.5 w-1.5 rounded-full ${u.is_active ? "bg-ok" : "bg-danger"}`} />
                       {u.is_active ? "Active" : "Inactive"}
                     </span>
