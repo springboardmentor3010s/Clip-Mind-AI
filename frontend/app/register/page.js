@@ -12,7 +12,6 @@ const ROLES = [
   { value: "content_creator", label: "Content creator" },
   { value: "learner", label: "Learner" },
   { value: "educator", label: "Educator" },
-  { value: "administrator", label: "Administrator" },
 ];
 
 const ROLE_DASHBOARD = {

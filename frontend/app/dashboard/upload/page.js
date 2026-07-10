@@ -134,11 +134,20 @@ export default function UploadPage() {
               <dd><StatusChip status={result.status} /></dd>
             </div>
           </dl>
-          <div className="mt-6 flex gap-3">
+          {result.status === "ready" && (
+            <Link
+              href={`/dashboard/videos/${result.id}`}
+              className="mt-6 block rounded-md bg-signal px-4 py-2 text-center text-sm font-medium text-white hover:bg-signal/90"
+            >
+              Generate transcript &amp; summary
+            </Link>
+          )}
+
+          <div className="mt-3 flex gap-3">
             <button onClick={reset} className="rounded-md border border-line px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-ink dark:border-line-dark dark:text-paper">
               Upload another
             </button>
-            <Link href="/dashboard" className="rounded-md bg-signal px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white">
+            <Link href="/dashboard" className="rounded-md border border-line px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-ink dark:border-line-dark dark:text-paper">
               Go to dashboard
             </Link>
           </div>
