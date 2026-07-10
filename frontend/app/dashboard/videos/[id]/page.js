@@ -27,6 +27,18 @@ function formatTimestamp(seconds) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
+function downloadText(filename, content) {
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 function PipelineStep({ label, done }) {
   return (
     <div className="flex items-center justify-between border-b border-line py-2 last:border-0 dark:border-line-dark">
@@ -199,12 +211,27 @@ export default function VideoDetailPage() {
             Transcript
           </p>
           {transcript && (
-            <button
-              onClick={() => setShowSegments((s) => !s)}
-              className="font-mono text-[11px] uppercase tracking-wide text-signal"
-            >
-              {showSegments ? "Show full text" : "Show timestamps"}
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() =>
+                  downloadText(
+                    `${(video.title || video.filename).replace(/\.[^/.]+$/, "")}-transcript.txt`,
+                    showSegments
+                      ? transcript.segments.map((seg) => `[${formatTimestamp(seg.start)}] ${seg.text}`).join("\n")
+                      : transcript.text
+                  )
+                }
+                className="font-mono text-[11px] uppercase tracking-wide text-signal"
+              >
+                Download
+              </button>
+              <button
+                onClick={() => setShowSegments((s) => !s)}
+                className="font-mono text-[11px] uppercase tracking-wide text-signal"
+              >
+                {showSegments ? "Show full text" : "Show timestamps"}
+              </button>
+            </div>
           )}
         </div>
 
@@ -244,9 +271,24 @@ export default function VideoDetailPage() {
 
       {/* Summary */}
       <div className="rounded-lg border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
-        <p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
-          AI Summary
-        </p>
+        <div className="mb-3 flex items-center justify-between">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
+            AI Summary
+          </p>
+          {summary && (
+            <button
+              onClick={() =>
+                downloadText(
+                  `${(video.title || video.filename).replace(/\.[^/.]+$/, "")}-summary.txt`,
+                  summary.detailed_summary
+                )
+              }
+              className="font-mono text-[11px] uppercase tracking-wide text-signal"
+            >
+              Download
+            </button>
+          )}
+        </div>
 
         {!summary ? (
           <div>
@@ -270,22 +312,9 @@ export default function VideoDetailPage() {
             {summaryError && <p className="mt-2 text-sm text-danger">{summaryError}</p>}
           </div>
         ) : (
-          <div className="space-y-4">
-            <div>
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-ink/50 dark:text-paper/50">
-                Short summary
-              </p>
-              <p className="text-sm text-ink/80 dark:text-paper/80">{summary.short_summary}</p>
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-ink/50 dark:text-paper/50">
-                Detailed summary
-              </p>
-              <p className="whitespace-pre-wrap text-sm text-ink/80 dark:text-paper/80">
-                {summary.detailed_summary}
-              </p>
-            </div>
-          </div>
+          <p className="whitespace-pre-wrap text-sm text-ink/80 dark:text-paper/80">
+            {summary.detailed_summary}
+          </p>
         )}
       </div>
     </div>
