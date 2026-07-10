@@ -1,0 +1,27 @@
+# ---------- Secrets ----------
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# ---------- Backend (Python) ----------
+backend/clipmind-venv/
+backend/**/__pycache__/
+*.pyc
+*.pyo
+
+# Uploaded/processed video files — don't commit user content
+backend/storage/uploads/*
+!backend/storage/uploads/.gitkeep
+
+# ---------- Frontend (Next.js) ----------
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+
+# ---------- Misc ----------
+*.zip
+.vscode/
+.DS_Store
+Thumbs.db

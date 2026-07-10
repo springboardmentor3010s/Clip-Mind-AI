@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-ink: #0B0E14;
+  --color-graphite: #161B24;
+  --color-graphite-2: #1F2530;
+  --color-paper: #F6F7F5;
+  --color-cloud: #FFFFFF;
+  --color-line: #E4E4E2;
+  --color-line-dark: #262C38;
+  --color-signal: #7C5CFC;
+  --color-signal-dark: #9B82FF;
+  --color-marker: #F5A623;
+  --color-ok: #22C55E;
+  --color-danger: #EF4444;
+}
+
+body {
+  font-family: var(--font-body);
+}
