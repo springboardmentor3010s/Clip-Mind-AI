@@ -66,6 +66,10 @@ export default function VideoDetailPage() {
   const [transcriptError, setTranscriptError] = useState("");
   const [showSegments, setShowSegments] = useState(false);
 
+  const [editing, setEditing] = useState(false);
+  const [editedText, setEditedText] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
   const [summary, setSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState("");
@@ -93,6 +97,30 @@ export default function VideoDetailPage() {
       setTranscriptError(err.response?.data?.detail || "Failed to generate transcript.");
     } finally {
       setTranscriptLoading(false);
+    }
+  }
+
+  function startEditing() {
+    setEditedText(transcript.text);
+    setEditing(true);
+  }
+
+  function cancelEditing() {
+    setEditing(false);
+    setEditedText("");
+  }
+
+  async function saveEditedTranscript() {
+    setSavingEdit(true);
+    setTranscriptError("");
+    try {
+      const res = await api.patch(`/api/v1/videos/${id}/transcript`, { text: editedText });
+      setTranscript(res.data);
+      setEditing(false);
+    } catch (err) {
+      setTranscriptError(err.response?.data?.detail || "Failed to save transcript.");
+    } finally {
+      setSavingEdit(false);
     }
   }
 
@@ -210,7 +238,7 @@ export default function VideoDetailPage() {
           <p className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
             Transcript
           </p>
-          {transcript && (
+          {transcript && !editing && (
             <div className="flex items-center gap-4">
               <button
                 onClick={() =>
@@ -225,6 +253,11 @@ export default function VideoDetailPage() {
               >
                 Download
               </button>
+              {!showSegments && (
+                <button onClick={startEditing} className="font-mono text-[11px] uppercase tracking-wide text-signal">
+                  Edit
+                </button>
+              )}
               <button
                 onClick={() => setShowSegments((s) => !s)}
                 className="font-mono text-[11px] uppercase tracking-wide text-signal"
@@ -249,6 +282,32 @@ export default function VideoDetailPage() {
                 This can take a minute or two, especially the first time (model loading onto GPU).
               </p>
             )}
+            {transcriptError && <p className="mt-2 text-sm text-danger">{transcriptError}</p>}
+          </div>
+        ) : editing ? (
+          <div>
+            <textarea
+              value={editedText}
+              onChange={(e) => setEditedText(e.target.value)}
+              rows={10}
+              className="w-full resize-y rounded-md border border-line bg-transparent px-3 py-2 text-sm text-ink focus:border-signal focus:outline-none dark:border-line-dark dark:text-paper"
+            />
+            <div className="mt-3 flex items-center gap-3">
+              <button
+                onClick={saveEditedTranscript}
+                disabled={savingEdit || !editedText.trim()}
+                className="rounded-md bg-signal px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {savingEdit ? "Saving..." : "Save changes"}
+              </button>
+              <button
+                onClick={cancelEditing}
+                disabled={savingEdit}
+                className="font-mono text-[11px] uppercase tracking-wide text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper"
+              >
+                Cancel
+              </button>
+            </div>
             {transcriptError && <p className="mt-2 text-sm text-danger">{transcriptError}</p>}
           </div>
         ) : showSegments ? (

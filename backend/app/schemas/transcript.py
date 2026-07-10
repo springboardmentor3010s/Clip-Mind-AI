@@ -19,4 +19,9 @@ class TranscriptOut(BaseModel):
     segments: list[TranscriptSegment]
     language: str | None = None
     status: str
+    edited: bool = False
     created_at: datetime
+
+
+class TranscriptUpdate(BaseModel):
+    text: str

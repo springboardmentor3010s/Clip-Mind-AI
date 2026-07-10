@@ -63,3 +63,22 @@ async def get_transcript(db: Session, video_id, current_user: User) -> dict:
             detail="Transcript not found. Generate it first.",
         )
     return doc
+
+
+async def update_transcript(db: Session, video_id, current_user: User, new_text: str) -> dict:
+    """Let the video owner manually correct/edit a generated transcript's text."""
+    get_video_or_404(db, video_id, current_user)
+
+    existing = await transcripts_collection.find_one({"video_id": str(video_id)})
+    if not existing:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transcript not found. Generate it first.",
+        )
+
+    await transcripts_collection.update_one(
+        {"video_id": str(video_id)},
+        {"$set": {"text": new_text.strip(), "edited": True, "updated_at": datetime.now(timezone.utc)}},
+    )
+
+    return await transcripts_collection.find_one({"video_id": str(video_id)})
