@@ -10,12 +10,13 @@
   --color-ink: #0B0E14;
   --color-graphite: #161B24;
   --color-graphite-2: #1F2530;
-  --color-paper: #F6F7F5;
+  --color-paper: #F5F5FB;
   --color-cloud: #FFFFFF;
-  --color-line: #E4E4E2;
+  --color-line: #E7E7F1;
   --color-line-dark: #262C38;
-  --color-signal: #7C5CFC;
+  --color-signal: #6C5CE0;
   --color-signal-dark: #9B82FF;
+  --color-secondary: #4C7DFF;
   --color-marker: #F5A623;
   --color-ok: #22C55E;
   --color-danger: #EF4444;

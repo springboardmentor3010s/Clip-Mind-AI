@@ -27,8 +27,8 @@ export default function DashboardLayout({ children }) {
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-5xl px-8 py-8">{children}</div>
+        <main className="flex-1 overflow-y-auto bg-paper dark:bg-ink">
+          <div className="mx-auto max-w-6xl px-8 py-8">{children}</div>
         </main>
       </div>
     </div>

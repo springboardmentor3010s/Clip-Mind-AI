@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import api from "../../../../lib/api";
 import StatusChip from "../../../../components/ui/StatusChip";
+import { PlayIcon, DownloadIcon, KeyMomentIcon, BarChartIcon } from "../../../../components/ui/icons";
 
 function formatDuration(seconds) {
   if (!seconds && seconds !== 0) return "—";
@@ -14,11 +14,7 @@ function formatDuration(seconds) {
 }
 
 function formatDate(iso) {
-  return new Date(iso).toLocaleDateString(undefined, {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
 function formatTimestamp(seconds) {
@@ -39,20 +35,7 @@ function downloadText(filename, content) {
   URL.revokeObjectURL(url);
 }
 
-function PipelineStep({ label, done }) {
-  return (
-    <div className="flex items-center justify-between border-b border-line py-2 last:border-0 dark:border-line-dark">
-      <span className="text-sm text-ink/70 dark:text-paper/70">{label}</span>
-      <span
-        className={`font-mono text-[11px] uppercase tracking-wide ${
-          done ? "text-ok" : "text-ink/40 dark:text-paper/40"
-        }`}
-      >
-        {done ? "Done" : "Pending"}
-      </span>
-    </div>
-  );
-}
+const TABS = ["Overview", "Transcript", "Summary", "Key Moments", "Analytics"];
 
 export default function VideoDetailPage() {
   const { id } = useParams();
@@ -60,6 +43,7 @@ export default function VideoDetailPage() {
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [tab, setTab] = useState("Overview");
 
   const [transcript, setTranscript] = useState(null);
   const [transcriptLoading, setTranscriptLoading] = useState(false);
@@ -75,13 +59,9 @@ export default function VideoDetailPage() {
   const [summaryError, setSummaryError] = useState("");
 
   useEffect(() => {
-    api
-      .get(`/api/v1/videos/${id}`)
-      .then((res) => setVideo(res.data))
-      .catch((err) => {
-        setError(err.response?.status === 404 ? "Video not found." : "Failed to load video.");
-      })
-      .finally(() => setLoading(false));
+    api.get(`/api/v1/videos/${id}`).then((res) => setVideo(res.data)).catch((err) => {
+      setError(err.response?.status === 404 ? "Video not found." : "Failed to load video.");
+    }).finally(() => setLoading(false));
 
     api.get(`/api/v1/videos/${id}/transcript`).then((res) => setTranscript(res.data)).catch(() => {});
     api.get(`/api/v1/videos/${id}/summary`).then((res) => setSummary(res.data)).catch(() => {});
@@ -137,245 +117,214 @@ export default function VideoDetailPage() {
     }
   }
 
-  if (loading) {
-    return <p className="font-mono text-xs text-ink/50 dark:text-paper/50">Loading...</p>;
-  }
+  if (loading) return <p className="text-sm text-ink/50 dark:text-paper/50">Loading...</p>;
 
   if (error || !video) {
     return (
       <div>
         <p className="text-sm text-danger">{error || "Video not found."}</p>
-        <button
-          onClick={() => router.back()}
-          className="mt-4 font-mono text-[11px] uppercase tracking-wide text-signal"
-        >
-          &larr; Go back
-        </button>
+        <button onClick={() => router.back()} className="mt-4 text-sm font-medium text-signal">&larr; Go back</button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="font-display text-xl font-semibold tracking-tight text-ink dark:text-paper">
-          Video details
-        </h1>
-        <button
-          onClick={() => router.back()}
-          className="font-mono text-[11px] uppercase tracking-wide text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper"
-        >
-          &larr; Back
-        </button>
+    <div className="max-w-4xl">
+      <button onClick={() => router.back()} className="mb-4 flex items-center gap-1.5 text-sm font-medium text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper">
+        &larr; {video.title || video.filename}
+      </button>
+
+      <div className="mb-5 flex gap-1 border-b border-line dark:border-line-dark">
+        {TABS.map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`-mb-px border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
+              tab === t
+                ? "border-signal text-signal"
+                : "border-transparent text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
       </div>
 
-      <div className="mb-6 rounded-lg border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <p className="break-all text-sm font-medium text-ink dark:text-paper">{video.title || video.filename}</p>
-          <StatusChip status={video.status} />
+      {tab === "Overview" && (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-[1.4fr_1fr]">
+          <div className="flex aspect-video flex-col items-center justify-center rounded-xl bg-ink text-white/70">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
+              <PlayIcon width={22} height={22} className="text-white translate-x-0.5" />
+            </span>
+            <p className="mt-3 font-mono text-xs tabular-nums text-white/40">00:00 / {formatDuration(video.duration_seconds)}</p>
+          </div>
+
+          <div className="rounded-xl border border-line bg-cloud p-5 dark:border-line-dark dark:bg-graphite">
+            <p className="mb-4 text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">Video Details</p>
+            <dl className="space-y-3 text-sm">
+              <Row label="Duration" value={formatDuration(video.duration_seconds)} mono />
+              <Row label="Uploaded On" value={formatDate(video.created_at)} />
+              <Row label="Status" value={<StatusChip status={video.status} />} />
+              <Row label="File Size" value={`${video.file_size_mb.toFixed(1)} MB`} mono />
+              <Row label="Format" value={video.content_type} />
+            </dl>
+          </div>
+
+          {video.status === "failed" && (
+            <p className="md:col-span-2 text-sm text-danger">Processing failed for this video. Try re-uploading it.</p>
+          )}
+
+          <div className="rounded-xl border border-line bg-cloud p-5 dark:border-line-dark dark:bg-graphite">
+            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">AI Summary</p>
+            {summary ? (
+              <p className="line-clamp-4 text-sm leading-relaxed text-ink/75 dark:text-paper/75">{summary.short_summary || summary.detailed_summary}</p>
+            ) : (
+              <p className="text-sm text-ink/40 dark:text-paper/40">Not generated yet — see the Summary tab.</p>
+            )}
+            <button onClick={() => setTab("Summary")} className="mt-3 text-xs font-medium text-signal">Read More</button>
+          </div>
+
+          <div className="rounded-xl border border-line bg-cloud p-5 dark:border-line-dark dark:bg-graphite">
+            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">Key Moments</p>
+            <p className="text-sm text-ink/40 dark:text-paper/40">Key moments detection isn't available for this video yet.</p>
+            <button onClick={() => setTab("Key Moments")} className="mt-3 text-xs font-medium text-signal">View All</button>
+          </div>
         </div>
-
-        {video.description && (
-          <p className="mb-4 text-sm text-ink/70 dark:text-paper/70">{video.description}</p>
-        )}
-
-        <dl className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <dt className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
-              Filename
-            </dt>
-            <dd className="mt-1 break-all text-ink dark:text-paper">{video.filename}</dd>
-          </div>
-          <div>
-            <dt className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
-              Duration
-            </dt>
-            <dd className="mt-1 font-mono tabular-nums text-ink dark:text-paper">
-              {formatDuration(video.duration_seconds)}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
-              File size
-            </dt>
-            <dd className="mt-1 font-mono tabular-nums text-ink dark:text-paper">
-              {video.file_size_mb.toFixed(1)} MB
-            </dd>
-          </div>
-          <div>
-            <dt className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
-              Format
-            </dt>
-            <dd className="mt-1 text-ink dark:text-paper">{video.content_type}</dd>
-          </div>
-          <div>
-            <dt className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
-              Uploaded on
-            </dt>
-            <dd className="mt-1 text-ink dark:text-paper">{formatDate(video.created_at)}</dd>
-          </div>
-        </dl>
-      </div>
-
-      <div className="mb-6 rounded-lg border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
-        <p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
-          Processing pipeline
-        </p>
-        <PipelineStep label="Format standardization" done={Boolean(video.processed_path)} />
-        <PipelineStep label="Thumbnail extraction" done={Boolean(video.thumbnail_path)} />
-        <PipelineStep label="Audio extraction (noise-reduced)" done={Boolean(video.audio_path)} />
-      </div>
-
-      {video.status === "failed" && (
-        <p className="mb-6 text-sm text-danger">
-          Processing failed for this video. Try re-uploading it.
-        </p>
       )}
 
-      {/* Transcript */}
-      <div className="mb-6 rounded-lg border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
-        <div className="mb-3 flex items-center justify-between">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
-            Transcript
-          </p>
-          {transcript && !editing && (
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() =>
-                  downloadText(
+      {tab === "Transcript" && (
+        <div className="rounded-xl border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">Transcript</p>
+            {transcript && !editing && (
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => downloadText(
                     `${(video.title || video.filename).replace(/\.[^/.]+$/, "")}-transcript.txt`,
-                    showSegments
-                      ? transcript.segments.map((seg) => `[${formatTimestamp(seg.start)}] ${seg.text}`).join("\n")
-                      : transcript.text
-                  )
-                }
-                className="font-mono text-[11px] uppercase tracking-wide text-signal"
-              >
-                Download
-              </button>
-              {!showSegments && (
-                <button onClick={startEditing} className="font-mono text-[11px] uppercase tracking-wide text-signal">
-                  Edit
+                    showSegments ? transcript.segments.map((seg) => `[${formatTimestamp(seg.start)}] ${seg.text}`).join("\n") : transcript.text
+                  )}
+                  className="flex items-center gap-1.5 text-xs font-medium text-signal"
+                >
+                  <DownloadIcon width={14} height={14} /> Download
                 </button>
-              )}
-              <button
-                onClick={() => setShowSegments((s) => !s)}
-                className="font-mono text-[11px] uppercase tracking-wide text-signal"
-              >
-                {showSegments ? "Show full text" : "Show timestamps"}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {!transcript ? (
-          <div>
-            <button
-              onClick={handleGenerateTranscript}
-              disabled={transcriptLoading || video.status !== "ready"}
-              className="rounded-md bg-signal px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {transcriptLoading ? "Transcribing..." : "Generate transcript"}
-            </button>
-            {transcriptLoading && (
-              <p className="mt-2 font-mono text-[11px] text-ink/40 dark:text-paper/40">
-                This can take a minute or two, especially the first time (model loading onto GPU).
-              </p>
-            )}
-            {transcriptError && <p className="mt-2 text-sm text-danger">{transcriptError}</p>}
-          </div>
-        ) : editing ? (
-          <div>
-            <textarea
-              value={editedText}
-              onChange={(e) => setEditedText(e.target.value)}
-              rows={10}
-              className="w-full resize-y rounded-md border border-line bg-transparent px-3 py-2 text-sm text-ink focus:border-signal focus:outline-none dark:border-line-dark dark:text-paper"
-            />
-            <div className="mt-3 flex items-center gap-3">
-              <button
-                onClick={saveEditedTranscript}
-                disabled={savingEdit || !editedText.trim()}
-                className="rounded-md bg-signal px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {savingEdit ? "Saving..." : "Save changes"}
-              </button>
-              <button
-                onClick={cancelEditing}
-                disabled={savingEdit}
-                className="font-mono text-[11px] uppercase tracking-wide text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper"
-              >
-                Cancel
-              </button>
-            </div>
-            {transcriptError && <p className="mt-2 text-sm text-danger">{transcriptError}</p>}
-          </div>
-        ) : showSegments ? (
-          <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
-            {transcript.segments.map((seg, i) => (
-              <div key={i} className="flex gap-3 text-sm">
-                <span className="shrink-0 font-mono text-[11px] tabular-nums text-ink/40 dark:text-paper/40">
-                  {formatTimestamp(seg.start)}
-                </span>
-                <span className="text-ink/80 dark:text-paper/80">{seg.text}</span>
+                {!showSegments && (
+                  <button onClick={startEditing} className="text-xs font-medium text-signal">Edit</button>
+                )}
+                <button onClick={() => setShowSegments((s) => !s)} className="text-xs font-medium text-signal">
+                  {showSegments ? "Show full text" : "Show timestamps"}
+                </button>
               </div>
-            ))}
+            )}
           </div>
-        ) : (
-          <p className="max-h-72 overflow-y-auto whitespace-pre-wrap text-sm text-ink/80 dark:text-paper/80">
-            {transcript.text}
-          </p>
-        )}
-      </div>
 
-      {/* Summary */}
-      <div className="rounded-lg border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
-        <div className="mb-3 flex items-center justify-between">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">
-            AI Summary
-          </p>
-          {summary && (
-            <button
-              onClick={() =>
-                downloadText(
-                  `${(video.title || video.filename).replace(/\.[^/.]+$/, "")}-summary.txt`,
-                  summary.detailed_summary
-                )
-              }
-              className="font-mono text-[11px] uppercase tracking-wide text-signal"
-            >
-              Download
-            </button>
+          {!transcript ? (
+            <div>
+              <button
+                onClick={handleGenerateTranscript}
+                disabled={transcriptLoading || video.status !== "ready"}
+                className="rounded-lg bg-signal px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {transcriptLoading ? "Transcribing..." : "Generate transcript"}
+              </button>
+              {transcriptLoading && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">This can take a minute or two, especially the first time (model loading onto GPU).</p>}
+              {transcriptError && <p className="mt-2 text-sm text-danger">{transcriptError}</p>}
+            </div>
+          ) : editing ? (
+            <div>
+              <textarea
+                value={editedText}
+                onChange={(e) => setEditedText(e.target.value)}
+                rows={10}
+                className="w-full resize-y rounded-lg border border-line bg-transparent px-3.5 py-2.5 text-sm text-ink focus:border-signal focus:outline-none dark:border-line-dark dark:text-paper"
+              />
+              <div className="mt-3 flex items-center gap-3">
+                <button onClick={saveEditedTranscript} disabled={savingEdit || !editedText.trim()} className="rounded-lg bg-signal px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50">
+                  {savingEdit ? "Saving..." : "Save changes"}
+                </button>
+                <button onClick={cancelEditing} disabled={savingEdit} className="text-sm text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper">Cancel</button>
+              </div>
+              {transcriptError && <p className="mt-2 text-sm text-danger">{transcriptError}</p>}
+            </div>
+          ) : showSegments ? (
+            <div className="max-h-96 space-y-2 overflow-y-auto pr-1">
+              {transcript.segments.map((seg, i) => (
+                <div key={i} className="flex gap-3 text-sm">
+                  <span className="shrink-0 font-mono text-xs tabular-nums text-ink/40 dark:text-paper/40">{formatTimestamp(seg.start)}</span>
+                  <span className="text-ink/80 dark:text-paper/80">{seg.text}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="max-h-96 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-ink/80 dark:text-paper/80">{transcript.text}</p>
           )}
         </div>
+      )}
 
-        {!summary ? (
-          <div>
-            <button
-              onClick={handleGenerateSummary}
-              disabled={summaryLoading || !transcript}
-              className="rounded-md bg-signal px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {summaryLoading ? "Summarizing..." : "Generate summary"}
-            </button>
-            {!transcript && (
-              <p className="mt-2 font-mono text-[11px] text-ink/40 dark:text-paper/40">
-                Generate the transcript first.
-              </p>
+      {tab === "Summary" && (
+        <div className="rounded-xl border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">AI Summary</p>
+            {summary && (
+              <button
+                onClick={() => downloadText(`${(video.title || video.filename).replace(/\.[^/.]+$/, "")}-summary.txt`, summary.detailed_summary)}
+                className="flex items-center gap-1.5 text-xs font-medium text-signal"
+              >
+                <DownloadIcon width={14} height={14} /> Download
+              </button>
             )}
-            {summaryLoading && (
-              <p className="mt-2 font-mono text-[11px] text-ink/40 dark:text-paper/40">
-                This can take a minute, especially the first time (model loading onto GPU).
-              </p>
-            )}
-            {summaryError && <p className="mt-2 text-sm text-danger">{summaryError}</p>}
           </div>
-        ) : (
-          <p className="whitespace-pre-wrap text-sm text-ink/80 dark:text-paper/80">
-            {summary.detailed_summary}
+
+          {!summary ? (
+            <div>
+              <button
+                onClick={handleGenerateSummary}
+                disabled={summaryLoading || !transcript}
+                className="rounded-lg bg-signal px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {summaryLoading ? "Summarizing..." : "Generate summary"}
+              </button>
+              {!transcript && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">Generate the transcript first.</p>}
+              {summaryLoading && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">This can take a minute, especially the first time (model loading onto GPU).</p>}
+              {summaryError && <p className="mt-2 text-sm text-danger">{summaryError}</p>}
+            </div>
+          ) : (
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink/80 dark:text-paper/80">{summary.detailed_summary}</p>
+          )}
+        </div>
+      )}
+
+      {tab === "Key Moments" && (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line bg-cloud p-12 text-center dark:border-line-dark dark:bg-graphite">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-signal/10 text-signal dark:bg-signal-dark/15 dark:text-signal-dark">
+            <KeyMomentIcon width={22} height={22} />
+          </span>
+          <p className="mt-3 text-sm font-medium text-ink dark:text-paper">Key moments detection coming soon</p>
+          <p className="mt-1 max-w-sm text-sm text-ink/45 dark:text-paper/45">
+            Automatic timestamp and highlight extraction is planned for Milestone 3 of the roadmap.
           </p>
-        )}
-      </div>
+        </div>
+      )}
+
+      {tab === "Analytics" && (
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line bg-cloud p-12 text-center dark:border-line-dark dark:bg-graphite">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-marker/10 text-marker">
+            <BarChartIcon width={22} height={22} />
+          </span>
+          <p className="mt-3 text-sm font-medium text-ink dark:text-paper">Per-video analytics coming soon</p>
+          <p className="mt-1 max-w-sm text-sm text-ink/45 dark:text-paper/45">
+            View counts, watch time, and audience data will appear here once tracking is implemented.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Row({ label, value, mono }) {
+  return (
+    <div className="flex items-center justify-between">
+      <dt className="text-ink/50 dark:text-paper/50">{label}</dt>
+      <dd className={`text-ink dark:text-paper ${mono ? "font-mono tabular-nums" : ""}`}>{value}</dd>
     </div>
   );
 }

@@ -4,12 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../lib/AuthContext";
-import ThemeToggle from "../../components/ui/ThemeToggle";
-import Waveform from "../../components/ui/Waveform";
+import { PlayIcon, ChevronDownIcon } from "../../components/ui/icons";
 import { getPasswordStrength, STRENGTH_COLORS } from "../../lib/passwordStrength";
 
 const ROLES = [
-  { value: "content_creator", label: "Content creator" },
+  { value: "content_creator", label: "Content Creator" },
   { value: "learner", label: "Learner" },
   { value: "educator", label: "Educator" },
 ];
@@ -27,6 +26,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("content_creator");
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { register } = useAuth();
@@ -42,6 +42,10 @@ export default function RegisterPage() {
       setError("Passwords do not match.");
       return;
     }
+    if (!agreed) {
+      setError("Please agree to the Terms & Conditions to continue.");
+      return;
+    }
     setSubmitting(true);
     try {
       const user = await register({ full_name: fullName, email, password, role });
@@ -54,43 +58,35 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen bg-paper dark:bg-ink">
-      <div className="absolute right-6 top-6 z-10"><ThemeToggle /></div>
+    <main className="flex min-h-screen items-center justify-center bg-paper p-6 dark:bg-ink">
+      <div className="grid w-full max-w-4xl overflow-hidden rounded-2xl border border-line bg-cloud shadow-sm dark:border-line-dark dark:bg-graphite md:grid-cols-2">
+        {/* Form panel */}
+        <div className="flex flex-col justify-center p-8 sm:p-12">
+          <div className="mb-6 flex items-center gap-2 md:hidden">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-signal text-white">
+              <PlayIcon width={15} height={15} />
+            </span>
+            <span className="font-display text-lg font-semibold tracking-tight text-ink dark:text-paper">ClipMind AI</span>
+          </div>
 
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-ink p-12 text-paper lg:flex">
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-signal-dark" />
-          <span className="font-display text-lg font-semibold tracking-tight">ClipMind AI</span>
-        </div>
-        <div>
-          <h2 className="max-w-sm font-display text-3xl font-semibold leading-tight tracking-tight">
-            Create your account and start transforming your videos with AI.
-          </h2>
-          <Waveform className="mt-8 h-8 w-48 text-signal-dark/50" />
-        </div>
-        <p className="font-mono text-[11px] uppercase tracking-widest text-paper/30">AI-powered video intelligence</p>
-      </div>
-
-      <div className="flex w-full items-center justify-center p-6 lg:w-1/2">
-        <div className="w-full max-w-sm">
-          <h1 className="font-display text-xl font-semibold tracking-tight text-ink dark:text-paper">Create account</h1>
+          <h1 className="font-display text-xl font-semibold tracking-tight text-ink dark:text-paper">Create Account</h1>
           <p className="mt-1 text-sm text-ink/50 dark:text-paper/50">Join ClipMind AI today</p>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-7 space-y-4">
             <div>
-              <label className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">Full name</label>
+              <label className="text-xs font-medium text-ink/60 dark:text-paper/60">Full Name</label>
               <input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name"
-                className="mt-1 w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm text-ink focus:border-signal focus:outline-none dark:border-line-dark dark:text-paper" />
+                className="mt-1.5 w-full rounded-lg border border-line bg-transparent px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/30 focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/15 dark:border-line-dark dark:text-paper dark:placeholder:text-paper/30" />
             </div>
             <div>
-              <label className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">Email address</label>
+              <label className="text-xs font-medium text-ink/60 dark:text-paper/60">Email address</label>
               <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com"
-                className="mt-1 w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm text-ink focus:border-signal focus:outline-none dark:border-line-dark dark:text-paper" />
+                className="mt-1.5 w-full rounded-lg border border-line bg-transparent px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/30 focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/15 dark:border-line-dark dark:text-paper dark:placeholder:text-paper/30" />
             </div>
             <div>
-              <label className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">Password</label>
+              <label className="text-xs font-medium text-ink/60 dark:text-paper/60">Password</label>
               <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password"
-                className="mt-1 w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm text-ink focus:border-signal focus:outline-none dark:border-line-dark dark:text-paper" />
+                className="mt-1.5 w-full rounded-lg border border-line bg-transparent px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/30 focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/15 dark:border-line-dark dark:text-paper dark:placeholder:text-paper/30" />
               {password.length > 0 && (
                 <div className="mt-2">
                   <div className="flex gap-1">
@@ -98,31 +94,43 @@ export default function RegisterPage() {
                       <div key={i} className={`h-1 flex-1 rounded-full ${i <= strength.score ? STRENGTH_COLORS[strength.score] : "bg-line dark:bg-line-dark"}`} />
                     ))}
                   </div>
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-ink/50 dark:text-paper/50">{strength.label}</p>
+                  <p className="mt-1 text-xs text-ink/50 dark:text-paper/50">{strength.label}</p>
                 </div>
               )}
             </div>
             <div>
-              <label className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">Confirm password</label>
+              <label className="text-xs font-medium text-ink/60 dark:text-paper/60">Confirm Password</label>
               <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm your password"
-                className={`mt-1 w-full rounded-md border bg-transparent px-3 py-2 text-sm text-ink focus:outline-none dark:text-paper ${passwordsMismatch ? "border-danger" : "border-line focus:border-signal dark:border-line-dark"}`} />
+                className={`mt-1.5 w-full rounded-lg border bg-transparent px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 dark:text-paper dark:placeholder:text-paper/30 ${passwordsMismatch ? "border-danger focus:ring-danger/15" : "border-line focus:border-signal focus:ring-signal/15 dark:border-line-dark"}`} />
               {passwordsMismatch && <p className="mt-1 text-xs text-danger">Passwords do not match.</p>}
             </div>
             <div>
-              <label className="font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:text-paper/50">Role</label>
-              <select value={role} onChange={(e) => setRole(e.target.value)}
-                className="mt-1 w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm text-ink focus:border-signal focus:outline-none dark:border-line-dark dark:text-paper">
-                {ROLES.map((r) => (
-                  <option key={r.value} value={r.value} className="bg-cloud text-ink dark:bg-graphite dark:text-paper">
-                    {r.label}
-                  </option>
-                ))}
-              </select>
+              <label className="text-xs font-medium text-ink/60 dark:text-paper/60">Role</label>
+              <div className="relative mt-1.5">
+                <select value={role} onChange={(e) => setRole(e.target.value)}
+                  className="w-full appearance-none rounded-lg border border-line bg-transparent px-3.5 py-2.5 text-sm text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/15 dark:border-line-dark dark:text-paper">
+                  {ROLES.map((r) => (
+                    <option key={r.value} value={r.value} className="bg-cloud text-ink dark:bg-graphite dark:text-paper">
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDownIcon width={15} height={15} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/40 dark:text-paper/40" />
+              </div>
             </div>
+
+            <label className="flex items-start gap-2 text-sm text-ink/60 dark:text-paper/60">
+              <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-line text-signal focus:ring-signal/30 dark:border-line-dark" />
+              <span>
+                I agree to the <Link href="#" className="font-medium text-signal">Terms &amp; Conditions</Link> and{" "}
+                <Link href="#" className="font-medium text-signal">Privacy Policy</Link>
+              </span>
+            </label>
 
             {error && <p className="text-sm text-danger">{error}</p>}
 
-            <button type="submit" disabled={submitting} className="w-full rounded-md bg-signal py-2.5 text-sm font-medium text-white hover:bg-signal/90 disabled:opacity-50">
+            <button type="submit" disabled={submitting} className="w-full rounded-lg bg-signal py-2.5 text-sm font-medium text-white shadow-sm hover:bg-signal/90 disabled:opacity-50">
               {submitting ? "Creating account..." : "Register"}
             </button>
           </form>
@@ -130,6 +138,33 @@ export default function RegisterPage() {
           <p className="mt-6 text-center text-sm text-ink/50 dark:text-paper/50">
             Already have an account? <Link href="/login" className="font-medium text-signal">Login</Link>
           </p>
+        </div>
+
+        {/* Illustration panel */}
+        <div className="hidden flex-col justify-between border-l border-line p-10 dark:border-line-dark md:flex">
+          <div className="flex items-center gap-2 self-end">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-signal text-white">
+              <PlayIcon width={15} height={15} />
+            </span>
+            <span className="font-display text-lg font-semibold tracking-tight text-ink dark:text-paper">ClipMind AI</span>
+          </div>
+
+          <div>
+            <h2 className="max-w-xs font-display text-2xl font-semibold leading-snug tracking-tight text-ink dark:text-paper">
+              Create your account and start transforming your videos with AI.
+            </h2>
+          </div>
+
+          <div className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl bg-paper dark:bg-graphite-2">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="3.5" />
+                <path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7" />
+              </svg>
+            </span>
+            <div className="mt-4 h-2 w-28 rounded-full bg-line dark:bg-line-dark" />
+            <div className="mt-2 h-2 w-16 rounded-full bg-line dark:bg-line-dark" />
+          </div>
         </div>
       </div>
     </main>
