@@ -204,3 +204,22 @@ def get_video_or_404(db: Session, video_id: uuid.UUID, owner: User) -> Video:
     if not video:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Video not found.")
     return video
+
+def delete_video_files_and_row(db: Session, video: Video) -> None:
+    """
+    Removes the video's files from disk (original upload, standardized copy,
+    thumbnail, extracted audio) and deletes its Postgres row. Missing files
+    are silently skipped — a partially-processed video may not have all of
+    them. Caller is responsible for removing any associated Mongo documents
+    (transcript/summary/key-moments) separately.
+    """
+    for path_str in (video.file_path, video.processed_path, video.thumbnail_path, video.audio_path):
+        if not path_str:
+            continue
+        try:
+            Path(path_str).unlink(missing_ok=True)
+        except OSError:
+            pass
+
+    db.delete(video)
+    db.commit()

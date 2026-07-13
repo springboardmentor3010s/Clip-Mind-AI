@@ -58,6 +58,10 @@ export default function VideoDetailPage() {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState("");
 
+  const [keyMoments, setKeyMoments] = useState(null);
+  const [keyMomentsLoading, setKeyMomentsLoading] = useState(false);
+  const [keyMomentsError, setKeyMomentsError] = useState("");
+
   useEffect(() => {
     api.get(`/api/v1/videos/${id}`).then((res) => setVideo(res.data)).catch((err) => {
       setError(err.response?.status === 404 ? "Video not found." : "Failed to load video.");
@@ -65,6 +69,7 @@ export default function VideoDetailPage() {
 
     api.get(`/api/v1/videos/${id}/transcript`).then((res) => setTranscript(res.data)).catch(() => {});
     api.get(`/api/v1/videos/${id}/summary`).then((res) => setSummary(res.data)).catch(() => {});
+    api.get(`/api/v1/videos/${id}/key-moments`).then((res) => setKeyMoments(res.data)).catch(() => {});
   }, [id]);
 
   async function handleGenerateTranscript() {
@@ -114,6 +119,20 @@ export default function VideoDetailPage() {
       setSummaryError(err.response?.data?.detail || "Failed to generate summary.");
     } finally {
       setSummaryLoading(false);
+    }
+  }
+
+
+  async function handleGenerateKeyMoments() {
+    setKeyMomentsLoading(true);
+    setKeyMomentsError("");
+    try {
+      const res = await api.post(`/api/v1/videos/${id}/key-moments`);
+      setKeyMoments(res.data);
+    } catch (err) {
+      setKeyMomentsError(err.response?.data?.detail || "Failed to detect key moments.");
+    } finally {
+      setKeyMomentsLoading(false);
     }
   }
 
@@ -186,7 +205,18 @@ export default function VideoDetailPage() {
 
           <div className="rounded-xl border border-line bg-cloud p-5 dark:border-line-dark dark:bg-graphite">
             <p className="mb-3 text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">Key Moments</p>
-            <p className="text-sm text-ink/40 dark:text-paper/40">Key moments detection isn't available for this video yet.</p>
+            {keyMoments && keyMoments.highlights.length > 0 ? (
+              <div className="space-y-2">
+                {keyMoments.highlights.slice(0, 2).map((h, i) => (
+                  <div key={i} className="flex gap-2 text-sm">
+                    <span className="shrink-0 font-mono text-xs tabular-nums text-signal">{formatTimestamp(h.start)}</span>
+                    <span className="line-clamp-1 text-ink/75 dark:text-paper/75">{h.text}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-ink/40 dark:text-paper/40">Key moments detection isn't available for this video yet.</p>
+            )}
             <button onClick={() => setTab("Key Moments")} className="mt-3 text-xs font-medium text-signal">View All</button>
           </div>
         </div>
@@ -294,14 +324,100 @@ export default function VideoDetailPage() {
       )}
 
       {tab === "Key Moments" && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line bg-cloud p-12 text-center dark:border-line-dark dark:bg-graphite">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-signal/10 text-signal dark:bg-signal-dark/15 dark:text-signal-dark">
-            <KeyMomentIcon width={22} height={22} />
-          </span>
-          <p className="mt-3 text-sm font-medium text-ink dark:text-paper">Key moments detection coming soon</p>
-          <p className="mt-1 max-w-sm text-sm text-ink/45 dark:text-paper/45">
-            Automatic timestamp and highlight extraction is planned for Milestone 3 of the roadmap.
-          </p>
+        <div className="space-y-5">
+          {!keyMoments ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line bg-cloud p-12 text-center dark:border-line-dark dark:bg-graphite">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-signal/10 text-signal dark:bg-signal-dark/15 dark:text-signal-dark">
+                <KeyMomentIcon width={22} height={22} />
+              </span>
+              <p className="mt-3 text-sm font-medium text-ink dark:text-paper">No key moments yet</p>
+              <p className="mt-1 max-w-sm text-sm text-ink/45 dark:text-paper/45">
+                Detect keywords, highlight segments, and topic boundaries from this video's transcript.
+              </p>
+              <button
+                onClick={handleGenerateKeyMoments}
+                disabled={keyMomentsLoading || !transcript}
+                className="mt-4 rounded-lg bg-signal px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {keyMomentsLoading ? "Analyzing..." : "Detect key moments"}
+              </button>
+              {!transcript && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">Generate the transcript first.</p>}
+              {keyMomentsError && <p className="mt-2 text-sm text-danger">{keyMomentsError}</p>}
+            </div>
+          ) : (
+            <>
+              <div className="rounded-xl border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
+                <p className="mb-3 text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">Keywords</p>
+                {keyMoments.keywords.length === 0 ? (
+                  <p className="text-sm text-ink/40 dark:text-paper/40">No keywords detected.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {keyMoments.keywords.map((kw) => (
+                      <span key={kw} className="rounded-full bg-signal/10 px-3 py-1 text-xs font-medium text-signal dark:bg-signal-dark/15 dark:text-signal-dark">
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
+                <p className="mb-4 text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">Highlights</p>
+                {keyMoments.highlights.length === 0 ? (
+                  <p className="text-sm text-ink/40 dark:text-paper/40">No standout segments detected.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {keyMoments.highlights.map((h, i) => (
+                      <div key={i} className="border-b border-line pb-4 last:border-0 last:pb-0 dark:border-line-dark">
+                        <div className="mb-1.5 flex items-center gap-3">
+                          <span className="font-mono text-xs font-medium tabular-nums text-signal">
+                            {formatTimestamp(h.start)}&ndash;{formatTimestamp(h.end)}
+                          </span>
+                          <div className="h-1 flex-1 max-w-24 overflow-hidden rounded-full bg-line dark:bg-line-dark">
+                            <div className="h-full rounded-full bg-signal" style={{ width: `${Math.round(h.importance_score * 100)}%` }} />
+                          </div>
+                        </div>
+                        <p className="text-sm leading-relaxed text-ink/80 dark:text-paper/80">{h.text}</p>
+                        {h.keywords.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {h.keywords.map((kw) => (
+                              <span key={kw} className="rounded-full bg-paper px-2 py-0.5 text-[11px] text-ink/50 dark:bg-graphite-2 dark:text-paper/50">
+                                {kw}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
+                <p className="mb-4 text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">Topics</p>
+                {keyMoments.topics.length === 0 ? (
+                  <p className="text-sm text-ink/40 dark:text-paper/40">No topic segments detected.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {keyMoments.topics.map((t, i) => (
+                      <div key={i} className="flex items-start gap-3 rounded-lg bg-paper px-3.5 py-3 dark:bg-graphite-2">
+                        <span className="shrink-0 font-mono text-xs tabular-nums text-ink/40 dark:text-paper/40">
+                          {formatTimestamp(t.start)}&ndash;{formatTimestamp(t.end)}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium capitalize text-ink dark:text-paper">{t.label}</p>
+                          <p className="mt-0.5 text-xs text-ink/45 dark:text-paper/45">
+                            {t.segment_count} segment{t.segment_count === 1 ? "" : "s"}
+                            {t.keywords.length > 0 && ` · ${t.keywords.join(", ")}`}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
 

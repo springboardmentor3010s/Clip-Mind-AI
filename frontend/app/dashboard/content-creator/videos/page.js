@@ -20,7 +20,7 @@ export default function MyVideosPage() {
       ) : videos.length === 0 ? (
         <p className="font-mono text-xs text-ink/50 dark:text-paper/50">No videos uploaded yet.</p>
       ) : (
-        <VideoTable videos={videos} />
+        <VideoTable videos={videos} onDeleted={(id) => setVideos((prev) => prev.filter((v) => v.id !== id))} />
       )}
     </div>
   );
