@@ -3,6 +3,7 @@ Transcript Generation Module: runs Whisper speech-to-text on a video's
 extracted audio track and stores the result in MongoDB.
 """
 import asyncio
+import time
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
@@ -12,6 +13,7 @@ from app.core.mongo import transcripts_collection
 from app.models.user import User
 from app.models.video import Video, VideoStatus
 from app.services.ai_models import get_whisper_model
+from app.services.evaluation_service import compute_transcript_metrics
 from app.services.video_service import get_video_or_404
 
 
@@ -29,12 +31,16 @@ async def generate_transcript(db: Session, video_id, current_user: User) -> dict
             detail="Video is still processing or has no extracted audio yet.",
         )
 
+    start_time = time.perf_counter()
     result = await asyncio.to_thread(_run_whisper, video.audio_path)
+    elapsed = time.perf_counter() - start_time
 
     segments = [
         {"start": seg["start"], "end": seg["end"], "text": seg["text"].strip()}
         for seg in result.get("segments", [])
     ]
+
+    metrics = compute_transcript_metrics(result, elapsed)
 
     doc = {
         "video_id": str(video_id),
@@ -43,6 +49,7 @@ async def generate_transcript(db: Session, video_id, current_user: User) -> dict
         "segments": segments,
         "language": result.get("language"),
         "status": "done",
+        "metrics": metrics,
         "created_at": datetime.now(timezone.utc),
     }
 

@@ -3,6 +3,7 @@ Video Summarization Module: runs a BART summarization pipeline over a
 video's transcript and stores short + detailed summaries in MongoDB.
 """
 import asyncio
+import time
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
@@ -11,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.mongo import summaries_collection, transcripts_collection
 from app.models.user import User
 from app.services.ai_models import get_summarizer
+from app.services.evaluation_service import compute_summary_metrics
 from app.services.video_service import get_video_or_404
 
 CHUNK_WORD_LIMIT = 700
@@ -47,6 +49,8 @@ async def generate_summary(db: Session, video_id, current_user: User) -> dict:
             detail="No transcript found for this video yet. Generate the transcript first.",
         )
 
+    start_time = time.perf_counter()
+
     chunks = _chunk_text(transcript["text"])
     chunk_summaries = await asyncio.to_thread(_summarize_chunks, chunks)
 
@@ -57,12 +61,22 @@ async def generate_summary(db: Session, video_id, current_user: User) -> dict:
     else:
         short_summary = chunk_summaries[0]
 
+    elapsed = time.perf_counter() - start_time
+
+    metrics = compute_summary_metrics(
+        transcript_text=transcript["text"],
+        detailed_summary=detailed_summary,
+        short_summary=short_summary,
+        processing_time_seconds=elapsed,
+    )
+
     doc = {
         "video_id": str(video_id),
         "owner_id": str(current_user.id),
         "short_summary": short_summary,
         "detailed_summary": detailed_summary,
         "status": "done",
+        "metrics": metrics,
         "created_at": datetime.now(timezone.utc),
     }
 
