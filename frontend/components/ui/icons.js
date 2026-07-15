@@ -215,3 +215,13 @@ export function TrashIcon(props) {
     </svg>
   );
 }
+
+export function DocumentIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5A1.5 1.5 0 0 1 7 3.5Z" />
+      <path d="M14 3.5V8h4.5" />
+      <path d="M9 12.5h6M9 16h4.5" />
+    </svg>
+  );
+}

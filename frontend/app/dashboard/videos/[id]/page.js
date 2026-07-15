@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "../../../../lib/api";
 import StatusChip from "../../../../components/ui/StatusChip";
+import BookmarkButton from "../../../../components/ui/BookmarkButton";
 import { PlayIcon, DownloadIcon, KeyMomentIcon, BarChartIcon } from "../../../../components/ui/icons";
 
 function formatDuration(seconds) {
@@ -62,6 +63,8 @@ export default function VideoDetailPage() {
   const [keyMomentsLoading, setKeyMomentsLoading] = useState(false);
   const [keyMomentsError, setKeyMomentsError] = useState("");
 
+  const [bookmarks, setBookmarks] = useState([]);
+
   useEffect(() => {
     api.get(`/api/v1/videos/${id}`).then((res) => setVideo(res.data)).catch((err) => {
       setError(err.response?.status === 404 ? "Video not found." : "Failed to load video.");
@@ -70,6 +73,7 @@ export default function VideoDetailPage() {
     api.get(`/api/v1/videos/${id}/transcript`).then((res) => setTranscript(res.data)).catch(() => {});
     api.get(`/api/v1/videos/${id}/summary`).then((res) => setSummary(res.data)).catch(() => {});
     api.get(`/api/v1/videos/${id}/key-moments`).then((res) => setKeyMoments(res.data)).catch(() => {});
+    api.get(`/api/v1/bookmarks`, { params: { video_id: id } }).then((res) => setBookmarks(res.data)).catch(() => {});
   }, [id]);
 
   async function handleGenerateTranscript() {
@@ -149,9 +153,12 @@ export default function VideoDetailPage() {
 
   return (
     <div className="max-w-4xl">
-      <button onClick={() => router.back()} className="mb-4 flex items-center gap-1.5 text-sm font-medium text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper">
-        &larr; {video.title || video.filename}
-      </button>
+      <div className="mb-4 flex items-center justify-between">
+        <button onClick={() => router.back()} className="flex items-center gap-1.5 text-sm font-medium text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper">
+          &larr; {video.title || video.filename}
+        </button>
+        <BookmarkButton videoId={id} target={{ type: "video" }} bookmarks={bookmarks} onChange={setBookmarks} />
+      </div>
 
       <div className="mb-5 flex gap-1 border-b border-line dark:border-line-dark">
         {TABS.map((t) => (
@@ -295,12 +302,20 @@ export default function VideoDetailPage() {
           <div className="mb-4 flex items-center justify-between">
             <p className="text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">AI Summary</p>
             {summary && (
-              <button
-                onClick={() => downloadText(`${(video.title || video.filename).replace(/\.[^/.]+$/, "")}-summary.txt`, summary.detailed_summary)}
-                className="flex items-center gap-1.5 text-xs font-medium text-signal"
-              >
-                <DownloadIcon width={14} height={14} /> Download
-              </button>
+              <div className="flex items-center gap-4">
+                <BookmarkButton
+                  videoId={id}
+                  target={{ type: "summary", variant: "detailed" }}
+                  bookmarks={bookmarks}
+                  onChange={setBookmarks}
+                />
+                <button
+                  onClick={() => downloadText(`${(video.title || video.filename).replace(/\.[^/.]+$/, "")}-summary.txt`, summary.detailed_summary)}
+                  className="flex items-center gap-1.5 text-xs font-medium text-signal"
+                >
+                  <DownloadIcon width={14} height={14} /> Download
+                </button>
+              </div>
             )}
           </div>
 
@@ -369,13 +384,22 @@ export default function VideoDetailPage() {
                   <div className="space-y-4">
                     {keyMoments.highlights.map((h, i) => (
                       <div key={i} className="border-b border-line pb-4 last:border-0 last:pb-0 dark:border-line-dark">
-                        <div className="mb-1.5 flex items-center gap-3">
-                          <span className="font-mono text-xs font-medium tabular-nums text-signal">
-                            {formatTimestamp(h.start)}&ndash;{formatTimestamp(h.end)}
-                          </span>
-                          <div className="h-1 flex-1 max-w-24 overflow-hidden rounded-full bg-line dark:bg-line-dark">
-                            <div className="h-full rounded-full bg-signal" style={{ width: `${Math.round(h.importance_score * 100)}%` }} />
+                        <div className="mb-1.5 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <span className="font-mono text-xs font-medium tabular-nums text-signal">
+                              {formatTimestamp(h.start)}&ndash;{formatTimestamp(h.end)}
+                            </span>
+                            <div className="h-1 flex-1 max-w-24 overflow-hidden rounded-full bg-line dark:bg-line-dark">
+                              <div className="h-full rounded-full bg-signal" style={{ width: `${Math.round(h.importance_score * 100)}%` }} />
+                            </div>
                           </div>
+                          <BookmarkButton
+                            videoId={id}
+                            target={{ type: "highlight", start: h.start }}
+                            bookmarks={bookmarks}
+                            onChange={setBookmarks}
+                            label=""
+                          />
                         </div>
                         <p className="text-sm leading-relaxed text-ink/80 dark:text-paper/80">{h.text}</p>
                         {h.keywords.length > 0 && (
