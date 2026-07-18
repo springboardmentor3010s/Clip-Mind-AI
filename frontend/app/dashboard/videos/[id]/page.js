@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import api from "../../../../lib/api";
 import StatusChip from "../../../../components/ui/StatusChip";
 import BookmarkButton from "../../../../components/ui/BookmarkButton";
-import { PlayIcon, DownloadIcon, KeyMomentIcon, BarChartIcon } from "../../../../components/ui/icons";
+import { DownloadIcon, KeyMomentIcon, BarChartIcon } from "../../../../components/ui/icons";
+import VideoPlayer from "../../../../components/ui/VideoPlayer";
 
 function formatDuration(seconds) {
   if (!seconds && seconds !== 0) return "—";
@@ -22,6 +23,19 @@ function formatTimestamp(seconds) {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function formatWatchDuration(totalSeconds) {
+  const s = Math.round(totalSeconds || 0);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s % 60}s`;
+  return `${s}s`;
+}
+
+function formatAudienceDate(iso) {
+  return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
 function downloadText(filename, content) {
@@ -65,6 +79,9 @@ export default function VideoDetailPage() {
 
   const [bookmarks, setBookmarks] = useState([]);
 
+  const [analytics, setAnalytics] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+
   useEffect(() => {
     api.get(`/api/v1/videos/${id}`).then((res) => setVideo(res.data)).catch((err) => {
       setError(err.response?.status === 404 ? "Video not found." : "Failed to load video.");
@@ -74,6 +91,7 @@ export default function VideoDetailPage() {
     api.get(`/api/v1/videos/${id}/summary`).then((res) => setSummary(res.data)).catch(() => {});
     api.get(`/api/v1/videos/${id}/key-moments`).then((res) => setKeyMoments(res.data)).catch(() => {});
     api.get(`/api/v1/bookmarks`, { params: { video_id: id } }).then((res) => setBookmarks(res.data)).catch(() => {});
+    api.get(`/api/v1/videos/${id}/analytics`).then((res) => setAnalytics(res.data)).catch(() => {}).finally(() => setAnalyticsLoading(false));
   }, [id]);
 
   async function handleGenerateTranscript() {
@@ -178,12 +196,7 @@ export default function VideoDetailPage() {
 
       {tab === "Overview" && (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-[1.4fr_1fr]">
-          <div className="flex aspect-video flex-col items-center justify-center rounded-xl bg-ink text-white/70">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
-              <PlayIcon width={22} height={22} className="text-white translate-x-0.5" />
-            </span>
-            <p className="mt-3 font-mono text-xs tabular-nums text-white/40">00:00 / {formatDuration(video.duration_seconds)}</p>
-          </div>
+          <VideoPlayer videoId={id} />
 
           <div className="rounded-xl border border-line bg-cloud p-5 dark:border-line-dark dark:bg-graphite">
             <p className="mb-4 text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">Video Details</p>
@@ -446,16 +459,80 @@ export default function VideoDetailPage() {
       )}
 
       {tab === "Analytics" && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line bg-cloud p-12 text-center dark:border-line-dark dark:bg-graphite">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-marker/10 text-marker">
-            <BarChartIcon width={22} height={22} />
-          </span>
-          <p className="mt-3 text-sm font-medium text-ink dark:text-paper">Per-video analytics coming soon</p>
-          <p className="mt-1 max-w-sm text-sm text-ink/45 dark:text-paper/45">
-            View counts, watch time, and audience data will appear here once tracking is implemented.
-          </p>
+        <div className="space-y-5">
+          {analyticsLoading ? (
+            <p className="text-sm text-ink/50 dark:text-paper/50">Loading...</p>
+          ) : !analytics || analytics.unique_viewers === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line bg-cloud p-12 text-center dark:border-line-dark dark:bg-graphite">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-marker/10 text-marker">
+                <BarChartIcon width={22} height={22} />
+              </span>
+              <p className="mt-3 text-sm font-medium text-ink dark:text-paper">No views yet</p>
+              <p className="mt-1 max-w-sm text-sm text-ink/45 dark:text-paper/45">
+                View counts, watch time, and audience data will appear here once someone plays this video.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <AnalyticsStat label="Views" value={analytics.view_count} />
+                <AnalyticsStat label="Unique Viewers" value={analytics.unique_viewers} />
+                <AnalyticsStat label="Total Watch Time" value={formatWatchDuration(analytics.total_watch_time_seconds)} />
+                <AnalyticsStat label="Avg. Completion" value={`${analytics.completion_rate}%`} />
+              </div>
+
+              <div className="rounded-xl border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
+                <p className="mb-4 text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">Retention</p>
+                <div className="flex h-32 items-end gap-4">
+                  {analytics.retention.map((r) => (
+                    <div key={r.label} className="flex flex-1 flex-col items-center gap-2">
+                      <span className="font-mono text-xs tabular-nums text-ink/50 dark:text-paper/50">{r.viewers_reached}</span>
+                      <div
+                        className="w-full rounded-t-sm bg-signal/70"
+                        style={{
+                          height: `${Math.max(4, (r.viewers_reached / analytics.unique_viewers) * 100)}%`,
+                        }}
+                        title={`${r.viewers_reached} viewer${r.viewers_reached === 1 ? "" : "s"} reached ${r.label}`}
+                      />
+                      <span className="text-[10px] text-ink/40 dark:text-paper/40">{r.label}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs text-ink/40 dark:text-paper/40">Share of viewers who reached each point in the video.</p>
+              </div>
+
+              <div className="rounded-xl border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
+                <p className="mb-4 text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">Audience</p>
+                <div className="space-y-3">
+                  {analytics.audience.map((a) => (
+                    <div key={a.viewer_id} className="flex items-center justify-between gap-3 border-b border-line pb-3 last:border-0 last:pb-0 dark:border-line-dark">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-ink dark:text-paper">{a.viewer_name}</p>
+                        <p className="text-xs text-ink/45 dark:text-paper/45">
+                          {a.view_count} view{a.view_count === 1 ? "" : "s"} · last watched {formatAudienceDate(a.last_watched_at)}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="font-mono text-sm tabular-nums text-ink dark:text-paper">{formatWatchDuration(a.watched_seconds)}</p>
+                        <p className="text-xs text-ink/45 dark:text-paper/45">{a.completion_pct}% watched</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
+    </div>
+  );
+}
+
+function AnalyticsStat({ label, value }) {
+  return (
+    <div className="rounded-xl border border-line bg-cloud p-4 dark:border-line-dark dark:bg-graphite">
+      <p className="text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">{label}</p>
+      <p className="mt-2 font-display text-2xl font-semibold tabular-nums text-ink dark:text-paper">{value}</p>
     </div>
   );
 }
