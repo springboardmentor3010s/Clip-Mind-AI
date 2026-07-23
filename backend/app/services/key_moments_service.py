@@ -165,7 +165,7 @@ async def generate_key_moments(db: Session, video_id: uuid.UUID, current_user: U
 
 
 async def get_key_moments(db: Session, video_id: uuid.UUID, current_user: User) -> dict:
-    get_video_or_404(db, video_id, current_user)
+    get_video_or_404(db, video_id, current_user, require_owner=False)
 
     doc = await key_moments_collection.find_one({"video_id": str(video_id)})
     if not doc:

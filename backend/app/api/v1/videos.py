@@ -17,13 +17,15 @@ from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.mongo import key_moments_collection, summaries_collection, transcripts_collection, video_views_collection
 from app.models.user import User
-from app.schemas.video import VideoOut
+from app.schemas.video import VideoOut, VideoPublishUpdate
 from app.schemas.video_analytics import VideoAnalytics, ViewPing
 from app.services.video_service import (
     delete_video_files_and_row,
     get_video_or_404,
+    list_published_videos,
     list_user_videos,
     save_uploaded_video,
+    set_video_published,
 )
 from app.services.video_analytics_service import get_video_analytics, record_view
 
@@ -51,14 +53,34 @@ def get_my_videos(
     return list_user_videos(db, current_user)
 
 
+@router.get("/library", response_model=list[VideoOut])
+def get_content_library(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Content Library: every video any user has published, for Learners (and everyone else) to browse."""
+    return list_published_videos(db)
+
+
 @router.get("/{video_id}", response_model=VideoOut)
 def get_video(
     video_id: uuid.UUID,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Get details of a specific video (must be owned by the current user)."""
-    return get_video_or_404(db, video_id, current_user)
+    """Get details of a video: owned by the current user, or published to the content library."""
+    return get_video_or_404(db, video_id, current_user, require_owner=False)
+
+
+@router.patch("/{video_id}/publish", response_model=VideoOut)
+def publish_video(
+    video_id: uuid.UUID,
+    payload: VideoPublishUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Owner-only: publish/unpublish a video to the shared content library."""
+    return set_video_published(db, video_id, current_user, payload.is_published)
 
 
 @router.get("/{video_id}/stream")
@@ -78,7 +100,7 @@ def stream_video(
     <video> tag straight at the URL, since a plain <video src="..."> tag
     can't attach an Authorization header.
     """
-    video = get_video_or_404(db, video_id, current_user)
+    video = get_video_or_404(db, video_id, current_user, require_owner=False)
     path = video.processed_path or video.file_path
     if not path or not Path(path).exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Video file not found on disk.")
@@ -98,6 +120,8 @@ async def ping_view(
     Record watch progress for the Analytics Dashboard Module. The player
     calls this on playback start (session_start=True) and periodically
     while playing, reporting the furthest position reached so far.
+    Works for the owner watching their own video, or anyone watching a
+    published one — that's exactly the audience data owners want to see.
     """
     await record_view(db, video_id, current_user, payload)
 

@@ -61,7 +61,7 @@ async def generate_transcript(db: Session, video_id, current_user: User) -> dict
 
 
 async def get_transcript(db: Session, video_id, current_user: User) -> dict:
-    get_video_or_404(db, video_id, current_user)
+    get_video_or_404(db, video_id, current_user, require_owner=False)
 
     doc = await transcripts_collection.find_one({"video_id": str(video_id)})
     if not doc:

@@ -12,7 +12,7 @@ class ViewPing(BaseModel):
 
 
 class RetentionBucket(BaseModel):
-    label: str
+    label: str          # e.g. "25%", "50%", "75%", "100%"
     viewers_reached: int
 
 

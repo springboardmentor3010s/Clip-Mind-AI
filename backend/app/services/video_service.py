@@ -199,10 +199,50 @@ def list_user_videos(db: Session, owner: User) -> list[Video]:
     return db.query(Video).filter(Video.owner_id == owner.id).order_by(Video.created_at.desc()).all()
 
 
-def get_video_or_404(db: Session, video_id: uuid.UUID, owner: User) -> Video:
-    video = db.query(Video).filter(Video.id == video_id, Video.owner_id == owner.id).first()
+def get_video_or_404(db: Session, video_id: uuid.UUID, owner: User, require_owner: bool = True) -> Video:
+    """
+    require_owner=True (default): only the video's owner may access it —
+    used for every mutating action (generate/edit transcript, generate
+    summary/key-moments, publish, delete).
+
+    require_owner=False: also allow read-only access if the video has been
+    published by its owner — used for the endpoints a Learner needs to view
+    a shared video (details, stream, transcript/summary/key-moments reads,
+    bookmarking, watch-progress pings).
+    """
+    video = db.query(Video).filter(Video.id == video_id).first()
     if not video:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Video not found.")
+
+    is_owner = video.owner_id == owner.id
+    if is_owner or (not require_owner and video.is_published):
+        return video
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Video not found.")
+
+
+def list_published_videos(db: Session) -> list[Video]:
+    """Content Library: every published video, from every user, newest first."""
+    rows = (
+        db.query(Video, User.full_name)
+        .join(User, User.id == Video.owner_id)
+        .filter(Video.is_published == True)  # noqa: E712
+        .order_by(Video.created_at.desc())
+        .all()
+    )
+    videos = []
+    for video, owner_name in rows:
+        video.owner_name = owner_name
+        videos.append(video)
+    return videos
+
+
+def set_video_published(db: Session, video_id: uuid.UUID, owner: User, is_published: bool) -> Video:
+    """Owner-only: publish/unpublish a video to the shared content library."""
+    video = get_video_or_404(db, video_id, owner)
+    video.is_published = is_published
+    db.commit()
+    db.refresh(video)
     return video
 
 def delete_video_files_and_row(db: Session, video: Video) -> None:

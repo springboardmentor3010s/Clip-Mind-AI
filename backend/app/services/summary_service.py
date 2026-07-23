@@ -88,7 +88,7 @@ async def generate_summary(db: Session, video_id, current_user: User) -> dict:
 
 
 async def get_summary(db: Session, video_id, current_user: User) -> dict:
-    get_video_or_404(db, video_id, current_user)
+    get_video_or_404(db, video_id, current_user, require_owner=False)
 
     doc = await summaries_collection.find_one({"video_id": str(video_id)})
     if not doc:

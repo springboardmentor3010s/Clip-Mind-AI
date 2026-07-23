@@ -9,10 +9,9 @@ back across Postgres and two Mongo collections per row, and a bookmark
 still displays correctly even if the underlying summary/key-moments are
 later regenerated.
 
-Access note: bookmarking reuses get_video_or_404, which currently only
-allows a video's owner to look it up. That means for now bookmarks only
-work on videos you own — the same limitation that applies everywhere
-else in the app today (there's no cross-user video visibility yet).
+Access note: bookmarking reuses get_video_or_404 with require_owner=False,
+so any video you own, or any video its owner has published to the content
+library, can be bookmarked.
 """
 import uuid
 from datetime import datetime, timezone
@@ -35,7 +34,7 @@ def _target_key(owner_id: str, payload: BookmarkCreate) -> str:
 
 
 async def create_bookmark(db: Session, payload: BookmarkCreate, current_user: User) -> dict:
-    video = get_video_or_404(db, payload.video_id, current_user)
+    video = get_video_or_404(db, payload.video_id, current_user, require_owner=False)
 
     key = _target_key(str(current_user.id), payload)
     existing = await bookmarks_collection.find_one({"target_key": key})

@@ -7,7 +7,7 @@ import enum
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, String, Integer, Float, DateTime, Enum, ForeignKey
+from sqlalchemy import Column, String, Integer, Float, DateTime, Enum, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
@@ -41,6 +41,9 @@ class Video(Base):
     audio_path = Column(String(500), nullable=True)         # denoised audio track (WAV, 16kHz mono)
 
     status = Column(Enum(VideoStatus), nullable=False, default=VideoStatus.UPLOADED)
+    # Content Library / Analytics Dashboard Module: owner opts a video into
+    # being visible (read-only) to every other user once it's published.
+    is_published = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(

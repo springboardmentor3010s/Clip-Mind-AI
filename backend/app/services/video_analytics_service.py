@@ -21,7 +21,7 @@ RETENTION_MARKS = (0.25, 0.5, 0.75, 1.0)
 
 
 async def record_view(db: Session, video_id, current_user: User, payload: ViewPing) -> None:
-    video = get_video_or_404(db, video_id, current_user)
+    video = get_video_or_404(db, video_id, current_user, require_owner=False)
     now = datetime.now(timezone.utc)
 
     existing = await video_views_collection.find_one(

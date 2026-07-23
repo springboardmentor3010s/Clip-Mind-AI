@@ -24,4 +24,10 @@ class VideoOut(BaseModel):
     thumbnail_path: str | None = None
     audio_path: str | None = None
     status: VideoStatus
+    is_published: bool
+    owner_name: str | None = None
     created_at: datetime
+
+
+class VideoPublishUpdate(BaseModel):
+    is_published: bool

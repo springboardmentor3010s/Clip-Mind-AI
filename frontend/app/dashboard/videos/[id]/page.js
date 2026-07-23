@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "../../../../lib/AuthContext";
 import api from "../../../../lib/api";
 import StatusChip from "../../../../components/ui/StatusChip";
 import BookmarkButton from "../../../../components/ui/BookmarkButton";
@@ -55,10 +56,12 @@ const TABS = ["Overview", "Transcript", "Summary", "Key Moments", "Analytics"];
 export default function VideoDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [tab, setTab] = useState("Overview");
+  const [publishing, setPublishing] = useState(false);
 
   const [transcript, setTranscript] = useState(null);
   const [transcriptLoading, setTranscriptLoading] = useState(false);
@@ -158,6 +161,19 @@ export default function VideoDetailPage() {
     }
   }
 
+  async function togglePublish() {
+    setPublishing(true);
+    try {
+      const res = await api.patch(`/api/v1/videos/${id}/publish`, { is_published: !video.is_published });
+      setVideo(res.data);
+    } catch (err) {
+      // best-effort — surfacing this inline keeps it simple since it's a single toggle
+      alert(err.response?.data?.detail || "Failed to update publish status.");
+    } finally {
+      setPublishing(false);
+    }
+  }
+
   if (loading) return <p className="text-sm text-ink/50 dark:text-paper/50">Loading...</p>;
 
   if (error || !video) {
@@ -169,17 +185,31 @@ export default function VideoDetailPage() {
     );
   }
 
+  const isOwner = !!user && !!video && video.owner_id === user.id;
+  const visibleTabs = isOwner ? TABS : TABS.filter((t) => t !== "Analytics");
+
   return (
     <div className="max-w-4xl">
       <div className="mb-4 flex items-center justify-between">
         <button onClick={() => router.back()} className="flex items-center gap-1.5 text-sm font-medium text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper">
           &larr; {video.title || video.filename}
         </button>
-        <BookmarkButton videoId={id} target={{ type: "video" }} bookmarks={bookmarks} onChange={setBookmarks} />
+        <div className="flex items-center gap-4">
+          {isOwner && (
+            <button
+              onClick={togglePublish}
+              disabled={publishing}
+              className={`text-sm font-medium disabled:opacity-50 ${video.is_published ? "text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper" : "text-signal"}`}
+            >
+              {publishing ? "Saving..." : video.is_published ? "Unpublish" : "Publish"}
+            </button>
+          )}
+          <BookmarkButton videoId={id} target={{ type: "video" }} bookmarks={bookmarks} onChange={setBookmarks} />
+        </div>
       </div>
 
       <div className="mb-5 flex gap-1 border-b border-line dark:border-line-dark">
-        {TABS.map((t) => (
+        {visibleTabs.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -257,7 +287,7 @@ export default function VideoDetailPage() {
                 >
                   <DownloadIcon width={14} height={14} /> Download
                 </button>
-                {!showSegments && (
+                {!showSegments && isOwner && (
                   <button onClick={startEditing} className="text-xs font-medium text-signal">Edit</button>
                 )}
                 <button onClick={() => setShowSegments((s) => !s)} className="text-xs font-medium text-signal">
@@ -268,17 +298,21 @@ export default function VideoDetailPage() {
           </div>
 
           {!transcript ? (
-            <div>
-              <button
-                onClick={handleGenerateTranscript}
-                disabled={transcriptLoading || video.status !== "ready"}
-                className="rounded-lg bg-signal px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {transcriptLoading ? "Transcribing..." : "Generate transcript"}
-              </button>
-              {transcriptLoading && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">This can take a minute or two, especially the first time (model loading onto GPU).</p>}
-              {transcriptError && <p className="mt-2 text-sm text-danger">{transcriptError}</p>}
-            </div>
+            isOwner ? (
+              <div>
+                <button
+                  onClick={handleGenerateTranscript}
+                  disabled={transcriptLoading || video.status !== "ready"}
+                  className="rounded-lg bg-signal px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {transcriptLoading ? "Transcribing..." : "Generate transcript"}
+                </button>
+                {transcriptLoading && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">This can take a minute or two, especially the first time (model loading onto GPU).</p>}
+                {transcriptError && <p className="mt-2 text-sm text-danger">{transcriptError}</p>}
+              </div>
+            ) : (
+              <p className="text-sm text-ink/40 dark:text-paper/40">No transcript available for this video yet.</p>
+            )
           ) : editing ? (
             <div>
               <textarea
@@ -333,18 +367,22 @@ export default function VideoDetailPage() {
           </div>
 
           {!summary ? (
-            <div>
-              <button
-                onClick={handleGenerateSummary}
-                disabled={summaryLoading || !transcript}
-                className="rounded-lg bg-signal px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {summaryLoading ? "Summarizing..." : "Generate summary"}
-              </button>
-              {!transcript && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">Generate the transcript first.</p>}
-              {summaryLoading && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">This can take a minute, especially the first time (model loading onto GPU).</p>}
-              {summaryError && <p className="mt-2 text-sm text-danger">{summaryError}</p>}
-            </div>
+            isOwner ? (
+              <div>
+                <button
+                  onClick={handleGenerateSummary}
+                  disabled={summaryLoading || !transcript}
+                  className="rounded-lg bg-signal px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {summaryLoading ? "Summarizing..." : "Generate summary"}
+                </button>
+                {!transcript && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">Generate the transcript first.</p>}
+                {summaryLoading && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">This can take a minute, especially the first time (model loading onto GPU).</p>}
+                {summaryError && <p className="mt-2 text-sm text-danger">{summaryError}</p>}
+              </div>
+            ) : (
+              <p className="text-sm text-ink/40 dark:text-paper/40">No summary available for this video yet.</p>
+            )
           ) : (
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink/80 dark:text-paper/80">{summary.detailed_summary}</p>
           )}
@@ -362,14 +400,16 @@ export default function VideoDetailPage() {
               <p className="mt-1 max-w-sm text-sm text-ink/45 dark:text-paper/45">
                 Detect keywords, highlight segments, and topic boundaries from this video's transcript.
               </p>
-              <button
-                onClick={handleGenerateKeyMoments}
-                disabled={keyMomentsLoading || !transcript}
-                className="mt-4 rounded-lg bg-signal px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {keyMomentsLoading ? "Analyzing..." : "Detect key moments"}
-              </button>
-              {!transcript && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">Generate the transcript first.</p>}
+              {isOwner && (
+                <button
+                  onClick={handleGenerateKeyMoments}
+                  disabled={keyMomentsLoading || !transcript}
+                  className="mt-4 rounded-lg bg-signal px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {keyMomentsLoading ? "Analyzing..." : "Detect key moments"}
+                </button>
+              )}
+              {isOwner && !transcript && <p className="mt-2 text-xs text-ink/40 dark:text-paper/40">Generate the transcript first.</p>}
               {keyMomentsError && <p className="mt-2 text-sm text-danger">{keyMomentsError}</p>}
             </div>
           ) : (
