@@ -6,32 +6,20 @@ The project is implemented as a Next.js frontend and a FastAPI backend. It uses 
 
 ## What is implemented
 
-### Milestone 1
-
-- Next.js frontend and FastAPI backend wired end to end
-- JWT login, registration, and role-based access control
-- Four personas: content creator, learner, educator, and administrator
-- SQLAlchemy models that auto-create the user and video tables on startup
-- Video upload flow with validation, file storage, and thumbnail processing
-- Admin controls for listing users and updating roles
-- Responsive glassmorphism UI across the landing page and dashboard
-
-### Milestone 2
-
-- Whisper-based speech-to-text transcription flow
-- AI-powered summarization using Llama 3 style prompts and Groq-backed processing
-- Transcript and summary storage in MongoDB
-- Decoupled processing flow where users trigger AI insight generation manually
-- Video streaming inside the dashboard
-- AI response fallback and retry handling for rate-limited services
+| Milestone | Status | Highlights |
+| --- | --- | --- |
+| Milestone 1 | Completed | Next.js frontend and FastAPI backend wired end to end; JWT login, registration, and role-based access control; four personas; SQLAlchemy models that auto-create user and video tables; video upload flow with validation, file storage, and thumbnail processing; admin controls for listing users and updating roles; responsive glassmorphism UI across the landing page and dashboard |
+| Milestone 2 | Completed | Whisper-based speech-to-text transcription flow; AI-powered summarization using Llama 3 style prompts and Groq-backed processing; transcript and summary storage in MongoDB; decoupled processing flow where users trigger AI insight generation manually; video streaming inside the dashboard; AI response fallback and retry handling for rate-limited services |
 
 ## Tech Stack
 
-- Frontend: Next.js, React, Tailwind CSS, Framer Motion
-- Backend: FastAPI, SQLAlchemy, Uvicorn
-- Databases: PostgreSQL, MongoDB
-- Media: FFmpeg
-- Auth: JWT, bcrypt
+| Layer | Tools |
+| --- | --- |
+| Frontend | Next.js, React, Tailwind CSS, Framer Motion |
+| Backend | FastAPI, SQLAlchemy, Uvicorn |
+| Databases | PostgreSQL, MongoDB |
+| Media | FFmpeg |
+| Auth | JWT, bcrypt |
 
 ## Project Structure
 
@@ -106,6 +94,5 @@ The repository already includes a starter file at [backend/.env.example](backend
 - `GET /api/insights/transcript/{video_id}`
 - `GET /api/insights/summary/{video_id}`
 
-## Status
+Devanshi Malhotra, 2026
 
-The repository currently reflects Milestone 1 and Milestone 2 functionality from the presentation decks. The AI workflow is intended to be fully functional when the required API keys and database services are configured.
