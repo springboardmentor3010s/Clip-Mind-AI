@@ -39,6 +39,11 @@ function formatAudienceDate(iso) {
   return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
+function formatPercent(value) {
+  if (value === null || value === undefined) return "—";
+  return `${Math.round(value * 100)}%`;
+}
+
 function highlightMatches(text, query) {
   if (!query.trim()) return text;
   const escaped = query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -313,6 +318,15 @@ export default function VideoDetailPage() {
             )}
           </div>
 
+          {isOwner && transcript?.metrics && (
+            <div className="mb-4 flex flex-wrap gap-x-5 gap-y-1 rounded-lg bg-paper px-3.5 py-2.5 font-mono text-[11px] text-ink/50 dark:bg-graphite-2 dark:text-paper/50">
+              <MetricStat label="Confidence" value={formatPercent(transcript.metrics.confidence_score)} />
+              <MetricStat label="Silence" value={formatPercent(transcript.metrics.avg_no_speech_prob)} />
+              <MetricStat label="Segments" value={transcript.metrics.segment_count} />
+              <MetricStat label="Processed in" value={`${transcript.metrics.processing_time_seconds}s`} />
+            </div>
+          )}
+
           {!transcript ? (
             isOwner ? (
               <div>
@@ -424,6 +438,15 @@ export default function VideoDetailPage() {
               </div>
             )}
           </div>
+
+          {isOwner && summary?.metrics && (
+            <div className="mb-4 flex flex-wrap gap-x-5 gap-y-1 rounded-lg bg-paper px-3.5 py-2.5 font-mono text-[11px] text-ink/50 dark:bg-graphite-2 dark:text-paper/50">
+              <MetricStat label="Groundedness" value={formatPercent(summary.metrics.groundedness_score)} />
+              <MetricStat label="Compression" value={formatPercent(summary.metrics.detailed_compression_ratio)} />
+              <MetricStat label="Words" value={`${summary.metrics.transcript_word_count} → ${summary.metrics.detailed_summary_word_count}`} />
+              <MetricStat label="Processed in" value={`${summary.metrics.processing_time_seconds}s`} />
+            </div>
+          )}
 
           {!summary ? (
             isOwner ? (
@@ -633,6 +656,14 @@ function AnalyticsStat({ label, value }) {
       <p className="text-xs font-medium uppercase tracking-wide text-ink/45 dark:text-paper/45">{label}</p>
       <p className="mt-2 font-display text-2xl font-semibold tabular-nums text-ink dark:text-paper">{value}</p>
     </div>
+  );
+}
+
+function MetricStat({ label, value }) {
+  return (
+    <span>
+      <span className="uppercase tracking-wide">{label}:</span> <span className="text-ink/70 dark:text-paper/70">{value}</span>
+    </span>
   );
 }
 
