@@ -39,6 +39,21 @@ function formatAudienceDate(iso) {
   return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
+function highlightMatches(text, query) {
+  if (!query.trim()) return text;
+  const escaped = query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${escaped})`, "gi"));
+  return parts.map((part, i) =>
+    part.toLowerCase() === query.trim().toLowerCase() ? (
+      <mark key={i} className="rounded-sm bg-signal/25 text-ink dark:bg-signal-dark/40 dark:text-paper">
+        {part}
+      </mark>
+    ) : (
+      part
+    )
+  );
+}
+
 function downloadText(filename, content) {
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -67,6 +82,7 @@ export default function VideoDetailPage() {
   const [transcriptLoading, setTranscriptLoading] = useState(false);
   const [transcriptError, setTranscriptError] = useState("");
   const [showSegments, setShowSegments] = useState(false);
+  const [transcriptQuery, setTranscriptQuery] = useState("");
 
   const [editing, setEditing] = useState(false);
   const [editedText, setEditedText] = useState("");
@@ -329,17 +345,60 @@ export default function VideoDetailPage() {
               </div>
               {transcriptError && <p className="mt-2 text-sm text-danger">{transcriptError}</p>}
             </div>
-          ) : showSegments ? (
-            <div className="max-h-96 space-y-2 overflow-y-auto pr-1">
-              {transcript.segments.map((seg, i) => (
-                <div key={i} className="flex gap-3 text-sm">
-                  <span className="shrink-0 font-mono text-xs tabular-nums text-ink/40 dark:text-paper/40">{formatTimestamp(seg.start)}</span>
-                  <span className="text-ink/80 dark:text-paper/80">{seg.text}</span>
-                </div>
-              ))}
-            </div>
           ) : (
-            <p className="max-h-96 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-ink/80 dark:text-paper/80">{transcript.text}</p>
+            <div>
+              <div className="mb-3 flex items-center gap-2">
+                <input
+                  type="text"
+                  value={transcriptQuery}
+                  onChange={(e) => setTranscriptQuery(e.target.value)}
+                  placeholder="Search within transcript..."
+                  className="w-full max-w-xs rounded-lg border border-line bg-transparent px-3 py-1.5 text-sm text-ink placeholder:text-ink/35 focus:border-signal focus:outline-none dark:border-line-dark dark:text-paper dark:placeholder:text-paper/35"
+                />
+                {transcriptQuery.trim() && (
+                  <button onClick={() => setTranscriptQuery("")} className="text-xs font-medium text-ink/45 hover:text-ink dark:text-paper/45 dark:hover:text-paper">
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {transcriptQuery.trim() ? (
+                (() => {
+                  const q = transcriptQuery.trim().toLowerCase();
+                  const matches = transcript.segments.filter((seg) => seg.text.toLowerCase().includes(q));
+                  return (
+                    <div>
+                      <p className="mb-3 text-xs text-ink/40 dark:text-paper/40">
+                        {matches.length} match{matches.length === 1 ? "" : "es"}
+                      </p>
+                      {matches.length === 0 ? (
+                        <p className="text-sm text-ink/40 dark:text-paper/40">No matches for &ldquo;{transcriptQuery.trim()}&rdquo;.</p>
+                      ) : (
+                        <div className="max-h-96 space-y-2 overflow-y-auto pr-1">
+                          {matches.map((seg, i) => (
+                            <div key={i} className="flex gap-3 text-sm">
+                              <span className="shrink-0 font-mono text-xs tabular-nums text-ink/40 dark:text-paper/40">{formatTimestamp(seg.start)}</span>
+                              <span className="text-ink/80 dark:text-paper/80">{highlightMatches(seg.text, transcriptQuery)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
+              ) : showSegments ? (
+                <div className="max-h-96 space-y-2 overflow-y-auto pr-1">
+                  {transcript.segments.map((seg, i) => (
+                    <div key={i} className="flex gap-3 text-sm">
+                      <span className="shrink-0 font-mono text-xs tabular-nums text-ink/40 dark:text-paper/40">{formatTimestamp(seg.start)}</span>
+                      <span className="text-ink/80 dark:text-paper/80">{seg.text}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="max-h-96 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-ink/80 dark:text-paper/80">{transcript.text}</p>
+              )}
+            </div>
           )}
         </div>
       )}
