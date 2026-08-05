@@ -8,8 +8,22 @@ from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.security import decode_token, create_access_token
 from app.models.user import User
-from app.schemas.user import UserCreate, UserLogin, UserOut, TokenPair, RefreshRequest
-from app.services.auth_service import register_user, authenticate_user, issue_tokens
+from app.schemas.user import (
+    UserCreate,
+    UserLogin,
+    UserOut,
+    TokenPair,
+    RefreshRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+)
+from app.services.auth_service import (
+    register_user,
+    authenticate_user,
+    issue_tokens,
+    request_password_reset,
+    reset_password,
+)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -46,3 +60,20 @@ def refresh(payload: RefreshRequest, db: Session = Depends(get_db)):
 def get_me(current_user: User = Depends(get_current_user)):
     """Return the profile of the currently authenticated user."""
     return current_user
+
+
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Request a password reset link by email. Always returns a generic
+    success message regardless of whether the email is registered.
+    """
+    request_password_reset(db, payload.email)
+    return {"message": "If an account with that email exists, a password reset link has been sent."}
+
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+def reset_password_endpoint(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Complete a password reset using the token from the emailed link."""
+    reset_password(db, payload.token, payload.new_password)
+    return {"message": "Your password has been reset. You can now log in."}

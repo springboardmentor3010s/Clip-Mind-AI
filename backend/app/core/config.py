@@ -32,6 +32,19 @@ class Settings(BaseSettings):
     # CORS - comma separated origins in env, parsed to list
     CORS_ORIGINS: str = "http://localhost:3000"
 
+    # SMTP / transactional email (used for password reset)
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = "no-reply@clipmind.ai"
+
+    # Frontend base URL — used to build links embedded in emails
+    FRONTEND_URL: str = "http://localhost:3000"
+
+    # Password reset
+    PASSWORD_RESET_EXPIRE_MINUTES: int = 30
+
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
 
     @property

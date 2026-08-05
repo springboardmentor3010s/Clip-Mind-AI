@@ -33,6 +33,11 @@ def create_refresh_token(subject: str) -> str:
     to_encode = {"sub": subject, "exp": expire, "type": "refresh"}
     return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
+def create_password_reset_token(subject: str) -> str:
+    """Short-lived, single-purpose token embedded in the password reset email link."""
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES)
+    to_encode = {"sub": subject, "exp": expire, "type": "password_reset"}
+    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 def decode_token(token: str) -> dict[str, Any] | None:
     try:

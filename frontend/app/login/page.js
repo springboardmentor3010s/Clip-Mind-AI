@@ -54,7 +54,7 @@ export default function LoginPage() {
             </h1>
           </div>
 
-          <div className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl bg-paper dark:bg-graphite-2">
+          <div className="flex aspect-4/3 flex-col items-center justify-center rounded-xl bg-paper dark:bg-graphite-2">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-signal/10 text-signal dark:bg-signal-dark/15 dark:text-signal-dark">
               <PlayIcon width={26} height={26} />
             </div>
@@ -86,7 +86,7 @@ export default function LoginPage() {
                   className="h-4 w-4 rounded border-line text-signal focus:ring-signal/30 dark:border-line-dark" />
                 Remember me
               </label>
-              <Link href="#" className="font-medium text-signal">Forgot password?</Link>
+              <Link href="/forgot-password" className="font-medium text-signal">Forgot password?</Link>
             </div>
 
             {error && <p className="text-sm text-danger">{error}</p>}

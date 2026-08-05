@@ -2,12 +2,23 @@
 Auth service — business logic for registration and login.
 Kept separate from the API layer so it's reusable/testable.
 """
+import uuid
+
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
+from app.core.config import settings
 from app.models.user import User
 from app.schemas.user import UserCreate
-from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token
+from app.core.security import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    create_refresh_token,
+    create_password_reset_token,
+    decode_token,
+)
+from app.services.email_service import send_password_reset_email
 
 
 def get_user_by_email(db: Session, email: str) -> User | None:
@@ -54,3 +65,35 @@ def issue_tokens(user: User) -> dict:
         "refresh_token": create_refresh_token(subject=str(user.id)),
         "token_type": "bearer",
     }
+
+
+def request_password_reset(db: Session, email: str) -> None:
+    """
+    Always succeeds from the caller's point of view — whether or not the
+    email matches an account, so the endpoint can't be used to enumerate
+    registered users. If it does match an active account, send a reset link.
+    """
+    user = get_user_by_email(db, email)
+    if user and user.is_active:
+        token = create_password_reset_token(subject=str(user.id))
+        reset_link = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+        send_password_reset_email(user.email, reset_link)
+
+
+def reset_password(db: Session, token: str, new_password: str) -> None:
+    decoded = decode_token(token)
+    if decoded is None or decoded.get("type") != "password_reset":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This reset link is invalid or has expired.",
+        )
+
+    user = db.query(User).filter(User.id == uuid.UUID(decoded["sub"])).first()
+    if user is None or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This reset link is invalid or has expired.",
+        )
+
+    user.hashed_password = hash_password(new_password)
+    db.commit()
