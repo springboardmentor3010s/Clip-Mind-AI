@@ -1,0 +1,36 @@
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+
+# Environment
+backend/.env
+
+# Node
+frontend/node_modules/
+
+# Vite
+frontend/dist/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+backend/uploads/videos/*
+backend/uploads/audio/*
+backend/uploads/transcripts/*
+
+# Keep folders
+!backend/uploads/videos/.gitkeep
+!backend/uploads/audio/.gitkeep
+!backend/uploads/transcripts/.gitkeep
+
+
+
+
+
+
