@@ -4,7 +4,7 @@ Pydantic schemas for the Video Upload & Processing Modules.
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 from app.models.video import VideoStatus
 
@@ -31,3 +31,21 @@ class VideoOut(BaseModel):
 
 class VideoPublishUpdate(BaseModel):
     is_published: bool
+
+
+class VideoShareCreate(BaseModel):
+    emails: list[EmailStr]
+
+
+class VideoShareOut(BaseModel):
+    id: uuid.UUID
+    video_id: uuid.UUID
+    user_id: uuid.UUID
+    full_name: str
+    email: EmailStr
+    created_at: datetime
+
+
+class VideoShareResult(BaseModel):
+    shared: list[VideoShareOut]
+    not_found: list[str]

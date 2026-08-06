@@ -11,6 +11,7 @@ import {
   UploadIcon,
   BarChartIcon,
   BookmarkIcon,
+  UsersIcon,
   SettingsIcon,
   HelpIcon,
   PanelIcon,
@@ -26,6 +27,7 @@ const NAV_BY_ROLE = {
     { href: "/dashboard/content-creator/videos", label: "My Videos", icon: FilmIcon },
     { href: "/dashboard/upload", label: "Upload Video", icon: UploadIcon },
     { href: "/dashboard/analytics", label: "Analytics", icon: BarChartIcon },
+    { href: "/dashboard/shared", label: "Shared with Me", icon: UsersIcon },
     { href: "/dashboard/bookmarks", label: "Bookmarks", icon: BookmarkIcon },
   ],
   educator: [
@@ -33,15 +35,18 @@ const NAV_BY_ROLE = {
     { href: "/dashboard/educator/videos", label: "My Videos", icon: FilmIcon },
     { href: "/dashboard/upload", label: "Upload Video", icon: UploadIcon },
     { href: "/dashboard/analytics", label: "Analytics", icon: BarChartIcon },
+    { href: "/dashboard/shared", label: "Shared with Me", icon: UsersIcon },
     { href: "/dashboard/bookmarks", label: "Bookmarks", icon: BookmarkIcon },
   ],
   learner: [
     { href: "/dashboard/learner", label: "Dashboard", icon: HomeIcon },
+    { href: "/dashboard/shared", label: "Shared with Me", icon: UsersIcon },
     { href: "/dashboard/bookmarks", label: "Bookmarks", icon: BookmarkIcon },
   ],
   administrator: [
     { href: "/dashboard/admin", label: "Dashboard", icon: HomeIcon },
     { href: "/dashboard/analytics", label: "Analytics", icon: BarChartIcon },
+    { href: "/dashboard/shared", label: "Shared with Me", icon: UsersIcon },
   ],
 };
 

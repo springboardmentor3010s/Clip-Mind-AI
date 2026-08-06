@@ -225,3 +225,26 @@ export function DocumentIcon(props) {
     </svg>
   );
 }
+
+
+export function ShareIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="18" cy="5.5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="18.5" r="2.5" />
+      <path d="M8.2 10.7 15.8 6.8M8.2 13.3l7.6 3.9" />
+    </svg>
+  );
+}
+
+export function UsersIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="9" cy="8" r="3.25" />
+      <path d="M3.5 20c0-3.6 2.5-6.5 5.5-6.5s5.5 2.9 5.5 6.5" />
+      <path d="M15.5 5.2c1.4.4 2.4 1.7 2.4 3.3 0 1.5-1 2.8-2.3 3.2" />
+      <path d="M17 13.7c2.3.6 4 2.9 4 5.8" />
+    </svg>
+  );
+}

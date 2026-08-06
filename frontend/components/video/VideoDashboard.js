@@ -94,11 +94,12 @@ function StatCard({ label, value, delta, sub, icon: Icon, iconClasses }) {
   );
 }
 
-export function VideoTable({ videos, onDeleted }) {
+export function VideoTable({ videos, onDeleted, mode = "owned" }) {
   const router = useRouter();
   const [openMenuId, setOpenMenuId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [deleteError, setDeleteError] = useState("");
+  const isShared = mode === "shared";
 
   async function handleDelete(video) {
     setOpenMenuId(null);
@@ -129,8 +130,12 @@ export function VideoTable({ videos, onDeleted }) {
               <th className="px-4 py-3 font-medium">Video</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Duration</th>
-              <th className="px-4 py-3 font-medium">Uploaded On</th>
-              <th className="px-4 py-3 font-medium text-right">Actions</th>
+              {isShared ? (
+                <th className="px-4 py-3 font-medium">Shared By</th>
+              ) : (
+                <th className="px-4 py-3 font-medium">Uploaded On</th>
+              )}
+              {!isShared && <th className="px-4 py-3 font-medium text-right">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-line bg-cloud dark:divide-line-dark dark:bg-graphite">
@@ -151,38 +156,44 @@ export function VideoTable({ videos, onDeleted }) {
             </td>
             <td className="px-4 py-3"><StatusChip status={v.status} /></td>
             <td className="px-4 py-3 font-mono tabular-nums text-ink/60 dark:text-paper/60">{formatDuration(v.duration_seconds)}</td>
-            <td className="px-4 py-3 text-ink/50 dark:text-paper/50">{formatDate(v.created_at)}</td>
-            <td className="relative px-4 py-3">
-              <div className="flex items-center justify-end gap-1 text-ink/40 dark:text-paper/40">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setOpenMenuId((id) => (id === v.id ? null : v.id)); }}
-                  title="More"
-                  disabled={deletingId === v.id}
-                  className="rounded p-1.5 hover:bg-line/40 hover:text-ink disabled:cursor-not-allowed dark:hover:bg-graphite-2 dark:hover:text-paper"
-                >
-                  <MoreIcon width={16} height={16} />
-                </button>
-              </div>
-
-              {openMenuId === v.id && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    onDoubleClick={(e) => e.stopPropagation()}
-                    className="absolute right-4 top-full z-20 mt-1 w-36 overflow-hidden rounded-lg border border-line bg-cloud shadow-lg dark:border-line-dark dark:bg-graphite-2"
+            {isShared ? (
+              <td className="px-4 py-3 text-ink/50 dark:text-paper/50">{v.owner_name || "—"}</td>
+            ) : (
+              <td className="px-4 py-3 text-ink/50 dark:text-paper/50">{formatDate(v.created_at)}</td>
+            )}
+            {!isShared && (
+              <td className="relative px-4 py-3">
+                <div className="flex items-center justify-end gap-1 text-ink/40 dark:text-paper/40">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuId((id) => (id === v.id ? null : v.id)); }}
+                    title="More"
+                    disabled={deletingId === v.id}
+                    className="rounded p-1.5 hover:bg-line/40 hover:text-ink disabled:cursor-not-allowed dark:hover:bg-graphite-2 dark:hover:text-paper"
                   >
-                    <button
-                      onClick={() => handleDelete(v)}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-danger hover:bg-danger/10"
+                    <MoreIcon width={16} height={16} />
+                  </button>
+                </div>
+
+                {openMenuId === v.id && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      onDoubleClick={(e) => e.stopPropagation()}
+                      className="absolute right-4 top-full z-20 mt-1 w-36 overflow-hidden rounded-lg border border-line bg-cloud shadow-lg dark:border-line-dark dark:bg-graphite-2"
                     >
-                      <TrashIcon width={14} height={14} />
-                      Delete video
-                    </button>
-                  </div>
-                </>
-              )}
-            </td>
+                      <button
+                        onClick={() => handleDelete(v)}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-danger hover:bg-danger/10"
+                      >
+                        <TrashIcon width={14} height={14} />
+                        Delete video
+                      </button>
+                    </div>
+                  </>
+                )}
+              </td>
+            )}
           </tr>
             ))}
           </tbody>

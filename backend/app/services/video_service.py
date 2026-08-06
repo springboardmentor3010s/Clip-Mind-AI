@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.models.video import Video, VideoStatus
+from app.models.video_share import VideoShare
 from app.models.user import User
 
 ALLOWED_CONTENT_TYPES = {
@@ -206,9 +207,9 @@ def get_video_or_404(db: Session, video_id: uuid.UUID, owner: User, require_owne
     summary/key-moments, publish, delete).
 
     require_owner=False: also allow read-only access if the video has been
-    published by its owner — used for the endpoints a Learner needs to view
-    a shared video (details, stream, transcript/summary/key-moments reads,
-    bookmarking, watch-progress pings).
+    published by its owner, OR shared directly with this user — used for
+    the endpoints a Learner needs to view a shared video (details, stream,
+    transcript/summary/key-moments reads, bookmarking, watch-progress pings).
     """
     video = db.query(Video).filter(Video.id == video_id).first()
     if not video:
@@ -217,6 +218,15 @@ def get_video_or_404(db: Session, video_id: uuid.UUID, owner: User, require_owne
     is_owner = video.owner_id == owner.id
     if is_owner or (not require_owner and video.is_published):
         return video
+
+    if not require_owner:
+        shared = (
+            db.query(VideoShare)
+            .filter(VideoShare.video_id == video_id, VideoShare.shared_with_user_id == owner.id)
+            .first()
+        )
+        if shared:
+            return video
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Video not found.")
 
@@ -244,6 +254,101 @@ def set_video_published(db: Session, video_id: uuid.UUID, owner: User, is_publis
     db.commit()
     db.refresh(video)
     return video
+
+
+def _share_to_dict(share: VideoShare, user: User) -> dict:
+    return {
+        "id": share.id,
+        "video_id": share.video_id,
+        "user_id": user.id,
+        "full_name": user.full_name,
+        "email": user.email,
+        "created_at": share.created_at,
+    }
+
+
+def share_video(db: Session, video_id: uuid.UUID, owner: User, emails: list[str]) -> dict:
+    """
+    Owner-only: share a video with specific people by email. Skips emails
+    that don't match a registered account (returned as `not_found`) and
+    emails already shared with (idempotent — no duplicate rows/errors).
+    """
+    video = get_video_or_404(db, video_id, owner)
+
+    shared: list[dict] = []
+    not_found: list[str] = []
+
+    for raw_email in emails:
+        email = raw_email.strip().lower()
+        recipient = db.query(User).filter(User.email == email).first()
+
+        if not recipient:
+            not_found.append(raw_email)
+            continue
+        if recipient.id == owner.id:
+            continue  # sharing with yourself is a no-op, not an error
+
+        existing = (
+            db.query(VideoShare)
+            .filter(VideoShare.video_id == video.id, VideoShare.shared_with_user_id == recipient.id)
+            .first()
+        )
+        if existing:
+            shared.append(_share_to_dict(existing, recipient))
+            continue
+
+        share = VideoShare(video_id=video.id, shared_with_user_id=recipient.id, shared_by_user_id=owner.id)
+        db.add(share)
+        db.commit()
+        db.refresh(share)
+        shared.append(_share_to_dict(share, recipient))
+
+    return {"shared": shared, "not_found": not_found}
+
+
+def get_video_shares(db: Session, video_id: uuid.UUID, owner: User) -> list[dict]:
+    """Owner-only: list everyone a video is currently shared with."""
+    get_video_or_404(db, video_id, owner)
+    rows = (
+        db.query(VideoShare, User)
+        .join(User, User.id == VideoShare.shared_with_user_id)
+        .filter(VideoShare.video_id == video_id)
+        .order_by(VideoShare.created_at.desc())
+        .all()
+    )
+    return [_share_to_dict(share, user) for share, user in rows]
+
+
+def revoke_share(db: Session, video_id: uuid.UUID, owner: User, share_id: uuid.UUID) -> None:
+    """Owner-only: revoke a previously granted share."""
+    get_video_or_404(db, video_id, owner)
+    share = (
+        db.query(VideoShare)
+        .filter(VideoShare.id == share_id, VideoShare.video_id == video_id)
+        .first()
+    )
+    if not share:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Share not found.")
+    db.delete(share)
+    db.commit()
+
+
+def list_shared_with_me(db: Session, user: User) -> list[Video]:
+    """Shared with Me: every video explicitly shared with the current user, newest first."""
+    rows = (
+        db.query(Video, User.full_name)
+        .join(VideoShare, VideoShare.video_id == Video.id)
+        .join(User, User.id == Video.owner_id)
+        .filter(VideoShare.shared_with_user_id == user.id)
+        .order_by(VideoShare.created_at.desc())
+        .all()
+    )
+    videos = []
+    for video, owner_name in rows:
+        video.owner_name = owner_name
+        videos.append(video)
+    return videos
+
 
 def delete_video_files_and_row(db: Session, video: Video) -> None:
     """

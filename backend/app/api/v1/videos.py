@@ -17,15 +17,19 @@ from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.mongo import key_moments_collection, summaries_collection, transcripts_collection, video_views_collection
 from app.models.user import User
-from app.schemas.video import VideoOut, VideoPublishUpdate
+from app.schemas.video import VideoOut, VideoPublishUpdate, VideoShareCreate, VideoShareOut, VideoShareResult
 from app.schemas.video_analytics import VideoAnalytics, ViewPing
 from app.services.video_service import (
     delete_video_files_and_row,
     get_video_or_404,
+    get_video_shares,
     list_published_videos,
+    list_shared_with_me,
     list_user_videos,
+    revoke_share,
     save_uploaded_video,
     set_video_published,
+    share_video,
 )
 from app.services.video_analytics_service import get_video_analytics, record_view
 
@@ -62,6 +66,15 @@ def get_content_library(
     return list_published_videos(db)
 
 
+@router.get("/shared-with-me", response_model=list[VideoOut])
+def get_shared_with_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Shared with Me: every video explicitly shared with the current user."""
+    return list_shared_with_me(db, current_user)
+
+
 @router.get("/{video_id}", response_model=VideoOut)
 def get_video(
     video_id: uuid.UUID,
@@ -81,6 +94,38 @@ def publish_video(
 ):
     """Owner-only: publish/unpublish a video to the shared content library."""
     return set_video_published(db, video_id, current_user, payload.is_published)
+
+
+@router.post("/{video_id}/share", response_model=VideoShareResult)
+def share_video_endpoint(
+    video_id: uuid.UUID,
+    payload: VideoShareCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Owner-only: share a video with specific people by email."""
+    return share_video(db, video_id, current_user, payload.emails)
+
+
+@router.get("/{video_id}/share", response_model=list[VideoShareOut])
+def list_video_shares(
+    video_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Owner-only: list everyone a video is currently shared with."""
+    return get_video_shares(db, video_id, current_user)
+
+
+@router.delete("/{video_id}/share/{share_id}", status_code=status.HTTP_204_NO_CONTENT)
+def revoke_video_share(
+    video_id: uuid.UUID,
+    share_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Owner-only: revoke a previously granted share."""
+    revoke_share(db, video_id, current_user, share_id)
 
 
 @router.get("/{video_id}/stream")

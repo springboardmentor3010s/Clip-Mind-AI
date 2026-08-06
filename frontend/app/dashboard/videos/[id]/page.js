@@ -6,7 +6,8 @@ import { useAuth } from "../../../../lib/AuthContext";
 import api from "../../../../lib/api";
 import StatusChip from "../../../../components/ui/StatusChip";
 import BookmarkButton from "../../../../components/ui/BookmarkButton";
-import { DownloadIcon, KeyMomentIcon, BarChartIcon } from "../../../../components/ui/icons";
+import ShareVideoPanel from "../../../../components/ui/ShareVideoPanel";
+import { DownloadIcon, KeyMomentIcon, BarChartIcon, ShareIcon } from "../../../../components/ui/icons";
 import VideoPlayer from "../../../../components/ui/VideoPlayer";
 
 function formatDuration(seconds) {
@@ -82,6 +83,7 @@ export default function VideoDetailPage() {
   const [error, setError] = useState("");
   const [tab, setTab] = useState("Overview");
   const [publishing, setPublishing] = useState(false);
+  const [showShare, setShowShare] = useState(false);
 
   const [transcript, setTranscript] = useState(null);
   const [transcriptLoading, setTranscriptLoading] = useState(false);
@@ -225,9 +227,16 @@ export default function VideoDetailPage() {
               {publishing ? "Saving..." : video.is_published ? "Unpublish" : "Publish"}
             </button>
           )}
+          {isOwner && (
+            <button onClick={() => setShowShare(true)} className="flex items-center gap-1.5 text-sm font-medium text-ink/50 hover:text-ink dark:text-paper/50 dark:hover:text-paper">
+              <ShareIcon width={15} height={15} /> Share
+            </button>
+          )}
           <BookmarkButton videoId={id} target={{ type: "video" }} bookmarks={bookmarks} onChange={setBookmarks} />
         </div>
       </div>
+
+      {showShare && <ShareVideoPanel videoId={id} onClose={() => setShowShare(false)} />}
 
       <div className="mb-5 flex gap-1 border-b border-line dark:border-line-dark">
         {visibleTabs.map((t) => (

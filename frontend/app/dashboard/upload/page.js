@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import api from "../../../lib/api";
 import StatusChip from "../../../components/ui/StatusChip";
+import ShareVideoPanel from "../../../components/ui/ShareVideoPanel";
 import { CloudUploadIcon, CheckCircleIcon, ClockIcon, ChevronDownIcon } from "../../../components/ui/icons";
 
 const ALLOWED_EXTENSIONS = [".mp4", ".mov", ".avi", ".webm"];
@@ -35,6 +36,7 @@ export default function UploadPage() {
   const [phase, setPhase] = useState("idle");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [showSharePanel, setShowSharePanel] = useState(false);
   const inputRef = useRef(null);
 
   function validateAndSetFile(selected) {
@@ -80,8 +82,16 @@ export default function UploadPage() {
           if (pct === 100) setPhase("processing");
         },
       });
-      setResult(res.data);
+
+      let uploaded = res.data;
+      if (visibility === "Public") {
+        const published = await api.patch(`/api/v1/videos/${uploaded.id}/publish`, { is_published: true });
+        uploaded = published.data;
+      }
+
+      setResult(uploaded);
       setPhase("done");
+      if (visibility === "Shared") setShowSharePanel(true);
     } catch (err) {
       setError(err.response?.data?.detail || "Upload failed. Please try again.");
       setPhase("error");
@@ -92,10 +102,12 @@ export default function UploadPage() {
     setFile(null);
     setTitle("");
     setDescription("");
+    setVisibility("Private");
     setProgress(0);
     setPhase("idle");
     setResult(null);
     setError("");
+    setShowSharePanel(false);
   }
 
   const canUpload = file && title.trim().length > 0;
@@ -191,6 +203,10 @@ export default function UploadPage() {
               <dt className="text-ink/50 dark:text-paper/50">Status</dt>
               <dd><StatusChip status={result.status} /></dd>
             </div>
+            <div className="flex items-center justify-between">
+              <dt className="text-ink/50 dark:text-paper/50">Visibility</dt>
+              <dd className="text-ink dark:text-paper">{result.is_published ? "Public" : visibility}</dd>
+            </div>
           </dl>
           {result.status === "ready" && (
             <Link
@@ -208,7 +224,14 @@ export default function UploadPage() {
             <Link href="/dashboard" className="rounded-lg border border-line px-4 py-2 text-sm text-ink dark:border-line-dark dark:text-paper">
               Go to dashboard
             </Link>
+            {!result.is_published && (
+              <button onClick={() => setShowSharePanel(true)} className="rounded-lg border border-line px-4 py-2 text-sm text-ink dark:border-line-dark dark:text-paper">
+                Share with people
+              </button>
+            )}
           </div>
+
+          {showSharePanel && <ShareVideoPanel videoId={result.id} onClose={() => setShowSharePanel(false)} />}
         </div>
       ) : (
         <div className="rounded-xl border border-line bg-cloud p-6 dark:border-line-dark dark:bg-graphite">
