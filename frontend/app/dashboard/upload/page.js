@@ -5,7 +5,8 @@ import Link from "next/link";
 import api from "../../../lib/api";
 import StatusChip from "../../../components/ui/StatusChip";
 import ShareVideoPanel from "../../../components/ui/ShareVideoPanel";
-import { CloudUploadIcon, CheckCircleIcon, ClockIcon, ChevronDownIcon } from "../../../components/ui/icons";
+import { CloudUploadIcon, CheckCircleIcon, ClockIcon } from "../../../components/ui/icons";
+import Select from "../../../components/ui/Select";
 
 const ALLOWED_EXTENSIONS = [".mp4", ".mov", ".avi", ".webm"];
 const MAX_SIZE_MB = 2048;
@@ -308,14 +309,8 @@ export default function UploadPage() {
               </div>
               <div>
                 <label className="text-xs font-medium text-ink/60 dark:text-paper/60">Visibility</label>
-                <div className="relative mt-1.5">
-                  <select value={visibility} onChange={(e) => setVisibility(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-line bg-transparent px-3.5 py-2.5 text-sm text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/15 dark:border-line-dark dark:text-paper">
-                    <option className="bg-cloud text-ink dark:bg-graphite dark:text-paper">Private</option>
-                    <option className="bg-cloud text-ink dark:bg-graphite dark:text-paper">Shared</option>
-                    <option className="bg-cloud text-ink dark:bg-graphite dark:text-paper">Public</option>
-                  </select>
-                  <ChevronDownIcon width={15} height={15} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/40 dark:text-paper/40" />
+                <div className="mt-1.5">
+                  <Select value={visibility} onChange={setVisibility} options={["Private", "Shared", "Public"]} />
                 </div>
               </div>
 

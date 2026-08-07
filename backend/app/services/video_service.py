@@ -13,6 +13,7 @@ from app.core.config import settings
 from app.models.video import Video, VideoStatus
 from app.models.video_share import VideoShare
 from app.models.user import User
+from app.services.email_service import send_share_notification_email
 
 ALLOWED_CONTENT_TYPES = {
     "video/mp4",
@@ -302,6 +303,14 @@ def share_video(db: Session, video_id: uuid.UUID, owner: User, emails: list[str]
         db.commit()
         db.refresh(share)
         shared.append(_share_to_dict(share, recipient))
+
+        video_link = f"{settings.FRONTEND_URL}/dashboard/videos/{video.id}"
+        send_share_notification_email(
+            recipient.email,
+            shared_by_name=owner.full_name,
+            video_title=video.title or video.filename,
+            video_link=video_link,
+        )
 
     return {"shared": shared, "not_found": not_found}
 

@@ -152,6 +152,14 @@ export function ChevronDownIcon(props) {
   );
 }
 
+export function CheckIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M5 12.5 9.5 17 19 6.5" />
+    </svg>
+  );
+}
+
 export function LogOutIcon(props) {
   return (
     <svg {...base} {...props}>

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../lib/AuthContext";
-import { PlayIcon, ChevronDownIcon } from "../../components/ui/icons";
+import { PlayIcon } from "../../components/ui/icons";
+import Select from "../../components/ui/Select";
 import { getPasswordStrength, STRENGTH_COLORS } from "../../lib/passwordStrength";
 
 const ROLES = [
@@ -106,16 +107,8 @@ export default function RegisterPage() {
             </div>
             <div>
               <label className="text-xs font-medium text-ink/60 dark:text-paper/60">Role</label>
-              <div className="relative mt-1.5">
-                <select value={role} onChange={(e) => setRole(e.target.value)}
-                  className="w-full appearance-none rounded-lg border border-line bg-transparent px-3.5 py-2.5 text-sm text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/15 dark:border-line-dark dark:text-paper">
-                  {ROLES.map((r) => (
-                    <option key={r.value} value={r.value} className="bg-cloud text-ink dark:bg-graphite dark:text-paper">
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDownIcon width={15} height={15} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-ink/40 dark:text-paper/40" />
+              <div className="mt-1.5">
+                <Select value={role} onChange={setRole} options={ROLES} />
               </div>
             </div>
 
@@ -155,7 +148,7 @@ export default function RegisterPage() {
             </h2>
           </div>
 
-          <div className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl bg-paper dark:bg-graphite-2">
+          <div className="flex aspect-4/3 flex-col items-center justify-center rounded-xl bg-paper dark:bg-graphite-2">
             <span className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary/10 text-secondary">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="8" r="3.5" />
