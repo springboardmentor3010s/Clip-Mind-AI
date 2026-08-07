@@ -7,7 +7,7 @@ import { ChevronDownIcon, CheckIcon } from "./icons";
  * Custom styled dropdown, replacing native <select>.
  * `options` accepts either plain strings or { value, label } objects.
  */
-export default function Select({ value, onChange, options, placeholder = "Select...", className = "" }) {
+export default function Select({ value, onChange, options, placeholder = "Select...", className = "", disabled = false }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -33,8 +33,9 @@ export default function Select({ value, onChange, options, placeholder = "Select
     <div className={`relative ${className}`} ref={ref}>
       <button
         type="button"
+        disabled={disabled}
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between rounded-lg border border-line bg-transparent px-3.5 py-2.5 text-left text-sm text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/15 dark:border-line-dark dark:text-paper"
+        className="flex w-full items-center justify-between rounded-lg border border-line bg-transparent px-3.5 py-2.5 text-left text-sm text-ink focus:border-signal focus:outline-none focus:ring-2 focus:ring-signal/15 disabled:cursor-not-allowed disabled:opacity-50 dark:border-line-dark dark:text-paper"
       >
         <span className={selected ? "" : "text-ink/35 dark:text-paper/35"}>{selected ? selected.label : placeholder}</span>
         <ChevronDownIcon

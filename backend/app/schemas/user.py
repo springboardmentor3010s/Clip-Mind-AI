@@ -38,6 +38,9 @@ class UserUpdate(BaseModel):
     password: str | None = Field(default=None, min_length=8, max_length=128)
 
 
+class UserRoleUpdate(BaseModel):
+    role: UserRole
+
 class TokenPair(BaseModel):
     access_token: str
     refresh_token: str

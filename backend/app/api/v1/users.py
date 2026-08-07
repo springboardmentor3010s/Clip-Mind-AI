@@ -12,7 +12,7 @@ from app.core.database import get_db
 from app.core.deps import get_current_user, require_role
 from app.core.security import hash_password
 from app.models.user import User, UserRole
-from app.schemas.user import UserOut, UserUpdate
+from app.schemas.user import UserOut, UserUpdate, UserRoleUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -46,6 +46,26 @@ def _get_user_or_404(db: Session, user_id: uuid.UUID) -> User:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return user
 
+
+@router.patch(
+    "/{user_id}/role",
+    response_model=UserOut,
+    dependencies=[Depends(require_role(UserRole.ADMINISTRATOR))],
+)
+def change_user_role(
+    user_id: uuid.UUID,
+    payload: UserRoleUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Admin-only: change a user's role."""
+    if user_id == current_user.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot change your own role.")
+    user = _get_user_or_404(db, user_id)
+    user.role = payload.role
+    db.commit()
+    db.refresh(user)
+    return user
 
 @router.patch(
     "/{user_id}/deactivate",
