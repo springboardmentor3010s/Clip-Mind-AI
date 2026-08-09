@@ -45,7 +45,6 @@ const NAV_BY_ROLE = {
   ],
   administrator: [
     { href: "/dashboard/admin", label: "Dashboard", icon: HomeIcon },
-    { href: "/dashboard/analytics", label: "Analytics", icon: BarChartIcon },
     { href: "/dashboard/shared", label: "Shared with Me", icon: UsersIcon },
   ],
 };
