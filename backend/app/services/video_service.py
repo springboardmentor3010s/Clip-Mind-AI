@@ -248,6 +248,29 @@ def list_published_videos(db: Session) -> list[Video]:
     return videos
 
 
+def list_all_videos(db: Session) -> list[Video]:
+    """Admin-only: every video on the platform, from every user, newest first."""
+    rows = (
+        db.query(Video, User.full_name)
+        .join(User, User.id == Video.owner_id)
+        .order_by(Video.created_at.desc())
+        .all()
+    )
+    videos = []
+    for video, owner_name in rows:
+        video.owner_name = owner_name
+        videos.append(video)
+    return videos
+
+
+def get_video_or_404_any(db: Session, video_id: uuid.UUID) -> Video:
+    """Admin-only helper: fetch any video regardless of owner, or 404."""
+    video = db.query(Video).filter(Video.id == video_id).first()
+    if not video:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Video not found.")
+    return video
+
+
 def set_video_published(db: Session, video_id: uuid.UUID, owner: User, is_published: bool) -> Video:
     """Owner-only: publish/unpublish a video to the shared content library."""
     video = get_video_or_404(db, video_id, owner)

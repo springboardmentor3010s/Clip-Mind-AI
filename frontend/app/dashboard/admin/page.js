@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import api from "../../../lib/api";
 import { useAuth } from "../../../lib/AuthContext";
 import Select from "../../../components/ui/Select";
+import StatusChip from "../../../components/ui/StatusChip";
+import { TrashIcon } from "../../../components/ui/icons";
 
 const ROLE_OPTIONS = [
   { value: "content_creator", label: "Content Creator" },
@@ -26,7 +28,7 @@ const STATUS_LABELS = {
   failed: "Failed",
 };
 
-const TABS = ["Users", "Platform Stats"];
+const TABS = ["Users", "Content", "Platform Stats"];
 
 function StatCard({ label, value }) {
   return (
@@ -168,6 +170,84 @@ function UsersTab() {
   );
 }
 
+function ContentTab() {
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
+
+  useEffect(() => {
+    api.get("/api/v1/admin/videos").then((res) => setVideos(res.data)).catch(() => setError("Failed to load videos.")).finally(() => setLoading(false));
+  }, []);
+
+  async function handleDelete(video) {
+    const confirmed = window.confirm(
+      `Delete "${video.title || video.filename}" by ${video.owner_name}? This permanently removes the video, its transcript, summary, and key moments. This can't be undone.`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(video.id);
+    setError("");
+    try {
+      await api.delete(`/api/v1/admin/videos/${video.id}`);
+      setVideos((prev) => prev.filter((v) => v.id !== video.id));
+    } catch (err) {
+      setError(err.response?.data?.detail || "Failed to delete video.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  if (loading) return <p className="font-mono text-xs text-ink/50 dark:text-paper/50">Loading...</p>;
+  if (error) return <p className="text-sm text-danger">{error}</p>;
+
+  return (
+    <div>
+      <p className="mb-4 text-sm text-ink/50 dark:text-paper/50">{videos.length} video{videos.length === 1 ? "" : "s"} across all users</p>
+
+      {videos.length === 0 ? (
+        <p className="font-mono text-xs text-ink/50 dark:text-paper/50">No videos on the platform yet.</p>
+      ) : (
+        <div className="overflow-visible rounded-lg border border-line dark:border-line-dark">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-paper font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:bg-ink dark:text-paper/50">
+              <tr>
+                <th className="px-4 py-2 font-medium">Video</th>
+                <th className="px-4 py-2 font-medium">Owner</th>
+                <th className="px-4 py-2 font-medium">Status</th>
+                <th className="px-4 py-2 font-medium">Visibility</th>
+                <th className="px-4 py-2 font-medium">Size</th>
+                <th className="px-4 py-2 font-medium text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line bg-cloud dark:divide-line-dark dark:bg-graphite">
+              {videos.map((v) => (
+                <tr key={v.id} className={deletingId === v.id ? "opacity-40" : ""}>
+                  <td className="px-4 py-3 font-medium text-ink dark:text-paper">{v.title || v.filename}</td>
+                  <td className="px-4 py-3 text-ink/60 dark:text-paper/60">{v.owner_name || "—"}</td>
+                  <td className="px-4 py-3"><StatusChip status={v.status} /></td>
+                  <td className="px-4 py-3 text-ink/60 dark:text-paper/60">{v.is_published ? "Public" : "Private/Shared"}</td>
+                  <td className="px-4 py-3 font-mono tabular-nums text-ink/60 dark:text-paper/60">{v.file_size_mb.toFixed(1)} MB</td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleDelete(v)}
+                      disabled={deletingId === v.id}
+                      title="Delete video"
+                      className="inline-flex rounded-md p-1.5 text-ink/40 hover:bg-danger/10 hover:text-danger disabled:cursor-not-allowed disabled:opacity-50 dark:text-paper/40"
+                    >
+                      <TrashIcon width={15} height={15} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PlatformStatsTab() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -246,6 +326,7 @@ export default function AdminDashboard() {
       </div>
 
       {tab === "Users" && <UsersTab />}
+      {tab === "Content" && <ContentTab />}
       {tab === "Platform Stats" && <PlatformStatsTab />}
     </div>
   );
