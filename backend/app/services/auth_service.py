@@ -19,6 +19,7 @@ from app.core.security import (
     decode_token,
 )
 from app.services.email_service import send_password_reset_email
+from app.services.audit_service import log_action
 
 
 def get_user_by_email(db: Session, email: str) -> User | None:
@@ -41,6 +42,7 @@ def register_user(db: Session, payload: UserCreate) -> User:
     db.add(user)
     db.commit()
     db.refresh(user)
+    log_action(db, actor_id=user.id, action="user.registered", target_type="user", target_id=user.id, detail=user.role.value)
     return user
 
 
@@ -56,6 +58,7 @@ def authenticate_user(db: Session, email: str, password: str) -> User:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="This account has been deactivated.",
         )
+    log_action(db, actor_id=user.id, action="user.login", target_type="user", target_id=user.id)
     return user
 
 

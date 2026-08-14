@@ -28,7 +28,7 @@ const STATUS_LABELS = {
   failed: "Failed",
 };
 
-const TABS = ["Users", "Content", "Platform Stats"];
+const TABS = ["Users", "Content", "Audit Log", "Platform Stats"];
 
 function StatCard({ label, value }) {
   return (
@@ -248,6 +248,69 @@ function ContentTab() {
   );
 }
 
+const ACTION_LABELS = {
+  "user.registered": "Registered",
+  "user.login": "Logged in",
+  "user.role_changed": "Changed role",
+  "user.activated": "Activated user",
+  "user.deactivated": "Deactivated user",
+  "video.published": "Published video",
+  "video.unpublished": "Unpublished video",
+  "video.shared": "Shared video",
+  "video.deleted": "Deleted video",
+  "video.deleted_by_admin": "Deleted video (moderation)",
+};
+
+function formatLogDate(iso) {
+  return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+function AuditLogTab() {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    api.get("/api/v1/admin/audit-logs").then((res) => setLogs(res.data)).catch(() => setError("Failed to load audit log.")).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p className="font-mono text-xs text-ink/50 dark:text-paper/50">Loading...</p>;
+  if (error) return <p className="text-sm text-danger">{error}</p>;
+
+  return (
+    <div>
+      <p className="mb-4 text-sm text-ink/50 dark:text-paper/50">Most recent {logs.length} action{logs.length === 1 ? "" : "s"} on the platform</p>
+
+      {logs.length === 0 ? (
+        <p className="font-mono text-xs text-ink/50 dark:text-paper/50">No activity recorded yet.</p>
+      ) : (
+        <div className="overflow-visible rounded-lg border border-line dark:border-line-dark">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-paper font-mono text-[10px] uppercase tracking-widest text-ink/50 dark:bg-ink dark:text-paper/50">
+              <tr>
+                <th className="px-4 py-2 font-medium">When</th>
+                <th className="px-4 py-2 font-medium">Actor</th>
+                <th className="px-4 py-2 font-medium">Action</th>
+                <th className="px-4 py-2 font-medium">Detail</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line bg-cloud dark:divide-line-dark dark:bg-graphite">
+              {logs.map((log) => (
+                <tr key={log.id}>
+                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs tabular-nums text-ink/50 dark:text-paper/50">{formatLogDate(log.created_at)}</td>
+                  <td className="px-4 py-3 text-ink dark:text-paper">{log.actor_name}</td>
+                  <td className="px-4 py-3 text-ink/70 dark:text-paper/70">{ACTION_LABELS[log.action] || log.action}</td>
+                  <td className="px-4 py-3 text-ink/50 dark:text-paper/50">{log.detail || "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PlatformStatsTab() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -327,6 +390,7 @@ export default function AdminDashboard() {
 
       {tab === "Users" && <UsersTab />}
       {tab === "Content" && <ContentTab />}
+      {tab === "Audit Log" && <AuditLogTab />}
       {tab === "Platform Stats" && <PlatformStatsTab />}
     </div>
   );

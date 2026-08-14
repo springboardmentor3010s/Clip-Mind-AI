@@ -32,6 +32,7 @@ from app.services.video_service import (
     share_video,
 )
 from app.services.video_analytics_service import get_video_analytics, record_view
+from app.services.audit_service import log_action
 
 router = APIRouter(prefix="/videos", tags=["Videos"])
 
@@ -192,6 +193,7 @@ async def remove_video(
     and any generated transcript, summary, and key-moments documents.
     """
     video = get_video_or_404(db, video_id, current_user)
+    video_label = video.title or video.filename
 
     await transcripts_collection.delete_one({"video_id": str(video_id)})
     await summaries_collection.delete_one({"video_id": str(video_id)})
@@ -199,3 +201,4 @@ async def remove_video(
     await video_views_collection.delete_many({"video_id": str(video_id)})
 
     delete_video_files_and_row(db, video)
+    log_action(db, actor_id=current_user.id, action="video.deleted", target_type="video", target_id=video_id, detail=video_label)

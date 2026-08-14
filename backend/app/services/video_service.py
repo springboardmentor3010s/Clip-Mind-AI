@@ -14,6 +14,7 @@ from app.models.video import Video, VideoStatus
 from app.models.video_share import VideoShare
 from app.models.user import User
 from app.services.email_service import send_share_notification_email
+from app.services.audit_service import log_action
 
 ALLOWED_CONTENT_TYPES = {
     "video/mp4",
@@ -277,6 +278,14 @@ def set_video_published(db: Session, video_id: uuid.UUID, owner: User, is_publis
     video.is_published = is_published
     db.commit()
     db.refresh(video)
+    log_action(
+        db,
+        actor_id=owner.id,
+        action="video.published" if is_published else "video.unpublished",
+        target_type="video",
+        target_id=video.id,
+        detail=video.title or video.filename,
+    )
     return video
 
 
@@ -333,6 +342,14 @@ def share_video(db: Session, video_id: uuid.UUID, owner: User, emails: list[str]
             shared_by_name=owner.full_name,
             video_title=video.title or video.filename,
             video_link=video_link,
+        )
+        log_action(
+            db,
+            actor_id=owner.id,
+            action="video.shared",
+            target_type="video",
+            target_id=video.id,
+            detail=f"{video.title or video.filename} -> {recipient.email}",
         )
 
     return {"shared": shared, "not_found": not_found}

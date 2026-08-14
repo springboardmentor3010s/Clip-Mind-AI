@@ -13,6 +13,7 @@ from app.core.deps import get_current_user, require_role
 from app.core.security import hash_password
 from app.models.user import User, UserRole
 from app.schemas.user import UserOut, UserUpdate, UserRoleUpdate
+from app.services.audit_service import log_action
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -62,10 +63,20 @@ def change_user_role(
     if user_id == current_user.id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot change your own role.")
     user = _get_user_or_404(db, user_id)
+    old_role = user.role.value
     user.role = payload.role
     db.commit()
     db.refresh(user)
+    log_action(
+        db,
+        actor_id=current_user.id,
+        action="user.role_changed",
+        target_type="user",
+        target_id=user.id,
+        detail=f"{old_role} -> {user.role.value} (target: {user.email})",
+    )
     return user
+
 
 @router.patch(
     "/{user_id}/deactivate",
@@ -84,6 +95,7 @@ def deactivate_user(
     user.is_active = False
     db.commit()
     db.refresh(user)
+    log_action(db, actor_id=current_user.id, action="user.deactivated", target_type="user", target_id=user.id, detail=user.email)
     return user
 
 
@@ -92,10 +104,15 @@ def deactivate_user(
     response_model=UserOut,
     dependencies=[Depends(require_role(UserRole.ADMINISTRATOR))],
 )
-def activate_user(user_id: uuid.UUID, db: Session = Depends(get_db)):
+def activate_user(
+    user_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     """Admin-only: reactivate a previously deactivated user account."""
     user = _get_user_or_404(db, user_id)
     user.is_active = True
     db.commit()
     db.refresh(user)
+    log_action(db, actor_id=current_user.id, action="user.activated", target_type="user", target_id=user.id, detail=user.email)
     return user
