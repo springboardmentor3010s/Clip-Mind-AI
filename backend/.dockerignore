@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.local
+venv/
+clipmind-venv/
+storage/uploads/*
+!storage/uploads/.gitkeep
+.git/
+.gitignore
+*.md
+.vscode/
+.idea/

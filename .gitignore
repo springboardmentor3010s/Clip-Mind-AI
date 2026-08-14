@@ -25,3 +25,19 @@ frontend/.env.local
 .vscode/
 .DS_Store
 Thumbs.db
+
+# ---------- Docker ----------
+docker-compose.override.yml
+
+# ---------- Model caches (if you ever run without Docker locally) ----------
+backend/.cache/
+**/*.pt
+**/*.safetensors
+
+# ---------- Logs & test artifacts ----------
+*.log
+.pytest_cache/
+*.egg-info/
+
+# ---------- IDE ----------
+.idea/
