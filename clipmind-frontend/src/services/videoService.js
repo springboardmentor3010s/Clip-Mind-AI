@@ -1,0 +1,192 @@
+import api from "@/lib/axios";
+
+/**
+ * Upload a video file
+ */
+export const uploadVideo = async (file, onUploadProgress) => {
+  const token = localStorage.getItem("access_token");
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await api.post("/upload", formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+
+    onUploadProgress: (progressEvent) => {
+      if (!progressEvent.total) return;
+
+      const percentCompleted = Math.round(
+        (progressEvent.loaded * 100) / progressEvent.total
+      );
+
+      if (onUploadProgress) {
+        onUploadProgress(percentCompleted);
+      }
+    },
+  });
+
+  return response.data;
+};
+
+/**
+ * Get all uploaded videos of the logged-in user
+ */
+export const getMyVideos = async () => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get("/videos", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+/**
+ * Get a single video by ID
+ */
+export const getVideoById = async (videoId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(`/videos/${videoId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+
+/**
+ * Get transcript of a video
+ */
+export const getTranscript = async (videoId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(`/videos/${videoId}/transcript`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+
+
+/**
+ * Get summary of a video
+ */
+export const getSummary = async (videoId, summaryType) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(
+    `/videos/${videoId}/summary?type=${summaryType}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+
+
+/**
+ * Generate key moments for a video
+ */
+export const generateKeyMoments = async (videoId, maxMoments = 5) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.post(
+    `/videos/${videoId}/key-moments/generate?max_moments=${maxMoments}`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+
+/**
+ * Get key moments for a video
+ */
+export const getKeyMoments = async (videoId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(
+    `/videos/${videoId}/key-moments`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+/**
+ * Get highlight report of a video
+ */
+export const getHighlightReport = async (videoId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(
+    `/videos/${videoId}/highlight-report`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+/**
+ * Get keywords of a video
+ */
+export const getKeywords = async (videoId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(
+    `/videos/${videoId}/keywords`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+/**
+ * Get transcript segments of a video
+ */
+export const getTranscriptSegments = async (videoId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(
+    `/videos/${videoId}/transcript/segments`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
