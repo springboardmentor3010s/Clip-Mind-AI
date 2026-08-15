@@ -1,0 +1,44 @@
+# ==== Core Framework ====
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# ==== PostgreSQL (relational: users, videos, analytics_events) ====
+sqlalchemy==2.0.35
+psycopg[binary]>=3.2.4
+alembic==1.13.3
+
+# ==== MongoDB (documents: transcripts, summaries, key_moments) ====
+motor==3.6.0
+pymongo==4.9.1
+
+# ==== Auth & Security ====
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+python-multipart==0.0.9
+
+# ==== Config & Validation ====
+pydantic==2.9.2
+pydantic-settings==2.5.2
+email-validator==2.2.0
+
+# ==== Video Processing ====
+ffmpeg-python==0.2.0
+yt-dlp
+
+# ==== AI: Speech-to-Text ====
+faster-whisper==1.0.3
+
+# ==== AI: Summarization & Q&A ====
+transformers>=4.44.0
+sentencepiece
+
+# ==== Translation ====
+deep-translator
+
+# ==== PDF Report Generation ====
+reportlab
+
+# ==== Utilities ====
+python-dotenv==1.0.1
+aiofiles==24.1.0
