@@ -161,3 +161,55 @@ async def google_callback(payload: dict, db: Session = Depends(get_db)):
     )
 
     return {"access_token": access_token, "token_type": "bearer", "user": user}
+
+from pydantic import BaseModel
+
+
+class UpdateProfileRequest(BaseModel):
+    username: str | None = None
+    email: str | None = None
+
+
+@router.patch("/me", response_model=UserResponse)
+def update_my_profile(
+    payload: UpdateProfileRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if payload.username and payload.username != current_user.username:
+        existing = db.query(User).filter(User.username == payload.username).first()
+        if existing:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This username is already taken.")
+        current_user.username = payload.username
+
+    if payload.email and payload.email != current_user.email:
+        existing = db.query(User).filter(User.email == payload.email).first()
+        if existing:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This email is already in use.")
+        current_user.email = payload.email
+
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.post("/me/change-password")
+def change_my_password(
+    payload: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect.")
+
+    if len(payload.new_password) < 6:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New password must be at least 6 characters.")
+
+    current_user.password_hash = hash_password(payload.new_password)
+    db.commit()
+    return {"message": "Password updated successfully."}
