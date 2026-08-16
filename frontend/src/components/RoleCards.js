@@ -3,9 +3,9 @@
 import { Video, GraduationCap, BookOpenCheck } from "lucide-react";
 
 const roleOptions = [
-  { value: "creator", label: "Content Creator", desc: "Upload & manage content", icon: Video },
-  { value: "learner", label: "Learner", desc: "Consume & learn", icon: GraduationCap },
-  { value: "educator", label: "Educator", desc: "Teach & share", icon: BookOpenCheck },
+  { value: "creator", label: "Content Creator", desc: "Upload & manage content", icon: Video, color: "bg-navy" },
+  { value: "learner", label: "Learner", desc: "Consume & learn", icon: GraduationCap, color: "bg-teal" },
+  { value: "educator", label: "Educator", desc: "Teach & share", icon: BookOpenCheck, color: "bg-blue" },
 ];
 
 export default function RoleCards({ value, onChange }) {
@@ -22,14 +22,12 @@ export default function RoleCards({ value, onChange }) {
               key={r.value}
               onClick={() => onChange(r.value)}
               className={`flex flex-col items-start gap-1.5 p-3 rounded-xl border-2 text-left transition-all ${
-                isActive
-                  ? "border-blue bg-blue/5 shadow-sm"
-                  : "border-gray-200 hover:border-gray-300"
+                isActive ? "border-blue bg-blue/5 shadow-sm" : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                  isActive ? "bg-blue text-white" : "bg-gray-100 text-gray-500"
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                  isActive ? `${r.color} text-white` : "bg-gray-100 text-gray-500"
                 }`}
               >
                 <Icon size={16} />

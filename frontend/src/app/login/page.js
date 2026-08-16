@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { LogIn, Mail, Lock, Video, Eye, EyeOff } from "lucide-react";
+import { LogIn, Mail, Lock, Video, Eye, EyeOff, FileText, Sparkles, Clock } from "lucide-react";
+
+const perks = [
+  { icon: FileText, label: "Full transcripts, instantly searchable" },
+  { icon: Sparkles, label: "AI summaries, short and detailed" },
+  { icon: Clock, label: "Key moments with exact timestamps" },
+];
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -13,8 +19,8 @@ export default function LoginPage() {
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
-    
-async function handleGoogleLogin() {
+
+  async function handleGoogleLogin() {
     try {
       const res = await fetch("http://localhost:8000/api/v1/auth/google/login");
       const data = await res.json();
@@ -23,6 +29,7 @@ async function handleGoogleLogin() {
       setError("Could not start Google login.");
     }
   }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
@@ -57,40 +64,79 @@ async function handleGoogleLogin() {
 
   return (
     <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 animated-gradient text-white flex-col justify-between p-12 relative overflow-hidden">
+      {/* Left panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0B0F1E] text-white flex-col justify-between p-12 relative overflow-hidden">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-40"
+          style={{
+            background:
+              "radial-gradient(600px circle at 20% 15%, rgba(79,70,229,0.35), transparent 60%), radial-gradient(500px circle at 80% 85%, rgba(20,184,166,0.25), transparent 60%)",
+          }}
+        />
+
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="flex items-center gap-2 relative z-10"
         >
-          <Video size={26} />
-          <span className="text-xl font-bold">ClipMind AI</span>
+          <Video size={24} className="text-blue" />
+          <span className="text-lg font-bold tracking-tight">ClipMind AI</span>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
+          transition={{ duration: 0.7, delay: 0.15 }}
           className="relative z-10"
         >
-          <h1 className="text-3xl font-bold leading-snug mb-4">Welcome back.</h1>
-          <p className="text-gray-200 text-sm max-w-md">
+          <span className="inline-block text-[11px] font-mono tracking-widest text-teal uppercase mb-4">
+            Welcome back
+          </span>
+          <h1 className="text-3xl font-bold leading-tight tracking-tight mb-4">
+            Pick up right where
+            <br />
+            you left off.
+          </h1>
+          <p className="text-gray-400 text-sm max-w-sm mb-8">
             Log in to access your transcripts, summaries, and key moments dashboard.
           </p>
+
+          <div className="flex flex-col gap-3">
+            {perks.map((perk, i) => (
+              <motion.div
+                key={perk.label}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
+                className="flex items-center gap-3"
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                  <perk.icon size={14} className="text-teal" />
+                </div>
+                <span className="text-sm text-gray-300">{perk.label}</span>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
 
-        <p className="text-xs text-gray-300 relative z-10">© 2026 ClipMind AI. All rights reserved.</p>
+        <p className="text-xs text-gray-500 relative z-10">© 2026 ClipMind AI. All rights reserved.</p>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8 bg-[#F5F5FA]">
+      {/* Right form panel */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-[#F7F7FB]">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="w-full max-w-md"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">Log in to your account</h2>
+          <div className="lg:hidden flex items-center gap-2 mb-8">
+            <Video size={22} className="text-blue" />
+            <span className="text-lg font-bold text-gray-900">ClipMind AI</span>
+          </div>
+
+          <h2 className="text-2xl font-bold text-gray-900 mb-1 tracking-tight">Log in to your account</h2>
           <p className="text-gray-500 text-sm mb-8">
             Don&apos;t have an account?{" "}
             <a href="/register" className="text-blue font-semibold hover:underline">
@@ -110,7 +156,7 @@ async function handleGoogleLogin() {
                   value={form.email}
                   onChange={handleChange}
                   placeholder="you@example.com"
-                  className="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent transition"
                 />
               </div>
             </div>
@@ -126,7 +172,7 @@ async function handleGoogleLogin() {
                   value={form.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full border border-gray-300 rounded-lg pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue focus:border-transparent transition"
                 />
                 <button
                   type="button"
