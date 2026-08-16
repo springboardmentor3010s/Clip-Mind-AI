@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, User, Mail, Shield, LogOut, Lock, Check, Loader2, Edit3 } from "lucide-react";
+import { X, User, Mail, Shield, LogOut, Lock, Check, Loader2, Edit3, Contrast, Type } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 
 const roleLabels = {
@@ -13,6 +13,32 @@ const roleLabels = {
 
 export default function SettingsModal({ username, email, role, onClose }) {
   const { isDark, toggleTheme } = useTheme();
+
+  const [highContrast, setHighContrast] = useState(
+    typeof window !== "undefined" && localStorage.getItem("clipmind_high_contrast") === "true"
+  );
+  const [largeText, setLargeText] = useState(
+    typeof window !== "undefined" && localStorage.getItem("clipmind_large_text") === "true"
+  );
+
+  function applyAccessibility(hc, lt) {
+    document.documentElement.style.filter = hc ? "contrast(1.15) saturate(1.15)" : "";
+    document.documentElement.style.fontSize = lt ? "112%" : "";
+  }
+
+  function toggleHighContrast() {
+    const next = !highContrast;
+    setHighContrast(next);
+    localStorage.setItem("clipmind_high_contrast", next);
+    applyAccessibility(next, largeText);
+  }
+
+  function toggleLargeText() {
+    const next = !largeText;
+    setLargeText(next);
+    localStorage.setItem("clipmind_large_text", next);
+    applyAccessibility(highContrast, next);
+  }
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [newUsername, setNewUsername] = useState(username);
@@ -294,6 +320,51 @@ export default function SettingsModal({ username, email, role, onClose }) {
                 <span className="w-4 h-4 bg-white rounded-full shadow" />
               </span>
             </button>
+          </div>
+
+          <div className="h-px bg-gray-200/10" />
+
+          {/* Accessibility */}
+          <div>
+            <p className="text-xs font-semibold uppercase text-gray-400 mb-3">Accessibility</p>
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={toggleHighContrast}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition ${
+                  isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
+                }`}
+              >
+                <span className="flex items-center gap-2 text-sm">
+                  <Contrast size={16} />
+                  High contrast mode
+                </span>
+                <span
+                  className={`w-9 h-5 rounded-full flex items-center px-0.5 transition-colors ${
+                    highContrast ? "bg-blue justify-end" : "bg-gray-300 justify-start"
+                  }`}
+                >
+                  <span className="w-4 h-4 bg-white rounded-full shadow" />
+                </span>
+              </button>
+              <button
+                onClick={toggleLargeText}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition ${
+                  isDark ? "hover:bg-white/5" : "hover:bg-gray-50"
+                }`}
+              >
+                <span className="flex items-center gap-2 text-sm">
+                  <Type size={16} />
+                  Larger text
+                </span>
+                <span
+                  className={`w-9 h-5 rounded-full flex items-center px-0.5 transition-colors ${
+                    largeText ? "bg-blue justify-end" : "bg-gray-300 justify-start"
+                  }`}
+                >
+                  <span className="w-4 h-4 bg-white rounded-full shadow" />
+                </span>
+              </button>
+            </div>
           </div>
 
           <div className="h-px bg-gray-200/10" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Download, Loader2, Copy, Check, FileText, Minimize2, Search, List, HelpCircle, Share2, Link as LinkIcon, FileDown } from "lucide-react";
+import { Sparkles, Download, Loader2, Copy, Check, FileText, Minimize2, Search, List, HelpCircle, Share2, Link as LinkIcon, FileDown, Volume2, VolumeX } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import VideoSelector from "@/components/VideoSelector";
 
@@ -39,12 +39,15 @@ export default function Summaries({ role }) {
   const [sharing, setSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
 
   const cardBg = isDark ? "bg-[#181B23] border-white/10" : "bg-white border-gray-200";
   const textPrimary = isDark ? "text-gray-100" : "text-gray-900";
   const textSecondary = isDark ? "text-gray-400" : "text-gray-500";
 
   function handleSelectVideo(v) {
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
     setSelectedVideo(v);
     setSummary(null);
     setError("");
@@ -54,6 +57,20 @@ export default function Summaries({ role }) {
     setQaPairs(null);
     setShowQa(false);
     checkExistingSummary(v.video_id);
+  }
+
+  function toggleSpeech() {
+    if (!summary) return;
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(summary.detailed_summary);
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+    setSpeaking(true);
   }
 
   async function checkExistingSummary(videoId) {
@@ -387,7 +404,20 @@ export default function Summaries({ role }) {
                     {copied ? <Check size={13} className="text-teal" /> : <Copy size={13} />}
                     {copied ? "Copied" : "Copy"}
                   </button>
-                 <button
+                  <button
+                    onClick={toggleSpeech}
+                    className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border transition ${
+                      speaking
+                        ? "bg-purple text-white border-purple"
+                        : isDark
+                        ? "border-white/10 text-gray-300 hover:bg-white/5"
+                        : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {speaking ? <VolumeX size={13} /> : <Volume2 size={13} />}
+                    {speaking ? "Stop" : "Listen"}
+                  </button>
+                  <button
                     onClick={downloadSummary}
                     className="flex items-center gap-1.5 text-xs font-semibold text-blue hover:underline"
                   >

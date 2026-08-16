@@ -57,6 +57,13 @@ export default function Sidebar({ active, onSelect, username = "Guest", role = "
   const navItems = allNavItems.filter((item) => item.roles.includes(role));
 
   useEffect(() => {
+    const hc = localStorage.getItem("clipmind_high_contrast") === "true";
+    const lt = localStorage.getItem("clipmind_large_text") === "true";
+    document.documentElement.style.filter = hc ? "contrast(1.15) saturate(1.15)" : "";
+    document.documentElement.style.fontSize = lt ? "112%" : "";
+  }, []);
+
+  useEffect(() => {
     function handleClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setMenuOpen(false);

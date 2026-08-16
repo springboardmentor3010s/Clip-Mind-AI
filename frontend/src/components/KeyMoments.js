@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Clock, Sparkles, Loader2, Search } from "lucide-react";
+import { Clock, Sparkles, Loader2, Search, Film } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import VideoSelector from "@/components/VideoSelector";
 
@@ -16,6 +16,10 @@ export default function KeyMoments({ role }) {
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
+  const [visualScenes, setVisualScenes] = useState(null);
+  const [generatingVisual, setGeneratingVisual] = useState(false);
+  const [visualError, setVisualError] = useState("");
+
   const videoRef = useRef(null);
 
   const cardBg = isDark ? "bg-[#181B23] border-white/10" : "bg-white border-gray-200";
@@ -28,31 +32,34 @@ export default function KeyMoments({ role }) {
     setSelectedVideo(v);
     setMoments(null);
     setTranscript(null);
+    setVisualScenes(null);
     setError("");
+    setVisualError("");
     setSearch("");
     setSearchResults([]);
 
     const token = localStorage.getItem("clipmind_token");
 
-    // Check for existing key moments
     try {
       const res = await fetch(`http://localhost:8000/api/v1/keymoments/${v.video_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setMoments(await res.json());
-    } catch (err) {
-      // none yet
-    }
+    } catch (err) {}
 
-    // Load transcript for search functionality
     try {
       const res = await fetch(`http://localhost:8000/api/v1/transcripts/${v.video_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setTranscript(await res.json());
-    } catch (err) {
-      // no transcript yet
-    }
+    } catch (err) {}
+
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/keymoments/${v.video_id}/visual`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setVisualScenes(await res.json());
+    } catch (err) {}
   }
 
   async function generateMoments() {
@@ -64,10 +71,7 @@ export default function KeyMoments({ role }) {
     try {
       const res = await fetch("http://localhost:8000/api/v1/keymoments/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ video_id: selectedVideo.video_id }),
       });
       const data = await res.json();
@@ -81,6 +85,31 @@ export default function KeyMoments({ role }) {
       setError("Could not connect to server. Make sure the backend is running.");
     }
     setGenerating(false);
+  }
+
+  async function generateVisualScenes() {
+    if (!selectedVideo) return;
+    setGeneratingVisual(true);
+    setVisualError("");
+    const token = localStorage.getItem("clipmind_token");
+
+    try {
+      const res = await fetch("http://localhost:8000/api/v1/keymoments/generate-visual", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ video_id: selectedVideo.video_id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setVisualError(data.detail || "Failed to detect visual scenes.");
+        setGeneratingVisual(false);
+        return;
+      }
+      setVisualScenes(data);
+    } catch (err) {
+      setVisualError("Could not connect to server.");
+    }
+    setGeneratingVisual(false);
   }
 
   function seekTo(seconds) {
@@ -162,7 +191,35 @@ export default function KeyMoments({ role }) {
               {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
             </div>
           )}
-          {/* Search within transcript */}
+
+          {!isLearner && (
+            <div className={`${cardBg} border rounded-xl p-4 mt-4`}>
+              <button
+                onClick={generateVisualScenes}
+                disabled={!selectedVideo || generatingVisual}
+                className={`w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isDark ? "border border-white/10 text-gray-200 hover:bg-white/5" : "border border-gray-200 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {generatingVisual ? (
+                  <>
+                    <Loader2 size={15} className="animate-spin" />
+                    Scanning video...
+                  </>
+                ) : (
+                  <>
+                    <Film size={15} />
+                    {visualScenes ? "Rescan Visual Scenes" : "Detect Visual Scenes"}
+                  </>
+                )}
+              </button>
+              <p className={`text-[11px] ${textSecondary} mt-2 text-center`}>
+                Analyzes actual video frames for cuts and scene changes.
+              </p>
+              {visualError && <p className="text-xs text-red-500 mt-2">{visualError}</p>}
+            </div>
+          )}
+
           {transcript && (
             <div className={`${cardBg} border rounded-xl p-4 mt-4`}>
               <label className={`text-xs font-semibold ${textSecondary} mb-1.5 block`}>
@@ -205,52 +262,104 @@ export default function KeyMoments({ role }) {
           )}
         </div>
 
-        <div className={`${cardBg} border rounded-xl p-5 shadow-sm lg:col-span-2`}>
-          <h4 className={`font-semibold ${textPrimary} mb-4 flex items-center gap-2`}>
-            <Clock size={16} />
-            Highlight Report — Detected Important Segments
-          </h4>
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          <div className={`${cardBg} border rounded-xl p-5 shadow-sm`}>
+            <h4 className={`font-semibold ${textPrimary} mb-4 flex items-center gap-2`}>
+              <Clock size={16} />
+              Highlight Report — Detected Important Segments
+            </h4>
 
-          {!moments ? (
-            <div className="flex flex-col items-center justify-center text-center py-14">
-              <Sparkles className="text-gray-400 mb-3" size={28} />
-              <p className={`text-sm font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                No key moments yet
-              </p>
-              <p className={`text-xs ${textSecondary} mt-1 max-w-xs`}>
-                {isLearner
-                  ? "This video doesn't have key moments generated yet."
-                  : "Select a video with a transcript, then click Detect Key Moments."}
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {moments.moments.map((m, i) => (
-                <div
-                  key={i}
-                  className={`flex items-center gap-4 p-3 rounded-lg border transition-colors ${
-                    isDark ? "border-white/10 hover:bg-white/5" : "border-gray-100 hover:bg-gray-50"
-                  }`}
-                >
-                  <span
-                    className={`${momentColors[i % momentColors.length]} text-white text-xs font-bold px-3 py-1.5 rounded-md w-16 text-center shrink-0`}
+            {!moments ? (
+              <div className="flex flex-col items-center justify-center text-center py-14">
+                <Sparkles className="text-gray-400 mb-3" size={28} />
+                <p className={`text-sm font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  No key moments yet
+                </p>
+                <p className={`text-xs ${textSecondary} mt-1 max-w-xs`}>
+                  {isLearner
+                    ? "This video doesn't have key moments generated yet."
+                    : "Select a video with a transcript, then click Detect Key Moments."}
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {moments.moments.map((m, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-4 p-3 rounded-lg border transition-colors ${
+                      isDark ? "border-white/10 hover:bg-white/5" : "border-gray-100 hover:bg-gray-50"
+                    }`}
                   >
-                    {formatTime(m.time)}
-                  </span>
-                  <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-800"} flex-1`}>
-                    {m.label}
-                  </span>
-                  <button
-                    onClick={() => seekTo(m.time)}
-                    disabled={!selectedVideo}
-                    className="text-xs text-blue font-semibold hover:underline shrink-0 disabled:opacity-40"
+                    <span
+                      className={`${momentColors[i % momentColors.length]} text-white text-xs font-bold px-3 py-1.5 rounded-md w-16 text-center shrink-0`}
+                    >
+                      {formatTime(m.time)}
+                    </span>
+                    <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-800"} flex-1`}>
+                      {m.label}
+                    </span>
+                    <button
+                      onClick={() => seekTo(m.time)}
+                      disabled={!selectedVideo}
+                      className="text-xs text-blue font-semibold hover:underline shrink-0 disabled:opacity-40"
+                    >
+                      Jump to
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className={`${cardBg} border rounded-xl p-5 shadow-sm`}>
+            <h4 className={`font-semibold ${textPrimary} mb-4 flex items-center gap-2`}>
+              <Film size={16} />
+              Visual Scene Changes
+            </h4>
+
+            {!visualScenes ? (
+              <div className="flex flex-col items-center justify-center text-center py-14">
+                <Film className="text-gray-400 mb-3" size={28} />
+                <p className={`text-sm font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  No visual scenes detected yet
+                </p>
+                <p className={`text-xs ${textSecondary} mt-1 max-w-xs`}>
+                  {isLearner
+                    ? "This video hasn't been scanned for scene changes yet."
+                    : "Click Detect Visual Scenes to scan actual video frames for cuts and transitions."}
+                </p>
+              </div>
+            ) : visualScenes.scenes.length === 0 ? (
+              <p className={`text-sm ${textSecondary} text-center py-8`}>
+                No significant scene changes detected — this video may be mostly static.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {visualScenes.scenes.map((s, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-4 p-3 rounded-lg border transition-colors ${
+                      isDark ? "border-white/10 hover:bg-white/5" : "border-gray-100 hover:bg-gray-50"
+                    }`}
                   >
-                    Jump to
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+                    <span className="bg-purple text-white text-xs font-bold px-3 py-1.5 rounded-md w-16 text-center shrink-0">
+                      {formatTime(s.time)}
+                    </span>
+                    <span className={`text-sm ${isDark ? "text-gray-300" : "text-gray-800"} flex-1`}>
+                      {s.label}
+                    </span>
+                    <button
+                      onClick={() => seekTo(s.time)}
+                      disabled={!selectedVideo}
+                      className="text-xs text-blue font-semibold hover:underline shrink-0 disabled:opacity-40"
+                    >
+                      Jump to
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
