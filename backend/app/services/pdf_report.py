@@ -114,3 +114,42 @@ def generate_analytics_report(report: dict, top_keywords: list, event_counts: di
     doc.build(story)
     buffer.seek(0)
     return buffer.read()
+
+def generate_learning_material_report(title: str, key_points: list, qa_pairs: list, keywords: list) -> bytes:
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.6 * inch, bottomMargin=0.6 * inch)
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle("TitleStyle", parent=styles["Title"], textColor=colors.HexColor("#1E1B3A"))
+    heading_style = ParagraphStyle("HeadingStyle", parent=styles["Heading2"], textColor=colors.HexColor("#4F46E5"), spaceBefore=14)
+    body_style = ParagraphStyle("BodyStyle", parent=styles["BodyText"], leading=16)
+
+    story = [
+        Paragraph("ClipMind AI — Learning Material", title_style),
+        Spacer(1, 4),
+        Paragraph(title, styles["Heading3"]),
+        Spacer(1, 12),
+    ]
+
+    if key_points:
+        story.append(Paragraph("Key Points", heading_style))
+        for point in key_points:
+            story.append(Paragraph(f"•  {point}", body_style))
+        story.append(Spacer(1, 12))
+
+    if keywords:
+        story.append(Paragraph("Keywords", heading_style))
+        kw_text = ", ".join(k.get("word", k) if isinstance(k, dict) else k for k in keywords)
+        story.append(Paragraph(kw_text, body_style))
+        story.append(Spacer(1, 12))
+
+    if qa_pairs:
+        story.append(Paragraph("Quiz Questions", heading_style))
+        for i, qa in enumerate(qa_pairs, 1):
+            story.append(Paragraph(f"Q{i}. {qa.get('question', '')}", body_style))
+            story.append(Paragraph(f"A: {qa.get('answer', '')}", body_style))
+            story.append(Spacer(1, 6))
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.read()

@@ -12,6 +12,7 @@ from app.db.mongodb import transcripts_collection, summaries_collection
 from app.models.user import User
 from app.api.deps import get_current_user
 from app.services.summarization import generate_summary, shorten_summary, bulletify_summary
+from app.services.pdf_report import generate_video_report
 from app.services.translation import translate_text
 from app.services.qagen import generate_qa_pairs
 
@@ -186,3 +187,25 @@ async def generate_qa(payload: QARequest, current_user: User = Depends(get_curre
             pair["answer"] = translate_text(pair["answer"], language)
 
     return {"qa_pairs": qa_pairs}
+
+@router.get("/{video_id}/download-pdf")
+async def download_summary_pdf(video_id: str, current_user: User = Depends(get_current_user)):
+    doc = await summaries_collection.find_one({"video_id": video_id, "user_id": str(current_user.user_id)})
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No summary found for this video.")
+
+    from fastapi.responses import StreamingResponse
+    from io import BytesIO
+
+    pdf_bytes = generate_video_report(
+        title=doc.get("video_title", "Video"),
+        summary=doc,
+        moments=None,
+        transcript_snippet="",
+    )
+
+    return StreamingResponse(
+        BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{doc.get("video_title", "summary")}_summary.pdf"'},
+    )

@@ -19,6 +19,7 @@ import {
   Bookmark,
   GraduationCap,
   Users,
+  Flame,
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import SettingsModal from "@/components/SettingsModal";
@@ -32,6 +33,7 @@ const allNavItems = [
   { name: "Key Moments", icon: Clock, roles: ["creator", "learner", "educator"] },
   { name: "Learning Materials", icon: GraduationCap, roles: ["educator", "learner"] },
   { name: "Classroom Analytics", icon: Users, roles: ["educator"] },
+  { name: "Trending Topics", icon: Flame, roles: ["creator", "learner", "educator", "admin"] },
   { name: "Bookmarks", icon: Bookmark, roles: ["learner"] },
   { name: "Search", icon: Search, roles: ["creator", "learner", "educator"] },
   { name: "Analytics", icon: BarChart3, roles: ["creator", "educator"] },

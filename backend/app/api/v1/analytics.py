@@ -228,4 +228,31 @@ async def get_classroom_analytics(db: Session = Depends(get_db), current_user: U
         "recent_activity": recent_activity,
         "avg_views_per_video": avg_views,
     }
-    
+
+
+@router.get("/trending-topics")
+async def get_trending_topics(current_user: User = Depends(get_current_user)):
+    """
+    Aggregates keywords across ALL transcripts on the platform
+    (not just the current user's), to surface what's trending overall.
+    """
+    from app.services.keywords import extract_keywords
+    from app.db.mongodb import summaries_collection
+
+    cursor = transcripts_collection.find({})
+    all_text = ""
+    video_titles = {}
+    async for doc in cursor:
+        all_text += " " + doc.get("text", "")
+        video_titles[doc.get("video_id")] = doc.get("video_title", "Video")
+
+    trending = extract_keywords(all_text, top_n=12) if all_text.strip() else []
+
+    total_videos_with_content = await transcripts_collection.count_documents({})
+    total_summaries = await summaries_collection.count_documents({})
+
+    return {
+        "trending_keywords": trending,
+        "total_videos_analyzed": total_videos_with_content,
+        "total_summaries": total_summaries,
+    }

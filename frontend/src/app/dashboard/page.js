@@ -17,6 +17,7 @@ import AdminDashboard from "@/components/AdminDashboard";
 import LearningMaterials from "@/components/LearningMaterials";
 import ClassroomAnalytics from "@/components/ClassroomAnalytics";
 import VideoDetail from "@/components/VideoDetail";
+import TrendingTopics from "@/components/TrendingTopics";
 function DashboardShell() {
   const [active, setActive] = useState("Dashboard");
   const [statType, setStatType] = useState(null);
@@ -97,6 +98,7 @@ function DashboardShell() {
     if (active === "Bookmarks") return <Bookmarks />;
     if (active === "Learning Materials") return <LearningMaterials role={role} />;
     if (active === "Classroom Analytics") return <ClassroomAnalytics />;
+    if (active === "Trending Topics") return <TrendingTopics />;
     return (
       <Dashboard
         username={username}

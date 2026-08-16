@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, Loader2, HelpCircle, Tag, ListChecks } from "lucide-react";
+import { GraduationCap, Loader2, HelpCircle, Tag, ListChecks, FileDown } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import VideoSelector from "@/components/VideoSelector";
 
@@ -117,6 +117,29 @@ export default function LearningMaterials({ role }) {
         </div>
 
         <div className="lg:col-span-2 flex flex-col gap-4">
+          {material && !checking && (
+            <button
+              onClick={() => {
+                const token = localStorage.getItem("clipmind_token");
+                fetch(`http://localhost:8000/api/v1/materials/${selectedVideo.video_id}/download-pdf`, {
+                  headers: { Authorization: `Bearer ${token}` },
+                })
+                  .then((res) => res.blob())
+                  .then((blob) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${selectedVideo.title.split(".")[0]}_learning_material.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                  });
+              }}
+              className="self-end flex items-center gap-1.5 text-xs font-semibold text-blue hover:underline"
+            >
+              <FileDown size={13} />
+              Download as PDF
+            </button>
+          )}
           {checking ? (
             <div className={`${cardBg} border rounded-xl p-10 text-center`}>
               <Loader2 className="animate-spin text-gray-400 mx-auto mb-2" size={22} />

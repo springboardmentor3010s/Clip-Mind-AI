@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Download, Loader2, Copy, Check, FileText, Minimize2, Search, List, HelpCircle, Share2, Link as LinkIcon } from "lucide-react";
+import { Sparkles, Download, Loader2, Copy, Check, FileText, Minimize2, Search, List, HelpCircle, Share2, Link as LinkIcon, FileDown } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import VideoSelector from "@/components/VideoSelector";
 
@@ -387,12 +387,33 @@ export default function Summaries({ role }) {
                     {copied ? <Check size={13} className="text-teal" /> : <Copy size={13} />}
                     {copied ? "Copied" : "Copy"}
                   </button>
-                  <button
+                 <button
                     onClick={downloadSummary}
                     className="flex items-center gap-1.5 text-xs font-semibold text-blue hover:underline"
                   >
                     <FileText size={13} />
                     Download .txt
+                  </button>
+                  <button
+                    onClick={() => {
+                      const token = localStorage.getItem("clipmind_token");
+                      fetch(`http://localhost:8000/api/v1/summaries/${selectedVideo.video_id}/download-pdf`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                      })
+                        .then((res) => res.blob())
+                        .then((blob) => {
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `${summary.video_title.split(".")[0]}_summary.pdf`;
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                        });
+                    }}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-blue hover:underline"
+                  >
+                    <FileDown size={13} />
+                    Download .pdf
                   </button>
                   {role === "educator" && (
                     <button
