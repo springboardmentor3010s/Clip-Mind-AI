@@ -47,8 +47,11 @@ from app.crud.user import (
 
 from app.crud.video import (
     get_user_videos,
-    get_video_by_id
+    get_all_available_videos,
+    get_video_by_id,
+    get_available_video_by_id
 )
+
 
 from app.auth.jwt_handler import create_access_token
 from app.auth.oauth2 import get_current_user
@@ -280,18 +283,40 @@ async def upload_video(
 
 
 @router.get("/videos")
-def get_my_videos(
+def get_videos(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
 
-    videos = get_user_videos(
-        db=db,
-        owner_id=current_user.id
+    # ---------------------------------------------------------
+    # Learners can browse all available completed videos
+    # ---------------------------------------------------------
+    if current_user.role == UserRole.LEARNER:
+        return get_all_available_videos(db=db)
+
+    # ---------------------------------------------------------
+    # Content Creators and Educators manage/view
+    # their own uploaded videos
+    # ---------------------------------------------------------
+    if current_user.role in [
+        UserRole.CONTENT_CREATOR,
+        UserRole.EDUCATOR
+    ]:
+        return get_user_videos(
+            db=db,
+            owner_id=current_user.id
+        )
+
+    # ---------------------------------------------------------
+    # Admin can view all available videos
+    # ---------------------------------------------------------
+    if current_user.role == UserRole.ADMIN:
+        return get_all_available_videos(db=db)
+
+    raise HTTPException(
+        status_code=403,
+        detail="You do not have permission to access videos"
     )
-
-    return videos
-
 
 @router.get("/videos/{video_id}")
 def get_video(
@@ -300,11 +325,37 @@ def get_video(
     db: Session = Depends(get_db)
 ):
 
-    video = get_video_by_id(
-        db=db,
-        video_id=video_id,
-        owner_id=current_user.id
-    )
+    # ---------------------------------------------------------
+    # Learner can view any available completed video
+    # ---------------------------------------------------------
+    if current_user.role == UserRole.LEARNER:
+
+        video = get_available_video_by_id(
+            db=db,
+            video_id=video_id
+        )
+
+    # ---------------------------------------------------------
+    # Admin can view available videos
+    # ---------------------------------------------------------
+    elif current_user.role == UserRole.ADMIN:
+
+        video = get_available_video_by_id(
+            db=db,
+            video_id=video_id
+        )
+
+    # ---------------------------------------------------------
+    # Content Creator / Educator can access
+    # their own videos
+    # ---------------------------------------------------------
+    else:
+
+        video = get_video_by_id(
+            db=db,
+            video_id=video_id,
+            owner_id=current_user.id
+        )
 
     if video is None:
         raise HTTPException(
@@ -313,6 +364,7 @@ def get_video(
         )
 
     return video
+
 @router.get(
     "/videos/{video_id}/transcript",
     response_model=TranscriptResponse
@@ -322,11 +374,26 @@ def get_video_transcript(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    video = get_video_by_id(
-        db=db,
-        video_id=video_id,
-        owner_id=current_user.id
-    )
+
+    # Learner and Admin can view any available video
+    if current_user.role in [
+        UserRole.LEARNER,
+        UserRole.ADMIN
+    ]:
+
+        video = get_available_video_by_id(
+            db=db,
+            video_id=video_id
+        )
+
+    # Creator and Educator access their own videos
+    else:
+
+        video = get_video_by_id(
+            db=db,
+            video_id=video_id,
+            owner_id=current_user.id
+        )
 
     if video is None:
         raise HTTPException(
@@ -356,11 +423,26 @@ def get_video_transcript_segments(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    video = get_video_by_id(
-        db=db,
-        video_id=video_id,
-        owner_id=current_user.id
-    )
+
+    # Learner/Admin can consume available content
+    if current_user.role in [
+        UserRole.LEARNER,
+        UserRole.ADMIN
+    ]:
+
+        video = get_available_video_by_id(
+            db=db,
+            video_id=video_id
+        )
+
+    # Creator/Educator access their own content
+    else:
+
+        video = get_video_by_id(
+            db=db,
+            video_id=video_id,
+            owner_id=current_user.id
+        )
 
     if video is None:
         raise HTTPException(
@@ -385,11 +467,26 @@ def get_video_summary(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    video = get_video_by_id(
-        db=db,
-        video_id=video_id,
-        owner_id=current_user.id
-    )
+
+    # Learner/Admin can view summaries of available videos
+    if current_user.role in [
+        UserRole.LEARNER,
+        UserRole.ADMIN
+    ]:
+
+        video = get_available_video_by_id(
+            db=db,
+            video_id=video_id
+        )
+
+    # Creator/Educator access their own videos
+    else:
+
+        video = get_video_by_id(
+            db=db,
+            video_id=video_id,
+            owner_id=current_user.id
+        )
 
     if video is None:
         raise HTTPException(

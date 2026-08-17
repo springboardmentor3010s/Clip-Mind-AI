@@ -4,9 +4,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
+from app.auth.authorization import require_roles
+from app.core.enums import UserRole
+
 from app.auth.oauth2 import get_current_user
 
-from app.crud.video import get_video_by_id
+from app.crud.video import (
+    get_video_by_id,
+    get_available_video_by_id
+)
 from app.crud.transcript_segment import get_transcript_segments_by_video
 from app.crud.summary import get_summary_by_type
 
@@ -37,7 +43,13 @@ def generate_video_key_moments(
         ge=1,
         le=10
     ),
-    current_user=Depends(get_current_user),
+    current_user=Depends(
+        require_roles(
+            UserRole.CONTENT_CREATOR,
+            UserRole.EDUCATOR,
+            UserRole.ADMIN
+        )
+    ),
     db: Session = Depends(get_db)
 ):
     # ---------------------------------------------------------
@@ -151,24 +163,36 @@ def get_video_key_moments(
 ):
 
     # ---------------------------------------------------------
-    # 1. Verify video ownership
+    # Learner/Admin can view key moments
+    # from available videos
     # ---------------------------------------------------------
+    if current_user.role in [
+        UserRole.LEARNER,
+        UserRole.ADMIN
+    ]:
 
-    video = get_video_by_id(
-        db=db,
-        video_id=video_id,
-        owner_id=current_user.id
-    )
+        video = get_available_video_by_id(
+            db=db,
+            video_id=video_id
+        )
+
+    # ---------------------------------------------------------
+    # Content Creator/Educator can view
+    # key moments for their own videos
+    # ---------------------------------------------------------
+    else:
+
+        video = get_video_by_id(
+            db=db,
+            video_id=video_id,
+            owner_id=current_user.id
+        )
 
     if video is None:
         raise HTTPException(
             status_code=404,
             detail="Video not found"
         )
-
-    # ---------------------------------------------------------
-    # 2. Retrieve generated key moments
-    # ---------------------------------------------------------
 
     key_moments = get_key_moments_by_video(
         db=db,

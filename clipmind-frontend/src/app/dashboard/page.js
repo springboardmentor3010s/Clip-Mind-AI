@@ -3,7 +3,7 @@ import {
   FaVideo,
   FaFileAlt,
   FaRobot,
-  FaUserCircle,
+  // FaUserCircle,
 } from "react-icons/fa";
 
 import Link from "next/link";
@@ -36,8 +36,10 @@ export default function DashboardPage() {
 
         setUser(response.user);
 
-        const myVideos = await getMyVideos();
-        setVideos(myVideos);
+        if (response.user.role !== "LEARNER") {
+          const myVideos = await getMyVideos();
+          setVideos(myVideos);
+        }
 
         const activityData = await getActivityHistory();
         setActivities(activityData.slice(0, 5));
@@ -82,22 +84,41 @@ export default function DashboardPage() {
 
   const getActivityIcon = (type) => {
   switch (type) {
-    case "VIDEO_UPLOADED":
-      return "🎥";
+  
+    case "LOGIN":
+  return "🔑";
 
-    case "USER_LOGIN":
-      return "🔑";
+case "LOGOUT":
+  return "🚪";
 
-    case "USER_LOGOUT":
-      return "🚪";
+case "REGISTER":
+  return "👤";
 
-    case "USER_REGISTERED":
-      return "👤";
+case "PROFILE_UPDATED":
+  return "✏️";
+
+case "VIDEO_UPLOADED":
+  return "🎥";
+
+case "TRANSCRIPT_GENERATED":
+  return "📄";
+
+case "SUMMARY_GENERATED":
+  return "🤖";
+
+case "KEY_MOMENTS_DETECTED":
+  return "⭐";
 
     default:
       return "📌";
   }
 };
+
+const canAccessVideoFeatures = [
+  "CONTENT_CREATOR",
+  "EDUCATOR",
+  "ADMIN",
+].includes(user?.role);
 
   return (
     <DashboardLayout>
@@ -105,17 +126,17 @@ export default function DashboardPage() {
       <div>
 
         <h1 className="text-4xl font-bold text-slate-800 mb-2">
-          Welcome, {user.full_name}
+          Welcome, {user?.full_name}
         </h1>
 
         <p className="text-slate-500 mb-8">
-          Role: {user.role}
+          Role: {user?.role?.replace(/_/g, " ")}
         </p>
 
         {/* Dashboard Cards */}
 
         {/* Dashboard Cards */}
-
+{canAccessVideoFeatures && (
 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
 
   {/* Uploaded Videos */}
@@ -255,6 +276,7 @@ export default function DashboardPage() {
 </div>
 
 </div>
+)}
         {/* Recent Activity */}
 
 <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 mt-10">

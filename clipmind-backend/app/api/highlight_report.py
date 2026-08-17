@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
-from app.auth.oauth2 import get_current_user
+from app.auth.authorization import require_roles
+from app.core.enums import UserRole
 
 from app.crud.video import get_video_by_id
 from app.crud.summary import get_summary_by_type
@@ -26,7 +27,13 @@ router = APIRouter(
 )
 def get_video_highlight_report(
     video_id: int,
-    current_user=Depends(get_current_user),
+    current_user=Depends(
+        require_roles(
+            UserRole.CONTENT_CREATOR,
+            UserRole.EDUCATOR,
+            UserRole.ADMIN
+        )
+    ),
     db: Session = Depends(get_db)
 ):
 

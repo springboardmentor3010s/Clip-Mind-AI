@@ -5,10 +5,6 @@ export default function RoleMenu({ role }) {
     case "LEARNER":
       return [
         { name: "Dashboard", path: "/dashboard" },
-        { name: "Videos", path: "/videos" },
-        { name: "Transcripts", path: "/transcripts" },
-        { name: "AI Summaries", path: "/summaries" },
-        { name: "Bookmarks", path: "/bookmarks" },
         { name: "Activity History", path: "/history" },
       ];
 
@@ -31,6 +27,7 @@ export default function RoleMenu({ role }) {
         { name: "My Uploads", path: "/videos" },
         { name: "Transcripts", path: "/transcripts" },
         { name: "AI Summaries", path: "/summaries" },
+        { name: "Key Moments", path: "/key-moments" },
         { name: "Classroom Analytics", path: "/analytics" },
         { name: "Activity History", path: "/history" },
       ];
@@ -38,13 +35,13 @@ export default function RoleMenu({ role }) {
     case "ADMIN":
       return [
         { name: "Dashboard", path: "/dashboard" },
-        { name: "User Management", path: "/users" },
-        { name: "Platform Analytics", path: "/analytics" },
+        { name: "Upload Videos", path: "/upload" },
         { name: "Manage Videos", path: "/videos" },
-        { name: "Storage Monitoring", path: "/storage" },
-        { name: "AI Processing Jobs", path: "/jobs" },
-        { name: "Audit Logs", path: "/audit-logs" },
-        { name: "Platform Settings", path: "/settings" },
+        { name: "Transcripts", path: "/transcripts" },
+        { name: "AI Summaries", path: "/summaries" },
+        { name: "Key Moments", path: "/key-moments" },
+        { name: "Platform Analytics", path: "/analytics" },
+        { name: "Activity History", path: "/history" },
       ];
 
     default:

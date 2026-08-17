@@ -24,11 +24,22 @@ export default function Navbar() {
     router.replace("/login");
   };
 
+  const getWelcomeMessage = () => {
+    if (user?.role === "LEARNER") {
+      return "View your recent activity and account information.";
+    }
+
+    if (user?.role === "ADMIN") {
+      return "Manage and monitor ClipMind AI activities and users.";
+    }
+
+    return "Manage your videos, transcripts and AI summaries.";
+  };
+
   return (
     <header className="bg-white border-b border-slate-200 px-8 py-6 flex justify-between items-center">
 
       {/* Left Side */}
-
       <div>
 
         <h1 className="text-3xl font-bold text-slate-900">
@@ -41,17 +52,15 @@ export default function Navbar() {
             {" "}
             {user?.full_name || ""}
           </span>
-          ! Manage your videos, transcripts and AI summaries.
+          ! {getWelcomeMessage()}
         </p>
 
       </div>
 
       {/* Right Side */}
-
       <div className="flex items-center gap-5">
 
         {/* Role Badge */}
-
         {user?.role && (
           <span className="px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-semibold">
             {user.role.replace("_", " ")}
@@ -59,7 +68,6 @@ export default function Navbar() {
         )}
 
         {/* Avatar */}
-
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-purple-700 text-white flex items-center justify-center text-lg font-bold shadow-lg">
 
           {user?.full_name
@@ -69,7 +77,6 @@ export default function Navbar() {
         </div>
 
         {/* Logout */}
-
         <button
           onClick={handleLogout}
           className="px-5 py-2 border border-red-300 text-red-600 rounded-xl hover:bg-red-50 hover:border-red-500 transition-all duration-300"
