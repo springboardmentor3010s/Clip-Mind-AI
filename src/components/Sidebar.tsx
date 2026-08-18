@@ -1,0 +1,250 @@
+import React from 'react';
+import { useAuth } from '../context/AuthContext';
+import {
+  LayoutDashboard,
+  UploadCloud,
+  ListVideo,
+  FileText,
+  Sparkles,
+  Zap,
+  BarChart3,
+  ShieldCheck,
+  Settings,
+  LogOut,
+  BookOpen,
+} from 'lucide-react';
+
+interface SidebarProps {
+  currentTab: string;
+  onNavigate: (tab: string) => void;
+  onOpenUploadModal?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({
+  currentTab,
+  onNavigate,
+}) => {
+  const { user, logout } = useAuth();
+
+  const role = (user?.role || 'content_creator').toLowerCase();
+
+  const isLearner =
+    role === 'learner' ||
+    role === 'student';
+
+  const navItems = isLearner
+    ? [
+        {
+          id: 'library',
+          label: 'Library',
+          icon: <ListVideo className="w-4 h-4" />,
+        },
+        {
+          id: 'learner-classrooms',
+          label: 'Classrooms',
+          icon: <BookOpen className="w-4 h-4" />,
+        },
+        {
+          id: 'bookmarks',
+          label: 'Bookmarks',
+          icon: <BookOpen className="w-4 h-4" />,
+        },
+        {
+          id: 'settings',
+          label: 'Settings',
+          icon: <Settings className="w-4 h-4" />,
+        },
+      ]
+    : [
+        {
+          id: 'dashboard',
+          label: 'Overview',
+          icon: <LayoutDashboard className="w-4 h-4" />,
+        },
+        {
+          id: 'upload',
+          label: 'Upload',
+          icon: <UploadCloud className="w-4 h-4" />,
+        },
+        {
+          id: 'library',
+          label: 'Library',
+          icon: <ListVideo className="w-4 h-4" />,
+        },
+        {
+          id: 'transcripts',
+          label: 'Transcripts',
+          icon: <FileText className="w-4 h-4" />,
+        },
+        {
+          id: 'summaries',
+          label: 'Summaries',
+          icon: <Sparkles className="w-4 h-4" />,
+        },
+        {
+          id: 'key-moments',
+          label: 'Key Moments',
+          icon: <Zap className="w-4 h-4" />,
+        },
+        {
+          id: 'analytics',
+          label: 'Analytics',
+          icon: <BarChart3 className="w-4 h-4" />,
+        },
+        {
+          id: 'settings',
+          label: 'Settings',
+          icon: <Settings className="w-4 h-4" />,
+        },
+      ];
+
+  // Administrator-only navigation
+  if (role === 'administrator' || role === 'admin') {
+    navItems.splice(8, 0, {
+      id: 'admin',
+      label: 'Admin',
+      icon: <ShieldCheck className="w-4 h-4" />,
+    });
+  }
+
+  const userInitial = user?.name
+    ? user.name.charAt(0).toUpperCase()
+    : user?.email
+      ? user.email.charAt(0).toUpperCase()
+      : 'U';
+
+  const handleLogout = () => {
+    logout();
+    onNavigate('landing');
+  };
+
+  return (
+    <aside className="w-64 flex-shrink-0 border-r border-slate-800/80 bg-[#0A0F1E] p-4 hidden md:flex flex-col justify-between min-h-[calc(100vh-4rem)] sticky top-16 h-[calc(100vh-4rem)]">
+
+      {/* =====================================================
+          TOP CONTENT
+      ===================================================== */}
+      <div className="space-y-6 overflow-y-auto pr-1">
+
+        {/* ===================================================
+            LOGO
+        =================================================== */}
+        <div className="flex items-center gap-2.5 px-2 pt-1 pb-3 border-b border-slate-800/80">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 p-0.5 shadow-md shadow-blue-500/20">
+            <div className="w-full h-full bg-slate-950 rounded-[6px] flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-blue-400" />
+            </div>
+          </div>
+
+          <span className="font-extrabold text-base text-white tracking-tight">
+            ClipMind <span className="text-blue-400">AI</span>
+          </span>
+        </div>
+
+        {/* ===================================================
+            USER PROFILE CARD
+        =================================================== */}
+        <div className="p-3 rounded-2xl bg-[#0D1220] border border-slate-800/80 space-y-2">
+
+          <div className="flex items-center gap-3">
+
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-md">
+              {userInitial}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-white truncate">
+                {user?.name || 'User'}
+              </p>
+
+              <p className="text-[11px] text-slate-400 truncate">
+                {user?.email || ''}
+              </p>
+            </div>
+
+          </div>
+
+          <div className="pt-1 flex items-center justify-between border-t border-slate-800/60">
+
+            <span className="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 text-[10px] font-bold uppercase tracking-wider border border-blue-500/20">
+              {role.replace('_', ' ')}
+            </span>
+
+            <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Active
+            </span>
+
+          </div>
+        </div>
+
+        {/* ===================================================
+            NAVIGATION
+        =================================================== */}
+        <div className="space-y-1">
+
+          <p className="px-3 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-2">
+            WORKSPACE NAVIGATION
+          </p>
+
+          {navItems.map((item) => {
+
+            const isActive = currentTab === item.id;
+
+            return (
+              <button
+                key={item.id}
+                id={`sidebar-nav-${item.id}`}
+                onClick={() => onNavigate(item.id)}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
+                  isActive
+                    ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/15 text-blue-400 border border-blue-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+                }`}
+              >
+
+                <div
+                  className={
+                    isActive
+                      ? 'text-blue-400'
+                      : 'text-slate-400'
+                  }
+                >
+                  {item.icon}
+                </div>
+
+                <span>{item.label}</span>
+
+              </button>
+            );
+          })}
+
+        </div>
+      </div>
+
+      {/* =====================================================
+          SIGN OUT
+      ===================================================== */}
+      <div className="pt-4 border-t border-slate-800/80">
+
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-colors"
+        >
+
+          <span className="flex items-center gap-2">
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </span>
+
+          <span className="text-[10px] text-red-400/70">
+            Logout
+          </span>
+
+        </button>
+
+      </div>
+
+    </aside>
+  );
+};

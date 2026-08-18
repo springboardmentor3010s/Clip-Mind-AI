@@ -1,0 +1,6 @@
+{
+  "name": "ClipMind AI",
+  "description": "Video Summarization & Key Moments Detection Platform with FastAPI, Whisper, BART, and PostgreSQL",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
