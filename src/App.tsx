@@ -320,15 +320,6 @@ function getPathFromTab(tab: string): string {
 
     case 'summaries':
       return '/summaries';
-      case 'creator-key-moments':
-        return '/creator/key-moments';
-      
-      case 'creator-bookmarks':
-        return '/creator/bookmarks';
-      
-      case 'creator-analytics':
-        return '/creator/analytics';
-
     case 'settings':
       return '/settings';
 
