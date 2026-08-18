@@ -33,18 +33,18 @@
 
 ## 🚀 Executive Overview
 
-**ClipMind AI** is an enterprise-grade video intelligence platform engineered to eliminate manual scrubbing across long-form video content[     : 4, 6]. By combining deep acoustic models with abstractive NLP transformers and an asynchronous backend, ClipMind automatically extracts speech transcripts, flags topical milestones, derives entity metrics, and generates downloadable client-side PDF lecture briefs[     : 2, 4, 5, 6].
+**ClipMind AI** is an enterprise-grade video intelligence platform engineered to eliminate manual scrubbing across long-form video content. By combining deep acoustic models with abstractive NLP transformers and an asynchronous backend, ClipMind automatically extracts speech transcripts, flags topical milestones, derives entity metrics, and generates downloadable client-side PDF lecture briefs.
 
 ---
 
 ## ✨ Key Features & Highlights
 
-- **🎙️ Sub-Second Whisper ASR:** High-fidelity speech-to-text conversion with precise word-level and sentence-level timestamp alignment[     : 3, 5].
+- **🎙️ Sub-Second Whisper ASR:** High-fidelity speech-to-text conversion with precise word-level and sentence-level timestamp alignment.
 - **🧠 Abstractive Neural Summarization:** Hugging Face BART pipelines compress dense educational lectures by over 90% without context loss.
 - **⏱️ Automated Topic Segmentation:** Phrase boundary analysis detects major lecture transitions, rendering interactive, clickable video milestone bookmarks.
-- **📊 NLP Content Analytics:** Instant extraction of total verbal volume, BART reduction ratios, sentiment classification, and technical keyword tag clouds[     : 4].
+- **📊 NLP Content Analytics:** Instant extraction of total verbal volume, BART reduction ratios, sentiment classification, and technical keyword tag clouds.
 - **📑 Zero-Overhead PDF Export:** In-browser A4 highlight brief compilation using `html2pdf.js`, avoiding backend compute bottlenecks.
-- **🔒 Multi-Tenant RBAC Security:** Strict write-isolation and dedicated persona workspaces (Creator, Learner, Educator, Admin)[     : 2, 3, 6].
+- **🔒 Multi-Tenant RBAC Security:** Strict write-isolation and dedicated persona workspaces (Creator, Learner, Educator, Admin).
 
 ---
 
@@ -77,15 +77,15 @@
 
 | Domain | Technology / Library | Architectural Role & Purpose |
 | :--- | :--- | :--- |
-| **Frontend Framework** | `Next.js 14`, `React`, `TypeScript` | Responsive UI dashboards, reactive polling, role-based views[     : 4, 5, 6]. |
-| **Styling & Icons** | `Tailwind CSS`, `Lucide React Icons` | Responsive UI, state badges, dark-theme layout styling[     : 4]. |
+| **Frontend Framework** | `Next.js 14`, `React`, `TypeScript` | Responsive UI dashboards, reactive polling, role-based views. |
+| **Styling & Icons** | `Tailwind CSS`, `Lucide React Icons` | Responsive UI, state badges, dark-theme layout styling. |
 | **Backend API Gateway** | `FastAPI`, `Uvicorn ASGI Server`, `Python 3.11` | Asynchronous REST endpoints, JWT authentication, non-blocking workers[     : 3, 5, 6]. |
-| **Media Engineering** | `FFmpeg` | Audio stream demuxing, 16 kHz mono WAV conversion, 720p thumbnail snapshots[     : 5, 6]. |
-| **Speech Recognition** | `OpenAI Whisper ASR` | Sub-second acoustic frame alignment and multi-accent speech-to-text extraction[     : 3, 4, 5]. |
-| **Summarization & NLP** | `Hugging Face Transformers (BART / T5)` | Abstractive executive summaries, chapter breakdowns, keyword extraction, sentiment analysis[     : 2, 4, 5]. |
-| **Persistence Tier** | `PostgreSQL`, `SQLAlchemy ORM`, `MongoDB` | Relational tables, upload state tracking, indexed transcript archives[     : 2, 5, 6]. |
-| **Client Reporting** | `html2pdf.js`, `HTML5 Canvas` | Client-side DOM compilation into downloadable A4 highlight reports[     : 3, 4, 5]. |
-| **Containerization** | `Docker`, `Docker Compose` | Multi-container microservice orchestration with persistent volume mounts[     : 3, 4]. |
+| **Media Engineering** | `FFmpeg` | Audio stream demuxing, 16 kHz mono WAV conversion, 720p thumbnail snapshots. |
+| **Speech Recognition** | `OpenAI Whisper ASR` | Sub-second acoustic frame alignment and multi-accent speech-to-text extraction. |
+| **Summarization & NLP** | `Hugging Face Transformers (BART / T5)` | Abstractive executive summaries, chapter breakdowns, keyword extraction, sentiment analysis. |
+| **Persistence Tier** | `PostgreSQL`, `SQLAlchemy ORM`, `MongoDB` | Relational tables, upload state tracking, indexed transcript archives. |
+| **Client Reporting** | `html2pdf.js`, `HTML5 Canvas` | Client-side DOM compilation into downloadable A4 highlight reports. |
+| **Containerization** | `Docker`, `Docker Compose` | Multi-container microservice orchestration with persistent volume mounts. |
 ---
 
 ## 📈 Empirical Quality Benchmarks
@@ -100,7 +100,7 @@ Quantitative performance benchmarks evaluated during system verification:
 | **BART Summarizer** | ROUGE-L (LCS F1) | Syntactic structure | **0.2143 (F1)**<br> | PASSED<br> |
 | **BART Summarizer** | Content Compression | $> 70\%$ reduction | **$\sim 90.0\% - 98.2\%$ reduction**<br> | PASSED<br> |
 
-$$\text{WER} = \frac{S + D + I}{N} = \frac{0 + 0 + 0}{31} = 0.00\% \quad \text{[     : 3]}$$
+$$\text{WER} = \frac{S + D + I}{N} = \frac{0 + 0 + 0}{31} = 0.00\% \quad \text{}$$
 
 ---
 
@@ -108,10 +108,10 @@ $$\text{WER} = \frac{S + D + I}{N} = \frac{0 + 0 + 0}{31} = 0.00\% \quad \text{[
 
 | User Persona | Permissions & Capabilities |
 | :--- | :--- |
-| **🎨 Content Creator** | Authorized multi-format video upload, live status tracking, transcript correction, key moments editing[     : 2, 3]. |
-| **🎓 Learner** | Read-only access to summaries, clickable timestamp navigation, keyword search, study history[     : 2, 3]. |
-| **👩‍🏫 Educator** | Classroom video management, lecture link generation, student topic breakdowns, analytics[     : 2, 3]. |
-| **🛡️ Administrator** | System telemetry, model performance metrics, resource utilization, platform audit logs[     : 2, 3]. |
+| **🎨 Content Creator** | Authorized multi-format video upload, live status tracking, transcript correction, key moments editing. |
+| **🎓 Learner** | Read-only access to summaries, clickable timestamp navigation, keyword search, study history. |
+| **👩‍🏫 Educator** | Classroom video management, lecture link generation, student topic breakdowns, analytics. |
+| **🛡️ Administrator** | System telemetry, model performance metrics, resource utilization, platform audit logs. |
 ---
 
 ## 📂 Project Directory Structure
@@ -122,39 +122,39 @@ ClipMind-AI/
 │   ├── app/
 │   │   ├── core/
 │   │   │   ├── config.py              # Application settings & environment variables
-│   │   │   ├── database.py            # SQLAlchemy engine & session lifecycle[     : 6]
-│   │   │   └── security.py            # Password hashing & JWT token generators[     : 6]
+│   │   │   ├── database.py            # SQLAlchemy engine & session lifecycle
+│   │   │   └── security.py            # Password hashing & JWT token generators
 │   │   ├── models/
-│   │   │   ├── user.py                # User authentication & RBAC models[     : 6]
-│   │   │   └── video.py               # Video metadata & moments entities[     : 6]
+│   │   │   ├── user.py                # User authentication & RBAC models
+│   │   │   └── video.py               # Video metadata & moments entities
 │   │   ├── routers/
-│   │   │   ├── auth.py                # Sign in, registration, and RBAC routes[     : 6]
-│   │   │   ├── video.py               # Media upload & ingestion handlers[     : 4, 6]
-│   │   │   ├── creator.py             # Creator-specific curation endpoints[     : 3]
-│   │   │   ├── educator.py            # Classroom & lecture sharing tools[     : 3]
-│   │   │   ├── learner.py             # Read-only search & bookmarking[     : 3]
-│   │   │   └── admin.py               # System telemetry & admin analytics[     : 3]
+│   │   │   ├── auth.py                # Sign in, registration, and RBAC routes
+│   │   │   ├── video.py               # Media upload & ingestion handlers
+│   │   │   ├── creator.py             # Creator-specific curation endpoints
+│   │   │   ├── educator.py            # Classroom & lecture sharing tools
+│   │   │   ├── learner.py             # Read-only search & bookmarking
+│   │   │   └── admin.py               # System telemetry & admin analytics
 │   │   ├── services/
-│   │   │   ├── ffmpeg_service.py      # Audio extraction & thumbnail snapshots[     : 5, 6]
-│   │   │   ├── whisper_service.py     # Whisper ASR speech recognition inference[     : 5]
-│   │   │   └── summarizer.py          # BART NLP summarization pipelines[     : 5]
-│   │   └── main.py                    # ASGI app initialization & routing[     : 6]
+│   │   │   ├── ffmpeg_service.py      # Audio extraction & thumbnail snapshots
+│   │   │   ├── whisper_service.py     # Whisper ASR speech recognition inference
+│   │   │   └── summarizer.py          # BART NLP summarization pipelines
+│   │   └── main.py                    # ASGI app initialization & routing
 │   ├── tests/
-│   │   └── test_rbac_and_pipeline.py  # Pytest test suite[     : 3]
+│   │   └── test_rbac_and_pipeline.py  # Pytest test suite
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── dashboard/page.tsx     # Multi-persona workspace view[     : 3, 6]
-│   │   │   ├── login/page.tsx         # Auth & role entry[     : 6]
+│   │   │   ├── dashboard/page.tsx     # Multi-persona workspace view
+│   │   │   ├── login/page.tsx         # Auth & role entry
 │   │   │   └── layout.tsx
 │   │   ├── components/                # Modular UI components
-│   │   └── lib/                       # Client-side PDF export compiler[     : 4]
+│   │   └── lib/                       # Client-side PDF export compiler
 │   ├── Dockerfile
 │   ├── package.json
 │   └── tailwind.config.js
-├── docker-compose.yaml                # Multi-container orchestration[     : 3]
+├── docker-compose.yaml                # Multi-container orchestration
 └── README.md
 
 ```
@@ -186,14 +186,14 @@ cd clipmind-ai
 
 2. **Launch all services in detached mode:**
 ```bash
-docker compose up --build -d[     : 3]
+docker compose up --build -d
 
 ```
 
 
 3. **Verify active container health:**
 ```bash
-docker compose ps[     : 3]
+docker compose ps
 
 ```
 
