@@ -319,3 +319,41 @@ def download_audit_logs(db: Session = Depends(get_db), current_user: User = Depe
         content,
         headers={"Content-Disposition": 'attachment; filename="clipmind_audit_log.txt"'},
     )
+
+@router.get("/trending")
+async def get_admin_trending(db: Session = Depends(get_db), current_user: User = Depends(require_role("admin"))):
+    from app.db.mongodb import transcripts_collection
+    from app.services.keywords import extract_keywords
+
+    cursor = transcripts_collection.find({})
+    all_text = ""
+    async for doc in cursor:
+        all_text += " " + doc.get("text", "")
+    top_keywords = extract_keywords(all_text, top_n=10) if all_text.strip() else []
+
+    videos = db.query(Video).all()
+    events = db.query(AnalyticsEvent).all()
+
+    event_counts_by_video = {}
+    event_counts_by_user = {}
+    for e in events:
+        if e.video_id:
+            event_counts_by_video[e.video_id] = event_counts_by_video.get(e.video_id, 0) + 1
+        event_counts_by_user[e.user_id] = event_counts_by_user.get(e.user_id, 0) + 1
+
+    top_videos = []
+    for v in videos:
+        count = event_counts_by_video.get(v.video_id, 0)
+        if count > 0:
+            top_videos.append({"video_id": str(v.video_id), "title": v.title, "engagement": count})
+    top_videos.sort(key=lambda x: x["engagement"], reverse=True)
+    top_videos = top_videos[:8]
+
+    top_user_ids = sorted(event_counts_by_user.items(), key=lambda x: x[1], reverse=True)[:5]
+    top_users = []
+    for uid, count in top_user_ids:
+        u = db.query(User).filter(User.user_id == uid).first()
+        if u:
+            top_users.append({"username": u.username, "role": u.role.value, "events": count})
+
+    return {"top_keywords": top_keywords, "top_videos": top_videos, "top_users": top_users}

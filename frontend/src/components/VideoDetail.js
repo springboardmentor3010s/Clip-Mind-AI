@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft, FileText, Sparkles, Clock, GraduationCap, Loader2,
-  Bookmark, BookmarkCheck, Music, HelpCircle,
+  Bookmark, BookmarkCheck, Music, HelpCircle, Play, Square,
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import { computeHealthScore, HealthBadge } from "@/components/HealthScore";
 
 const TABS = [
   { key: "transcript", label: "Transcript", icon: FileText },
@@ -13,6 +14,8 @@ const TABS = [
   { key: "moments", label: "Key Moments", icon: Clock },
   { key: "materials", label: "Learning Materials", icon: GraduationCap },
 ];
+
+const HIGHLIGHT_DURATION_MS = 4000;
 
 export default function VideoDetail({ videoId, role, onBack, onNavigate }) {
   const { isDark } = useTheme();
@@ -24,6 +27,11 @@ export default function VideoDetail({ videoId, role, onBack, onNavigate }) {
   const [materials, setMaterials] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState(false);
+  const [playingHighlights, setPlayingHighlights] = useState(false);
+
+  const videoRef = useRef(null);
+  const highlightTimerRef = useRef(null);
+  const highlightIndexRef = useRef(0);
 
   const isLearner = role === "learner";
 
@@ -33,6 +41,7 @@ export default function VideoDetail({ videoId, role, onBack, onNavigate }) {
 
   useEffect(() => {
     loadAll();
+    return () => stopHighlights();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoId]);
 
@@ -44,9 +53,7 @@ export default function VideoDetail({ videoId, role, onBack, onNavigate }) {
     try {
       const videoRes = await fetch(`http://localhost:8000/api/v1/videos/${videoId}`, { headers });
       if (videoRes.ok) setVideo(await videoRes.json());
-    } catch (err) {
-      // ignore
-    }
+    } catch (err) {}
 
     const results = await Promise.allSettled([
       fetch(`http://localhost:8000/api/v1/transcripts/${videoId}`, { headers }),
@@ -86,9 +93,7 @@ export default function VideoDetail({ videoId, role, onBack, onNavigate }) {
         });
         setBookmarked(true);
       }
-    } catch (err) {
-      // ignore
-    }
+    } catch (err) {}
   }
 
   function formatTime(seconds) {
@@ -97,7 +102,40 @@ export default function VideoDetail({ videoId, role, onBack, onNavigate }) {
     return `${m}:${String(s).padStart(2, "0")}`;
   }
 
+  function stopHighlights() {
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current);
+      highlightTimerRef.current = null;
+    }
+    setPlayingHighlights(false);
+  }
+
+  function playHighlightAt(index) {
+    const list = moments?.moments || [];
+    if (index >= list.length || !videoRef.current) {
+      stopHighlights();
+      return;
+    }
+    highlightIndexRef.current = index;
+    videoRef.current.currentTime = list[index].time;
+    videoRef.current.play();
+    highlightTimerRef.current = setTimeout(() => playHighlightAt(index + 1), HIGHLIGHT_DURATION_MS);
+  }
+
+  function toggleHighlightsReel() {
+    if (playingHighlights) {
+      stopHighlights();
+      videoRef.current?.pause();
+      return;
+    }
+    if (!moments?.moments?.length) return;
+    setPlayingHighlights(true);
+    playHighlightAt(0);
+  }
+
   const visibleTabs = TABS.filter((t) => t.key !== "materials" || isLearner || role === "educator");
+  const healthScore = video ? computeHealthScore({ transcript, summary, moments }) : null;
+  const duration = video?.duration_seconds || 0;
 
   if (loading) {
     return (
@@ -120,13 +158,51 @@ export default function VideoDetail({ videoId, role, onBack, onNavigate }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-1">
           {video?.video_url ? (
-            <video src={video.video_url} controls className="w-full rounded-xl bg-black aspect-video" />
+            <video ref={videoRef} src={video.video_url} controls className="w-full rounded-xl bg-black aspect-video" />
           ) : (
             <div className="bg-[#101820] rounded-xl aspect-video flex items-center justify-center">
               <p className="text-gray-400 text-sm">Video unavailable</p>
             </div>
           )}
-          <p className={`text-sm font-semibold ${textPrimary} mt-3`}>{video?.title || "—"}</p>
+
+          {/* Key-moment heatmap */}
+          {duration > 0 && moments?.moments?.length > 0 && (
+            <div className={`relative h-2 rounded-full mt-2 ${isDark ? "bg-white/10" : "bg-gray-100"}`}>
+              {moments.moments.map((m, i) => (
+                <div
+                  key={i}
+                  title={`${formatTime(m.time)} — ${m.label}`}
+                  className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue cursor-pointer hover:scale-150 transition-transform"
+                  style={{ left: `${Math.min((m.time / duration) * 100, 99)}%` }}
+                  onClick={() => {
+                    if (videoRef.current) {
+                      videoRef.current.currentTime = m.time;
+                      videoRef.current.play();
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-2 mt-3">
+            <p className={`text-sm font-semibold ${textPrimary} truncate`}>{video?.title || "—"}</p>
+            {healthScore != null && (video?.title) && <HealthBadge score={healthScore} />}
+          </div>
+
+          {moments?.moments?.length > 0 && (
+            <button
+              onClick={toggleHighlightsReel}
+              className={`mt-3 w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 rounded-full transition ${
+                playingHighlights
+                  ? "bg-red-500 text-white hover:opacity-90"
+                  : "border border-purple text-purple hover:bg-purple/10"
+              }`}
+            >
+              {playingHighlights ? <Square size={14} /> : <Play size={14} />}
+              {playingHighlights ? "Stop Highlights Reel" : "Play Highlights Reel"}
+            </button>
+          )}
 
           {isLearner && video && (
             <button

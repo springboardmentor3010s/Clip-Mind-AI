@@ -14,7 +14,7 @@ const roleLabels = {
   admin: "Administrator",
 };
 
-const TABS = ["Users", "Activity", "Content", "Processing Jobs", "Storage", "Settings", "Audit Logs"];
+const TABS = ["Users", "Activity", "Content", "Processing Jobs", "Storage", "Trending", "Settings", "Audit Logs"];
 
 export default function AdminDashboard() {
   const { isDark } = useTheme();
@@ -234,8 +234,87 @@ export default function AdminDashboard() {
           onManageUser={goToContent}
         />
       )}
+      {tab === "Trending" && <AdminTrendingTab cardBg={cardBg} textPrimary={textPrimary} textSecondary={textSecondary} isDark={isDark} />}
       {tab === "Settings" && <SettingsTab cardBg={cardBg} textPrimary={textPrimary} textSecondary={textSecondary} isDark={isDark} />}
       {tab === "Audit Logs" && <AuditLogsTab cardBg={cardBg} textPrimary={textPrimary} textSecondary={textSecondary} isDark={isDark} />}
+    </div>
+  );
+}
+
+// ── Trending Tab ──────────────────────────────────────────────
+
+function AdminTrendingTab({ cardBg, textPrimary, textSecondary, isDark }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("clipmind_token");
+    fetch("http://localhost:8000/api/v1/admin/trending", { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.json())
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p className={`text-sm ${textSecondary}`}>Loading...</p>;
+
+  const keywords = data?.top_keywords || [];
+  const maxKw = keywords.length ? Math.max(...keywords.map((k) => k.count)) : 1;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className={`${cardBg} border rounded-xl p-5`}>
+        <h4 className={`font-semibold ${textPrimary} mb-4`}>Top Keywords Platform-Wide</h4>
+        {keywords.length ? (
+          <div className="flex flex-wrap gap-2">
+            {keywords.map((k) => (
+              <span
+                key={k.word}
+                style={{ opacity: 0.5 + (k.count / maxKw) * 0.5 }}
+                className="text-xs font-semibold px-3 py-1.5 rounded-full bg-purple text-white"
+                title={`${k.count} mentions`}
+              >
+                {k.word}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className={`text-sm ${textSecondary}`}>No data yet.</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={`${cardBg} border rounded-xl p-5`}>
+          <h4 className={`font-semibold ${textPrimary} mb-3`}>Most Engaged Videos</h4>
+          {data?.top_videos?.length ? (
+            <div className="flex flex-col gap-2">
+              {data.top_videos.map((v) => (
+                <div key={v.video_id} className="flex items-center justify-between text-sm">
+                  <span className={`truncate max-w-[70%] ${isDark ? "text-gray-300" : "text-gray-700"}`}>{v.title}</span>
+                  <span className={textSecondary}>{v.engagement} events</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className={`text-sm ${textSecondary}`}>No data yet.</p>
+          )}
+        </div>
+
+        <div className={`${cardBg} border rounded-xl p-5`}>
+          <h4 className={`font-semibold ${textPrimary} mb-3`}>Most Active Users</h4>
+          {data?.top_users?.length ? (
+            <div className="flex flex-col gap-2">
+              {data.top_users.map((u) => (
+                <div key={u.username} className="flex items-center justify-between text-sm">
+                  <span className={isDark ? "text-gray-300" : "text-gray-700"}>{u.username}</span>
+                  <span className={textSecondary}>{u.events} actions</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className={`text-sm ${textSecondary}`}>No data yet.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -24,7 +24,8 @@ import {
 import { useTheme } from "@/context/ThemeContext";
 import SettingsModal from "@/components/SettingsModal";
 import HelpModal from "@/components/HelpModal";
-
+import NotificationBell from "@/components/NotificationBell";
+import { GitCompare } from "lucide-react";
 const allNavItems = [
   { name: "Dashboard", icon: LayoutDashboard, roles: ["creator", "learner", "educator", "admin"] },
   { name: "Upload Video", icon: Upload, roles: ["creator", "educator"] },
@@ -34,6 +35,7 @@ const allNavItems = [
   { name: "Learning Materials", icon: GraduationCap, roles: ["educator", "learner"] },
   { name: "Classroom Analytics", icon: Users, roles: ["educator"] },
   { name: "Trending Topics", icon: Flame, roles: ["creator", "learner", "educator", "admin"] },
+  { name: "Compare Videos", icon: GitCompare, roles: ["creator", "learner", "educator"] },
   { name: "Bookmarks", icon: Bookmark, roles: ["learner"] },
   { name: "Search", icon: Search, roles: ["creator", "learner", "educator"] },
   { name: "Analytics", icon: BarChart3, roles: ["creator", "educator"] },
@@ -83,7 +85,10 @@ export default function Sidebar({ active, onSelect, username = "Guest", role = "
 
   return (
     <aside className="w-64 min-h-screen bg-sidebar text-white flex flex-col py-6 px-4 relative">
-      <h1 className="text-2xl font-bold px-2 mb-8">ClipMind AI</h1>
+      <div className="flex items-center justify-between px-2 mb-8">
+        <h1 className="text-2xl font-bold">ClipMind AI</h1>
+        <NotificationBell />
+      </div>
 
       <nav className="flex flex-col gap-1 flex-1">
         {navItems.map((item) => {

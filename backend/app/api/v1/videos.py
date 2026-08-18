@@ -149,6 +149,42 @@ def get_video_stats(db: Session = Depends(get_db), current_user: User = Depends(
     }
 
 
+@router.get("/notifications")
+def get_notifications(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role.value == "admin":
+        events = db.query(AnalyticsEvent).order_by(AnalyticsEvent.event_timestamp.desc()).limit(10).all()
+    elif current_user.role.value in ("creator", "educator"):
+        my_video_ids = [v.video_id for v in db.query(Video).filter(Video.user_id == current_user.user_id).all()]
+        events = (
+            db.query(AnalyticsEvent)
+            .filter(AnalyticsEvent.video_id.in_(my_video_ids))
+            .filter(AnalyticsEvent.user_id != current_user.user_id)
+            .order_by(AnalyticsEvent.event_timestamp.desc())
+            .limit(10)
+            .all()
+        ) if my_video_ids else []
+    else:
+        events = (
+            db.query(AnalyticsEvent)
+            .filter(AnalyticsEvent.user_id == current_user.user_id)
+            .order_by(AnalyticsEvent.event_timestamp.desc())
+            .limit(10)
+            .all()
+        )
+
+    result = []
+    for e in events:
+        actor = db.query(User).filter(User.user_id == e.user_id).first()
+        result.append({
+            "event_id": str(e.event_id),
+            "actor": actor.username if actor else "Someone",
+            "event_type": e.event_type,
+            "video_title": e.video_title or "a video",
+            "timestamp": e.event_timestamp,
+        })
+    return result
+
+
 @router.get("/{video_id}")
 def get_video(video_id: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     video = db.query(Video).filter(Video.video_id == video_id).first()

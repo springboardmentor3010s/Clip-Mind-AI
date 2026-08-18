@@ -18,6 +18,8 @@ import LearningMaterials from "@/components/LearningMaterials";
 import ClassroomAnalytics from "@/components/ClassroomAnalytics";
 import VideoDetail from "@/components/VideoDetail";
 import TrendingTopics from "@/components/TrendingTopics";
+import VideoComparison from "@/components/VideoComparison";
+import OnboardingTour from "@/components/OnboardingTour";
 function DashboardShell() {
   const [active, setActive] = useState("Dashboard");
   const [statType, setStatType] = useState(null);
@@ -99,6 +101,7 @@ function DashboardShell() {
     if (active === "Learning Materials") return <LearningMaterials role={role} />;
     if (active === "Classroom Analytics") return <ClassroomAnalytics />;
     if (active === "Trending Topics") return <TrendingTopics />;
+    if (active === "Compare Videos") return <VideoComparison />;
     return (
       <Dashboard
         username={username}
@@ -119,6 +122,7 @@ function DashboardShell() {
       <main className={`flex-1 p-8 transition-colors ${isDark ? "text-gray-100" : "text-gray-900"}`}>
         {renderContent()}
       </main>
+      <OnboardingTour role={role} />
     </div>
   );
 }
