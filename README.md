@@ -73,6 +73,36 @@
 ```
 ---
 
+## 🖥️ Role-Based Workspaces & UI Previews
+
+<table align="center" width="100%">
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <h3>🎨 Content Creator Studio</h3>
+      <p><i>Upload raw media, monitor ingestion, curate key moments, and review Whisper transcripts.</i></p>
+      <img src="./docs/assets/creator_dashboard.png" alt="Creator Studio Dashboard" width="100%" />
+    </td>
+    <td width="50%" align="center" valign="top">
+      <h3>🎓 Learner Workspace</h3>
+      <p><i>Read-only abstractive summaries, jumpable timestamp bookmarks, and transcript search.</i></p>
+      <img src="./docs/assets/learner_dashboard.png" alt="Learner Workspace" width="100%" />
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <h3>👩‍🏫 Educator Lecture Hub</h3>
+      <p><i>Organize lecture catalogs, generate share links, and export downloadable PDF briefs.</i></p>
+      <img src="./docs/assets/educator_dashboard.png" alt="Educator Hub" width="100%" />
+    </td>
+    <td width="50%" align="center" valign="top">
+      <h3>🛡️ Admin Console</h3>
+      <p><i>Platform health monitoring, background task tracking, and storage telemetry.</i></p>
+      <img src="./docs/assets/admin_dashboard.png" alt="Admin Dashboard" width="100%" />
+    </td>
+  </tr>
+</table>
+
+---
 ## 💻 Tech Stack
 
 | Domain | Technology / Library | Architectural Role & Purpose |
