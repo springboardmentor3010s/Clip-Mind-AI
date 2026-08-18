@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+backend/storage/raw_videos/*
+backend/storage/thumbnails/*
+backend/uploads/*
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.db
+__pycache__/
+.next/
+node_modules/

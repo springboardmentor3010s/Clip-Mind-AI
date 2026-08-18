@@ -25,7 +25,7 @@ export default function Sidebar() {
             Dashboard
           </Link>
           
-          {/* Conditional Access: Content Creators & Educators can upload videos [cite: 120, 145] */}
+          {/* Conditional Access: Content Creators & Educators can upload videos [     : 120, 145] */}
           {(user?.role === 'Content Creator' || user?.role === 'Educator') && (
             <Link href="/upload" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 text-emerald-400 transition-colors">
               <Video size={18} />
@@ -33,7 +33,7 @@ export default function Sidebar() {
             </Link>
           )}
 
-          {/* Conditional Access: Administrators exclusive management options [cite: 156] */}
+          {/* Conditional Access: Administrators exclusive management options [     : 156] */}
           {user?.role === 'Administrator' && (
             <Link href="/admin/users" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 text-amber-400 transition-colors">
               <Users size={18} />

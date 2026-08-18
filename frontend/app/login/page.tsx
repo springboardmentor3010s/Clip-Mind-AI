@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 
+
 export default function AuthPage() {
   const { login } = useAuth();
   const router = useRouter();
@@ -16,8 +17,8 @@ export default function AuthPage() {
   const [role, setRole] = useState("Learner"); // Matches default model enum
   const [message, setMessage] = useState({ text: "", type: "" }); // Handles error/success alerts
   const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage({ text: "", type: "" });
     setLoading(true);
@@ -30,7 +31,7 @@ export default function AuthPage() {
         formData.append("username", email); 
         formData.append("password", password);
 
-        const response = await fetch("http://localhost:8000/auth/login", {
+        const response = await fetch("http://localhost:8000/api/v1/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: formData.toString(),
@@ -39,12 +40,17 @@ export default function AuthPage() {
         const data = await response.json();
         if (!response.ok) throw new Error(data.detail || "Authentication validation failed.");
 
+        
+        localStorage.setItem("token", data.access_token || "");
+        localStorage.setItem("role", (data.role || "learner").toLowerCase());
+        // =========================================================
+
         login(data.access_token, data.email, data.role);
         router.push("/dashboard");
 
       } else {
         // --- REGISTRATION WORKFLOW ---
-        const response = await fetch("http://localhost:8000/auth/register", {
+        const response = await fetch("http://localhost:8000/api/v1/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password, role }),
@@ -60,7 +66,7 @@ export default function AuthPage() {
         loginFormData.append("username", email);
         loginFormData.append("password", password);
 
-        const loginResponse = await fetch("http://localhost:8000/auth/login", {
+        const loginResponse = await fetch("http://localhost:8000/api/v1/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: loginFormData.toString(),
@@ -68,6 +74,10 @@ export default function AuthPage() {
 
         const loginData = await loginResponse.json();
         if (!loginResponse.ok) throw new Error(loginData.detail || "Auto-login failed.");
+
+        localStorage.setItem("token", loginData.access_token || "");
+        localStorage.setItem("role", (loginData.role || role || "learner").toLowerCase());
+        // =========================================================
 
         login(loginData.access_token, loginData.email, loginData.role);
         router.push("/dashboard");
@@ -79,6 +89,34 @@ export default function AuthPage() {
     }
   };
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        
+        // Save token and role to localStorage
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("role", data.role || "learner");
+        localStorage.setItem("user_email", data.email || email);
+
+        // Navigate to dashboard
+        router.push("/dashboard");
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || "Invalid credentials.");
+      }
+    } catch (err) {
+      console.error("Login connection error:", err);
+      alert("Failed to connect to backend server.");
+    }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
       <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-2xl">

@@ -1,42 +1,29 @@
-# backend/app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.database import Base, engine
+from app.routers import auth, video, creator, educator, admin, learner
 
-# 1. Import base core dependencies
-from app.core.database import engine, Base
-
-# 2. Explicitly import models here to register them with metadata before running migrations 🌟
-from app.models.user import User
-from app.models.video import VideoMetadata
-
-# 3. Create tables instantly
+# Create tables in the local SQLite database file if they don't exist
 Base.metadata.create_all(bind=engine)
 
-# 4. Import routers
-from app.routers import auth, video
-
-app = FastAPI(title="ClipMind AI")
+app = FastAPI(title="ClipMind AI Core", docs_url="/docs")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
-app.include_router(auth.router)
-app.include_router(video.router)
-# 3. Simple root health-check route
-@app.get("/")
-def read_root():
-    return {
-        "status": "online",
-        "platform": "ClipMind AI Core Service",
-        "milestone": 1
-    }
+@app.get("/health")
+def health_check():
+    return {"status": "healthy", "mode": "standalone-sqlite"}
 
-# In backend/app/main.py
-from app.routers import auth
-
-app.include_router(auth.router)
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(video.router, prefix="/api/v1")
+app.include_router(creator.router, prefix="/api/v1")
+app.include_router(educator.router, prefix="/api/v1")
+app.include_router(admin.router, prefix="/api/v1")
+app.include_router(learner.router, prefix="/api/v1")

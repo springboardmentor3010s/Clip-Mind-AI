@@ -1,0 +1,26 @@
+# Video and binary storage
+backend/storage/
+backend/uploads/
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.wav
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+venv/
+.env
+
+# Node & Next.js
+node_modules/
+.next/
+dist/
+
+# SQLite & local DBs
+*.db
+*.sqlite3

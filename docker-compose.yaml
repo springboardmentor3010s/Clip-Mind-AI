@@ -1,0 +1,55 @@
+services:
+  clipmind-postgres:
+    image: postgres:15-alpine
+    container_name: clipmind-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: clipmind_user
+      POSTGRES_PASSWORD: clipmind_password
+      POSTGRES_DB: clipmind_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - clipmind-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clipmind-backend
+    restart: always
+    depends_on:
+      - clipmind-postgres
+    environment:
+      - DATABASE_URL=postgresql://clipmind_user:clipmind_password@clipmind-postgres:5432/clipmind_db
+      - SECRET_KEY=SUPER_SECRET_PLATFORM_KEY_CHANGE_THIS_IN_PRODUCTION
+      - WHISPER_MODEL_SIZE=base
+      - BART_MAX_SUMMARY_LEN=140
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    networks:
+      - clipmind-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: clipmind-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    networks:
+      - clipmind-network
+
+volumes:
+  pgdata:
+
+networks:
+  clipmind-network:
+    driver: bridge
