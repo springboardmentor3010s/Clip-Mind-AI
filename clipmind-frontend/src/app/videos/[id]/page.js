@@ -8,6 +8,8 @@ import {
   getTranscript,
   getTranscriptSegments,
   getSummary,
+  downloadTranscript,
+  downloadSummary,
   getKeyMoments,
   generateKeyMoments,
   getHighlightReport,
@@ -189,6 +191,83 @@ async function loadKeywords() {
   }
 }
 
+const handleDownloadTranscript = async () => {
+  try {
+    const response = await downloadTranscript(id);
+
+    const blob = new Blob(
+      [response.data],
+      { type: "text/plain" }
+    );
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "transcript.txt";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error(
+      "Failed to download transcript:",
+      error
+    );
+
+    alert("Failed to download transcript.");
+  }
+};
+
+
+const handleDownloadSummary = async (summaryType) => {
+  try {
+    const response = await downloadSummary(
+      id,
+      summaryType
+    );
+
+    const blob = new Blob(
+      [response.data],
+      { type: "text/plain" }
+    );
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+
+    const filename =
+      summaryType === "short"
+        ? "short_summary.txt"
+        : "detailed_summary.txt";
+
+    link.download = filename;
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error(
+      "Failed to download summary:",
+      error
+    );
+
+    alert("Failed to download summary.");
+  }
+};
 
   async function handleGenerateKeyMoments() {
     try {
@@ -437,13 +516,28 @@ async function loadKeywords() {
 
     <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8">
 
-      <h2 className="text-3xl font-bold text-slate-900">
-        Transcript
-      </h2>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-      <p className="mt-2 text-slate-500">
-        AI-generated transcription of the uploaded video.
-      </p>
+  <div>
+    <h2 className="text-3xl font-bold text-slate-900">
+      Transcript
+    </h2>
+
+    <p className="mt-2 text-slate-500">
+      AI-generated transcription of the uploaded video.
+    </p>
+  </div>
+
+  {!transcriptLoading && transcript && (
+    <button
+      onClick={handleDownloadTranscript}
+      className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition"
+    >
+      ⬇ Download Transcript
+    </button>
+  )}
+
+</div>
 
       {transcriptLoading && (
         <div className="mt-8 text-center py-10 text-slate-500">
@@ -562,35 +656,49 @@ async function loadKeywords() {
 
       {/* Short Summary */}
 
-      {shortSummary && (
-        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6">
+{shortSummary && (
+  <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6">
 
-          <h3 className="text-xl font-bold text-emerald-900">
-            Short Summary
-          </h3>
+    <h3 className="text-xl font-bold text-emerald-900">
+      Short Summary
+    </h3>
 
-          <p className="mt-4 text-emerald-800 leading-8 whitespace-pre-wrap">
-            {shortSummary.summary_text}
-          </p>
+    <p className="mt-4 text-emerald-800 leading-8 whitespace-pre-wrap">
+      {shortSummary.summary_text}
+    </p>
 
-        </div>
-      )}
+    <button
+      onClick={() => handleDownloadSummary("short")}
+      className="mt-4 px-5 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition"
+    >
+      ⬇ Download Short Summary
+    </button>
+
+  </div>
+)}
 
       {/* Detailed Summary */}
 
-      {detailedSummary && (
-        <div className="bg-sky-50 border border-sky-100 rounded-2xl p-6">
+{detailedSummary && (
+  <div className="bg-sky-50 border border-sky-100 rounded-2xl p-6">
 
-          <h3 className="text-xl font-bold text-sky-900">
-            Detailed Summary
-          </h3>
+    <h3 className="text-xl font-bold text-sky-900">
+      Detailed Summary
+    </h3>
 
-          <p className="mt-4 text-sky-800 leading-8 whitespace-pre-wrap">
-            {detailedSummary.summary_text}
-          </p>
+    <p className="mt-4 text-sky-800 leading-8 whitespace-pre-wrap">
+      {detailedSummary.summary_text}
+    </p>
 
-        </div>
-      )}
+    <button
+      onClick={() => handleDownloadSummary("detailed")}
+      className="mt-4 px-5 py-3 rounded-xl bg-sky-600 text-white font-semibold hover:bg-sky-700 transition"
+    >
+      ⬇ Download Detailed Summary
+    </button>
+
+  </div>
+)}
 
     </div>
   )}

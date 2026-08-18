@@ -19,6 +19,9 @@ from app.crud.keyword import (
 
 from app.schemas.keyword import KeywordResponse
 
+from app.services.activity_service import log_activity
+from app.core.enums import ActivityType
+
 from app.services.keyword_extraction_service import (
     extract_keywords
 )
@@ -109,6 +112,13 @@ def generate_video_keywords(
         keywords=extracted_keywords
     )
 
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.KEYWORDS_GENERATED,
+        entity_name=video.filename
+    )
+
     return saved_keywords
 
 
@@ -145,6 +155,13 @@ def get_video_keywords(
     keywords = get_keywords_by_video(
         db=db,
         video_id=video.id
+    )
+
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.KEYWORDS_VIEWED,
+        entity_name=video.filename
     )
 
     return keywords

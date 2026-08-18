@@ -4,7 +4,6 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import router
 from app.api.key_moment import router as key_moment_router
-
 from app.api.highlight_report import router as highlight_report_router
 from app.api.keyword import router as keyword_router
 from app.api.analytics import router as analytics_router
@@ -22,13 +21,18 @@ from app.models.transcript_segment import TranscriptSegment
 from app.models.key_moment import KeyMoment
 from app.models.keyword import Keyword
 
+
 app = FastAPI(
     title="ClipMind AI Backend",
     description="Backend API for ClipMind AI",
     version="1.0.0"
 )
 
-# Allow frontend to access backend
+
+# ---------------------------------------------------------
+# CORS Configuration
+# Allow frontend applications to access the backend
+# ---------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -37,14 +41,22 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=[
+        "Content-Disposition",
+        "Content-Length",
+    ],
 )
 
-# Create database tables
+
+# ---------------------------------------------------------
+# Create Database Tables
+# ---------------------------------------------------------
 Base.metadata.create_all(bind=engine)
 
-# -----------------------------
-# Serve static files
-# -----------------------------
+
+# ---------------------------------------------------------
+# Serve Static Files
+# ---------------------------------------------------------
 app.mount(
     "/uploads",
     StaticFiles(directory="uploads"),
@@ -63,7 +75,10 @@ app.mount(
     name="audio"
 )
 
-# Include all API routes
+
+# ---------------------------------------------------------
+# Include API Routers
+# ---------------------------------------------------------
 app.include_router(router)
 
 app.include_router(key_moment_router)
@@ -72,10 +87,6 @@ app.include_router(highlight_report_router)
 
 app.include_router(keyword_router)
 
-app.include_router(
-    analytics_router
-)
+app.include_router(analytics_router)
 
-app.include_router(
-    usage_analytics_router
-)
+app.include_router(usage_analytics_router)

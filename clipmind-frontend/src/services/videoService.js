@@ -31,6 +31,7 @@ export const uploadVideo = async (file, onUploadProgress) => {
   return response.data;
 };
 
+
 /**
  * Get all uploaded videos of the logged-in user
  */
@@ -45,6 +46,7 @@ export const getMyVideos = async () => {
 
   return response.data;
 };
+
 
 /**
  * Get a single video by ID
@@ -68,15 +70,32 @@ export const getVideoById = async (videoId) => {
 export const getTranscript = async (videoId) => {
   const token = localStorage.getItem("access_token");
 
-  const response = await api.get(`/videos/${videoId}/transcript`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const response = await api.get(
+    `/videos/${videoId}/transcript`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 
   return response.data;
 };
 
+
+/**
+ * Download transcript of a video
+ */
+export const downloadTranscript = async (videoId) => {
+  const response = await api.get(
+    `/videos/${videoId}/transcript/download`,
+    {
+      responseType: "blob",
+    }
+  );
+
+  return response;
+};
 
 
 /**
@@ -98,11 +117,31 @@ export const getSummary = async (videoId, summaryType) => {
 };
 
 
+/**
+ * Download summary of a video
+ *
+ * summaryType can be:
+ * "short" or "detailed"
+ */
+export const downloadSummary = async (videoId, summaryType) => {
+  const response = await api.get(
+    `/videos/${videoId}/summary/download?type=${summaryType}`,
+    {
+      responseType: "blob",
+    }
+  );
+
+  return response;
+};
+
 
 /**
  * Generate key moments for a video
  */
-export const generateKeyMoments = async (videoId, maxMoments = 5) => {
+export const generateKeyMoments = async (
+  videoId,
+  maxMoments = 5
+) => {
   const token = localStorage.getItem("access_token");
 
   const response = await api.post(
@@ -137,6 +176,7 @@ export const getKeyMoments = async (videoId) => {
   return response.data;
 };
 
+
 /**
  * Get highlight report of a video
  */
@@ -155,6 +195,7 @@ export const getHighlightReport = async (videoId) => {
   return response.data;
 };
 
+
 /**
  * Get keywords of a video
  */
@@ -172,6 +213,7 @@ export const getKeywords = async (videoId) => {
 
   return response.data;
 };
+
 
 /**
  * Get transcript segments of a video

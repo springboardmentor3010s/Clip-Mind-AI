@@ -9,7 +9,9 @@ import {
   FaRobot,
   FaChartBar,
   FaHistory,
+  FaStar,
 } from "react-icons/fa";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -51,6 +53,9 @@ export default function Sidebar() {
     case "Summaries":
     case "AI Summaries":
       return <FaRobot />;
+
+    case "Key Moments":
+      return <FaStar />;
 
     case "Classroom Analytics":
     case "Analytics":

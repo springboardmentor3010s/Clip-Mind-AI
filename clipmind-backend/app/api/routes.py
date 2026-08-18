@@ -12,7 +12,10 @@ from app.crud.summary import (
 
 from app.schemas.summary import SummaryResponse
 from app.schemas.transcript import TranscriptResponse
-from app.services.upload_service import process_uploaded_video
+from app.services.upload_service import (
+    save_uploaded_video,
+    process_video_in_background
+)
 from app.crud.activity_history import get_user_activities
 from app.services.activity_service import log_activity
 from app.core.enums import ActivityType
@@ -22,11 +25,14 @@ from app.core.enums import UserRole
 
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     Depends,
     File,
     HTTPException,
     UploadFile
 )
+from fastapi.responses import Response
+
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -248,23 +254,32 @@ def get_activity_history(
 
 @router.post("/upload")
 async def upload_video(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     current_user=Depends(
-    require_roles(
-        UserRole.CONTENT_CREATOR,
-        UserRole.EDUCATOR,
-        UserRole.ADMIN
-    )
-),
+        require_roles(
+            UserRole.CONTENT_CREATOR,
+            UserRole.EDUCATOR,
+            UserRole.ADMIN
+        )
+    ),
     db: Session = Depends(get_db)
 ):
 
-    video = process_uploaded_video(
+    # Save the video and create the database record
+    video = save_uploaded_video(
         db=db,
         file=file,
         current_user=current_user,
     )
 
+    # Start AI processing in the background
+    background_tasks.add_task(
+        process_video_in_background,
+        video.id
+    )
+
+    # Log upload activity
     log_activity(
         db=db,
         user=current_user,
@@ -273,14 +288,13 @@ async def upload_video(
     )
 
     return {
-        "message": "Video uploaded successfully",
+        "message": "Video uploaded successfully. AI processing has started.",
         "video": {
             "id": video.id,
             "filename": video.filename,
             "status": video.status
         }
     }
-
 
 @router.get("/videos")
 def get_videos(
@@ -412,7 +426,91 @@ def get_video_transcript(
             detail="Transcript not found"
         )
 
+    log_activity(
+            db=db,
+            user=current_user,
+            activity_type=ActivityType.TRANSCRIPT_VIEWED,
+            entity_name=video.filename
+    )   
+
     return transcript
+
+@router.get(
+    "/videos/{video_id}/transcript/download"
+)
+def download_video_transcript(
+    video_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    # ---------------------------------------------------------
+    # Learner/Admin can access available videos
+    # ---------------------------------------------------------
+    if current_user.role in [
+        UserRole.LEARNER,
+        UserRole.ADMIN
+    ]:
+
+        video = get_available_video_by_id(
+            db=db,
+            video_id=video_id
+        )
+
+    # ---------------------------------------------------------
+    # Content Creator/Educator can access own videos
+    # ---------------------------------------------------------
+    else:
+
+        video = get_video_by_id(
+            db=db,
+            video_id=video_id,
+            owner_id=current_user.id
+        )
+
+    if video is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Video not found"
+        )
+
+    # ---------------------------------------------------------
+    # Get transcript
+    # ---------------------------------------------------------
+    transcript = get_transcript_by_video(
+        db=db,
+        video=video
+    )
+
+    if transcript is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Transcript not found"
+        )
+
+    # ---------------------------------------------------------
+    # Log download activity
+    # ---------------------------------------------------------
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.TRANSCRIPT_DOWNLOADED,
+        entity_name=video.filename
+    )
+
+    # ---------------------------------------------------------
+    # Create downloadable TXT response
+    # ---------------------------------------------------------
+    safe_filename = video.filename.rsplit(".", 1)[0]
+
+    return Response(
+        content=transcript.transcript_text,
+        media_type="text/plain",
+        headers={
+            "Content-Disposition":
+                f'attachment; filename="{safe_filename}_transcript.txt"'
+        }
+    )
 
 @router.get(
     "/videos/{video_id}/transcript/segments",
@@ -453,6 +551,13 @@ def get_video_transcript_segments(
     segments = get_transcript_segments_by_video(
         db=db,
         video_id=video.id
+    )
+
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.TRANSCRIPT_SEGMENTS_VIEWED,
+        entity_name=video.filename
     )
 
     return segments
@@ -506,4 +611,99 @@ def get_video_summary(
             detail="Summary not found"
         )
 
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.SUMMARY_VIEWED,
+        entity_name=f"{type.title()} summary - {video.filename}"
+    )
+
     return summary
+
+@router.get(
+    "/videos/{video_id}/summary/download"
+)
+def download_video_summary(
+    video_id: int,
+    type: str = "short",
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    # ---------------------------------------------------------
+    # Validate summary type
+    # ---------------------------------------------------------
+    if type not in ["short", "detailed"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid summary type. Use 'short' or 'detailed'."
+        )
+
+    # ---------------------------------------------------------
+    # Learner/Admin can access available videos
+    # ---------------------------------------------------------
+    if current_user.role in [
+        UserRole.LEARNER,
+        UserRole.ADMIN
+    ]:
+
+        video = get_available_video_by_id(
+            db=db,
+            video_id=video_id
+        )
+
+    # ---------------------------------------------------------
+    # Content Creator/Educator can access own videos
+    # ---------------------------------------------------------
+    else:
+
+        video = get_video_by_id(
+            db=db,
+            video_id=video_id,
+            owner_id=current_user.id
+        )
+
+    if video is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Video not found"
+        )
+
+    # ---------------------------------------------------------
+    # Get requested summary
+    # ---------------------------------------------------------
+    summary = get_summary_by_type(
+        db=db,
+        video=video,
+        summary_type=type
+    )
+
+    if summary is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"{type.title()} summary not found"
+        )
+
+    # ---------------------------------------------------------
+    # Log download activity
+    # ---------------------------------------------------------
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.SUMMARY_DOWNLOADED,
+        entity_name=f"{type.title()} summary - {video.filename}"
+    )
+
+    # ---------------------------------------------------------
+    # Create downloadable TXT response
+    # ---------------------------------------------------------
+    safe_filename = video.filename.rsplit(".", 1)[0]
+
+    return Response(
+        content=summary.summary_text,
+        media_type="text/plain",
+        headers={
+            "Content-Disposition":
+                f'attachment; filename="{safe_filename}_{type}_summary.txt"'
+        }
+    )

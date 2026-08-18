@@ -5,14 +5,14 @@ from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
 from app.auth.authorization import require_roles
-from app.core.enums import UserRole
-
+from app.core.enums import UserRole, ActivityType
 from app.auth.oauth2 import get_current_user
 
 from app.crud.video import (
     get_video_by_id,
     get_available_video_by_id
 )
+
 from app.crud.transcript_segment import get_transcript_segments_by_video
 from app.crud.summary import get_summary_by_type
 
@@ -23,14 +23,19 @@ from app.crud.key_moment import (
 )
 
 from app.schemas.key_moment import KeyMomentResponse
-
 from app.services.key_moment_service import detect_key_moments
+from app.services.activity_service import log_activity
 
 
 router = APIRouter(
     tags=["Key Moments"]
 )
 
+
+# ============================================================
+# GENERATE KEY MOMENTS
+# Content Creator, Educator and Admin
+# ============================================================
 
 @router.post(
     "/videos/{video_id}/key-moments/generate",
@@ -52,10 +57,8 @@ def generate_video_key_moments(
     ),
     db: Session = Depends(get_db)
 ):
-    # ---------------------------------------------------------
-    # 1. Verify that the video belongs to the current user
-    # ---------------------------------------------------------
 
+    # 1. Verify that the video belongs to the current user
     video = get_video_by_id(
         db=db,
         video_id=video_id,
@@ -68,10 +71,7 @@ def generate_video_key_moments(
             detail="Video not found"
         )
 
-    # ---------------------------------------------------------
     # 2. Get transcript segments
-    # ---------------------------------------------------------
-
     segments = get_transcript_segments_by_video(
         db=db,
         video_id=video.id
@@ -83,10 +83,7 @@ def generate_video_key_moments(
             detail="Transcript segments not found"
         )
 
-    # ---------------------------------------------------------
     # 3. Get the short summary
-    # ---------------------------------------------------------
-
     summary = get_summary_by_type(
         db=db,
         video=video,
@@ -99,10 +96,7 @@ def generate_video_key_moments(
             detail="Short summary not found"
         )
 
-    # ---------------------------------------------------------
     # 4. Run key moment detection
-    # ---------------------------------------------------------
-
     detected_moments = detect_key_moments(
         segments=segments,
         summary_text=summary.summary_text,
@@ -115,19 +109,13 @@ def generate_video_key_moments(
             detail="No key moments could be detected"
         )
 
-    # ---------------------------------------------------------
-    # 5. Remove previously generated moments
-    # ---------------------------------------------------------
-
+    # 5. Remove previously generated key moments
     delete_key_moments_by_video(
         db=db,
         video_id=video.id
     )
 
-    # ---------------------------------------------------------
-    # 6. Save newly detected moments
-    # ---------------------------------------------------------
-
+    # 6. Save newly detected key moments
     saved_moments = []
 
     for moment in detected_moments:
@@ -135,22 +123,32 @@ def generate_video_key_moments(
         key_moment = create_key_moment(
             db=db,
             video_id=video.id,
-            transcript_segment_id=moment[
-                "transcript_segment_id"
-            ],
+            transcript_segment_id=moment["transcript_segment_id"],
             start_time=moment["start_time"],
             end_time=moment["end_time"],
             title=moment["title"],
             segment_text=moment["segment_text"],
-            importance_score=moment[
-                "importance_score"
-            ]
+            importance_score=moment["importance_score"]
         )
 
         saved_moments.append(key_moment)
 
+    # 7. Log key moment generation activity
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.KEY_MOMENTS_DETECTED,
+        entity_name=video.filename
+    )
+
     return saved_moments
 
+
+# ============================================================
+# VIEW KEY MOMENTS
+# Learner/Admin -> Available videos
+# Content Creator/Educator -> Their own videos
+# ============================================================
 
 @router.get(
     "/videos/{video_id}/key-moments",
@@ -162,10 +160,7 @@ def get_video_key_moments(
     db: Session = Depends(get_db)
 ):
 
-    # ---------------------------------------------------------
-    # Learner/Admin can view key moments
-    # from available videos
-    # ---------------------------------------------------------
+    # Learner and Admin can view available videos
     if current_user.role in [
         UserRole.LEARNER,
         UserRole.ADMIN
@@ -176,10 +171,7 @@ def get_video_key_moments(
             video_id=video_id
         )
 
-    # ---------------------------------------------------------
-    # Content Creator/Educator can view
-    # key moments for their own videos
-    # ---------------------------------------------------------
+    # Content Creator and Educator can view only their own videos
     else:
 
         video = get_video_by_id(
@@ -194,9 +186,18 @@ def get_video_key_moments(
             detail="Video not found"
         )
 
+    # Get key moments
     key_moments = get_key_moments_by_video(
         db=db,
         video_id=video.id
+    )
+
+    # Log viewing activity
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.KEY_MOMENTS_VIEWED,
+        entity_name=video.filename
     )
 
     return key_moments

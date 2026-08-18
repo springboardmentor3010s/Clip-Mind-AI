@@ -1,97 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   FaCloudUploadAlt,
   FaVideo,
 } from "react-icons/fa";
+
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import {
-  uploadVideo,
-  getTranscript,
-  getSummary,
-} from "@/services/videoService";
+import { uploadVideo } from "@/services/videoService";
+
 
 export default function UploadPage() {
+  const router = useRouter();
+  const fileInputRef = useRef(null);
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const [videoId, setVideoId] = useState(null);
-  const [transcript, setTranscript] = useState("");
-  const [transcriptLoading, setTranscriptLoading] = useState(false);  
+  const [uploadedVideo, setUploadedVideo] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const [summary, setSummary] = useState("");
-  const [summaryType, setSummaryType] = useState("short");
-  const [summaryLoading, setSummaryLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState(null);
 
-  const handleFileChange = (e) => {
-    if (e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
-      setMessage("");
-      setUploadProgress(0);
+  const selectFile = (file) => {
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      setMessage("Please select a valid video file.");
+      return;
     }
+
+    setSelectedFile(file);
+    setMessage("");
+    setUploadProgress(0);
+    setUploadedVideo(null);
   };
 
-  const fetchTranscript = async (id) => {
-  try {
-    console.log("Fetching transcript for video:", id);
 
-    setTranscriptLoading(true);
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0];
+    selectFile(file);
+  };
 
-    const data = await getTranscript(id);
 
-    console.log("Transcript Response:", data);
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setIsDragging(true);
+  };
 
-    setTranscript(data.transcript_text);
 
-  } catch (error) {
+  const handleDragLeave = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+  };
 
-    console.error("Transcript Error:", error);
 
-    if (error.response) {
-      console.log("Status:", error.response.status);
-      console.log("Response:", error.response.data);
-    }
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
 
-    setMessage("Failed to fetch transcript.");
-
-  } finally {
-    setTranscriptLoading(false);
-  }
-};
-
-const fetchSummary = async (id, type = "short") => {
-  try {
-    console.log(`Fetching ${type} summary for video:`, id);
-
-    setSummaryLoading(true);
-
-    const data = await getSummary(id, type);
-
-    console.log("Summary Response:", data);
-
-    setSummary(data.summary_text);
-
-    setSummaryType(type);
-
-  } catch (error) {
-
-    console.error("Summary Error:", error);
-
-    if (error.response) {
-      console.log("Status:", error.response.status);
-      console.log("Response:", error.response.data);
-    }
-
-    setMessage(`Failed to fetch ${type} summary.`);
-
-  } finally {
-    setSummaryLoading(false);
-  }
-};
+    const file = event.dataTransfer.files?.[0];
+    selectFile(file);
+  };
 
 
   const handleUpload = async () => {
@@ -102,6 +74,7 @@ const fetchSummary = async (id, type = "short") => {
 
     setLoading(true);
     setMessage("");
+    setUploadProgress(0);
 
     try {
       const response = await uploadVideo(
@@ -109,176 +82,209 @@ const fetchSummary = async (id, type = "short") => {
         setUploadProgress
       );
 
-      setMessage(response.message || "Video uploaded successfully.");
+      setUploadedVideo(response.video);
 
-      if (response.video && response.video.id) {
-    setVideoId(response.video.id);
+      setMessage(
+        response.message ||
+        "Video uploaded successfully. AI processing has started."
+      );
 
-}
       setSelectedFile(null);
-
-      setUploadProgress(100);
 
     } catch (error) {
 
       if (error.response) {
-        setMessage(error.response.data.detail || "Upload failed.");
+        setMessage(
+          error.response.data.detail || "Upload failed."
+        );
       } else {
         setMessage("Unable to connect to the server.");
-
-
-        
-
-
       }
 
     } finally {
-
       setLoading(false);
-
     }
   };
+
+
+  const handleOpenWorkspace = () => {
+    if (!uploadedVideo?.id) return;
+
+    router.push(
+      `/videos/${uploadedVideo.id}`
+    );
+  };
+
+
+  const handleUploadAnother = () => {
+    setSelectedFile(null);
+    setUploadProgress(0);
+    setMessage("");
+    setUploadedVideo(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
 
   return (
     <DashboardLayout>
 
       <div className="max-w-4xl mx-auto py-8">
 
-        <div className="w-full max-w-4xl">
-          
-        </div>
         <div className="mb-10">
 
-  <h1 className="text-5xl font-extrabold text-slate-900">
+          <h1 className="text-5xl font-extrabold text-slate-900">
+            Upload Video
+          </h1>
 
-    Upload Video
+          <p className="mt-4 text-lg text-slate-500 max-w-2xl">
+            Upload your videos securely to ClipMind AI.
+            Your video will be processed for AI-powered analysis.
+          </p>
 
-  </h1>
+        </div>
 
-  <p className="mt-4 text-lg text-slate-500 max-w-2xl">
-
-     Upload your videos securely to ClipMind AI.
-    Your uploads will be stored and prepared for AI-powered
-    processing in upcoming milestones.
-
-  </p>
-
-</div>
 
         <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 p-10">
-          <div className="border-2 border-dashed border-violet-300 rounded-3xl p-12 flex flex-col items-center justify-center hover:border-violet-500 hover:bg-violet-50 transition-all duration-300">
 
-  <FaCloudUploadAlt className="text-6xl text-violet-500" />
+          {!uploadedVideo && (
 
-  <h2 className="mt-6 text-2xl font-bold text-slate-800">
-    Select a Video to Upload
-  </h2>
+            <>
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`border-2 border-dashed rounded-3xl p-12 flex flex-col items-center justify-center transition-all duration-300 ${
+                  isDragging
+                    ? "border-violet-600 bg-violet-50"
+                    : "border-violet-300 hover:border-violet-500 hover:bg-violet-50"
+                }`}
+              >
 
-  <p className="mt-3 text-slate-500 text-center max-w-md">
-    Click the button below to browse and choose a video from your device.
-  </p>
+                <FaCloudUploadAlt className="text-6xl text-violet-500" />
 
-  <label
-    htmlFor="videoUpload"
-    className="mt-6 cursor-pointer rounded-xl bg-gradient-to-r from-violet-600 to-purple-700 px-8 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:from-violet-700 hover:to-purple-800"
-  >
-    Browse Videos
-  </label>
+                <h2 className="mt-6 text-2xl font-bold text-slate-800">
+                  Drag & Drop Your Video
+                </h2>
 
-  <input
-    id="videoUpload"
-    type="file"
-    accept="video/*"
-    onChange={handleFileChange}
-    className="hidden"
-  />
+                <p className="mt-3 text-slate-500 text-center max-w-md">
+                  Drag and drop a video file here, or click Browse Videos
+                  to choose a video from your device.
+                </p>
 
-</div>
 
-          {selectedFile && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="mt-6 cursor-pointer rounded-xl bg-gradient-to-r from-violet-600 to-purple-700 px-8 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:from-violet-700 hover:to-purple-800"
+                >
+                  Browse Videos
+                </button>
 
-  <div className="mt-8 bg-slate-50 border border-slate-200 rounded-2xl p-6">
 
-    <div className="flex items-center gap-5">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="video/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
 
-      <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center">
+              </div>
 
-        <FaVideo className="text-violet-600 text-2xl" />
 
-      </div>
+              {selectedFile && (
 
-      <div>
+                <div className="mt-8 bg-slate-50 border border-slate-200 rounded-2xl p-6">
 
-        <p className="text-sm text-slate-500">
+                  <div className="flex items-center gap-5">
 
-          Selected Video
+                    <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center">
+                      <FaVideo className="text-violet-600 text-2xl" />
+                    </div>
 
-        </p>
+                    <div>
 
-        <p className="font-bold text-slate-800">
+                      <p className="text-sm text-slate-500">
+                        Selected Video
+                      </p>
 
-          {selectedFile.name}
+                      <p className="font-bold text-slate-800">
+                        {selectedFile.name}
+                      </p>
 
-        </p>
+                      <p className="text-sm text-slate-500 mt-1">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
 
-        <p className="text-sm text-slate-500 mt-1">
+                    </div>
 
-          {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                  </div>
 
-        </p>
+                </div>
 
-      </div>
+              )}
 
-    </div>
 
-  </div>
+              {loading && (
 
-)}
+                <div className="mt-8">
 
-          {loading && (
+                  <div className="flex justify-between mb-2">
 
-  <div className="mt-8">
+                    <span className="font-semibold text-slate-700">
+                      Uploading Video
+                    </span>
 
-    <div className="flex justify-between mb-2">
+                    <span className="text-violet-600 font-bold">
+                      {uploadProgress}%
+                    </span>
 
-      <span className="font-semibold text-slate-700">
+                  </div>
 
-        Upload Progress
 
-      </span>
+                  <div className="w-full bg-slate-200 rounded-full h-4 overflow-hidden">
 
-      <span className="text-violet-600 font-bold">
+                    <div
+                      className="bg-gradient-to-r from-violet-500 to-purple-700 h-4 transition-all duration-300"
+                      style={{
+                        width: `${uploadProgress}%`,
+                      }}
+                    />
 
-        {uploadProgress}%
+                  </div>
 
-      </span>
 
-    </div>
+                  {uploadProgress === 100 && (
+                    <p className="mt-3 text-sm text-violet-600">
+                      Finalizing your upload...
+                    </p>
+                  )}
 
-    <div className="w-full bg-slate-200 rounded-full h-4 overflow-hidden">
+                </div>
 
-      <div
-        className="bg-gradient-to-r from-violet-500 to-purple-700 h-4 transition-all duration-300"
-        style={{
-          width: `${uploadProgress}%`,
-        }}
-      />
+              )}
 
-    </div>
 
-  </div>
+              <button
+                onClick={handleUpload}
+                disabled={loading || !selectedFile}
+                className="mt-8 w-full bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white py-4 rounded-2xl text-lg font-bold shadow-xl transition-all duration-300 disabled:opacity-50"
+              >
+                {loading
+                  ? "Uploading..."
+                  : "Upload Video"}
+              </button>
 
-)}
+            </>
 
-          <button
-  onClick={handleUpload}
-  disabled={loading}
-  className="mt-8 w-full bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white py-4 rounded-2xl text-lg font-bold shadow-xl transition-all duration-300 disabled:opacity-50"
->
-  {loading ? "Uploading Video..." : "Upload Video"}
-</button>
+          )}
 
-          {message && (
+
+          {message && !uploadedVideo && (
+
             <p
               className={`mt-6 ${
                 message.toLowerCase().includes("success")
@@ -288,115 +294,99 @@ const fetchSummary = async (id, type = "short") => {
             >
               {message}
             </p>
+
           )}
 
-          {videoId && (
-  <div className="mt-4 rounded-xl bg-green-50 border border-green-200 p-4">
-    <p className="text-green-700 font-semibold">
-      Uploaded Video ID: {videoId}
-    </p>
-  </div>
-)}
+
+          {uploadedVideo && (
+
+            <div className="rounded-2xl border border-green-200 bg-green-50 p-8">
+
+              <div className="flex items-center gap-4">
+
+                <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center">
+                  <FaVideo className="text-green-600 text-2xl" />
+                </div>
 
 
-{videoId && (
-  <div className="mt-6 flex gap-4">
+                <div>
 
-    <button
-  onClick={async () => {
-    console.log("========== Transcript Button ==========");
-    console.log("Current videoId:", videoId);
+                  <h2 className="text-2xl font-bold text-green-800">
+                    Video uploaded successfully
+                  </h2>
 
-    setActiveTab("transcript");
+                  <p className="mt-1 text-green-700">
+                    Your video is now being processed for AI analysis.
+                  </p>
 
-    await fetchTranscript(videoId);
-  }}
-  className="px-5 py-2 rounded-xl bg-violet-600 text-white hover:bg-violet-700"
->
-  Transcript
-</button>
+                </div>
 
-    <button
-  onClick={async () => {
-    console.log("========== Short Summary ==========");
-    console.log("Current videoId:", videoId);
-
-    setActiveTab("short");
-
-    await fetchSummary(videoId, "short");
-  }}
-  className="px-5 py-2 rounded-xl bg-violet-600 text-white hover:bg-violet-700"
->
-  Short Summary
-</button>
+              </div>
 
 
-    <button
-  onClick={async () => {
-    console.log("========== Detailed Summary ==========");
-    console.log("Current videoId:", videoId);
+              <div className="mt-6 space-y-2 text-slate-700">
 
-    setActiveTab("detailed");
+                <p>
+                  <span className="font-semibold">
+                    Video:
+                  </span>{" "}
+                  {uploadedVideo.filename}
+                </p>
 
-    await fetchSummary(videoId, "detailed");
-  }}
-  className="px-5 py-2 rounded-xl bg-violet-600 text-white hover:bg-violet-700"
->
-  Detailed Summary
-</button>
+                <p>
+                  <span className="font-semibold">
+                    Video ID:
+                  </span>{" "}
+                  {uploadedVideo.id}
+                </p>
 
-  </div>
-)}
+                <p>
+                  <span className="font-semibold">
+                    Status:
+                  </span>{" "}
 
-{transcriptLoading && (
-  <div className="mt-6 p-4 rounded-xl bg-blue-50 border border-blue-200">
-    <p className="text-blue-700 font-medium">
-      Fetching transcript...
-    </p>
-  </div>
-)}
+                  <span className="font-bold text-amber-600">
+                    ⏳ {uploadedVideo.status}
+                  </span>
+                </p>
 
-{activeTab === "transcript" &&  transcript && (
-  <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-    <h2 className="text-xl font-bold text-slate-800 mb-4">
-      Transcript
-    </h2>
+              </div>
 
-    <p className="whitespace-pre-wrap text-slate-700 leading-7">
-      {transcript}
-    </p>
-  </div>
-)}
 
-{summaryLoading && (
-  <div className="mt-6 p-4 rounded-xl bg-yellow-50 border border-yellow-200">
-    <p className="text-yellow-700 font-medium">
-      Generating summary...
-    </p>
-  </div>
-)}
+              <div className="mt-6 rounded-xl bg-white border border-slate-200 p-5">
 
-{(activeTab === "short" || activeTab === "detailed") && summary && (
-  <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                <p className="font-semibold text-slate-800">
+                  AI processing is in progress
+                </p>
 
-    <h2 className="text-xl font-bold text-slate-800 mb-4">
-      AI Summary
-    </h2>
+                <p className="mt-2 text-sm text-slate-500">
+                  Your transcript and AI summaries are being generated
+                  in the background. You can continue using ClipMind AI
+                  while processing continues.
+                </p>
 
-    <p className="text-sm text-slate-500 mb-3">
-      {summaryType === "short"
-        ? "Short Summary"
-        : "Detailed Summary"}
-    </p>
+              </div>
 
-    <p className="whitespace-pre-wrap text-slate-700 leading-7">
-      {summary}
-    </p>
 
-  </div>
-)}
+              <button
+                onClick={handleOpenWorkspace}
+                className="mt-6 w-full bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white py-4 rounded-2xl text-lg font-bold shadow-xl transition-all duration-300"
+              >
+                Open Workspace →
+              </button>
 
-            
+
+              <button
+                onClick={handleUploadAnother}
+                className="mt-5 w-full rounded-2xl border-2 border-violet-300 bg-white py-4 text-lg font-bold text-violet-700 transition-all hover:bg-violet-50"
+              >
+                Upload Another Video
+              </button>
+
+            </div>
+
+          )}
+
         </div>
 
       </div>
