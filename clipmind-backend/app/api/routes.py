@@ -468,6 +468,9 @@ def download_video_transcript(
             owner_id=current_user.id
         )
 
+    # ---------------------------------------------------------
+    # Validate video
+    # ---------------------------------------------------------
     if video is None:
         raise HTTPException(
             status_code=404,
@@ -499,16 +502,20 @@ def download_video_transcript(
     )
 
     # ---------------------------------------------------------
-    # Create downloadable TXT response
+    # Use a safe ASCII-only filename
+    # This avoids Unicode errors from the original video filename
     # ---------------------------------------------------------
-    safe_filename = video.filename.rsplit(".", 1)[0]
+    filename = f"video_{video_id}_transcript.txt"
 
+    # ---------------------------------------------------------
+    # Return downloadable transcript
+    # ---------------------------------------------------------
     return Response(
         content=transcript.transcript_text,
         media_type="text/plain",
         headers={
             "Content-Disposition":
-                f'attachment; filename="{safe_filename}_transcript.txt"'
+                f'attachment; filename="{filename}"'
         }
     )
 
@@ -663,6 +670,9 @@ def download_video_summary(
             owner_id=current_user.id
         )
 
+    # ---------------------------------------------------------
+    # Validate video
+    # ---------------------------------------------------------
     if video is None:
         raise HTTPException(
             status_code=404,
@@ -695,15 +705,18 @@ def download_video_summary(
     )
 
     # ---------------------------------------------------------
-    # Create downloadable TXT response
+    # Use a safe ASCII-only filename
     # ---------------------------------------------------------
-    safe_filename = video.filename.rsplit(".", 1)[0]
+    filename = f"video_{video_id}_{type}_summary.txt"
 
+    # ---------------------------------------------------------
+    # Return downloadable summary
+    # ---------------------------------------------------------
     return Response(
         content=summary.summary_text,
         media_type="text/plain",
         headers={
             "Content-Disposition":
-                f'attachment; filename="{safe_filename}_{type}_summary.txt"'
+                f'attachment; filename="{filename}"'
         }
     )
