@@ -365,7 +365,7 @@ async function startServer() {
 
   app.listen(
     PORT,
-    "localhost",
+    "0.0.0.0",
     () => {
       console.log(
         `[ClipMind AI] Full-Stack application running on http://localhost:${PORT}`
