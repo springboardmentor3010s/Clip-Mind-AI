@@ -17,3 +17,4 @@ pytest
 httpx
 static-ffmpeg
 redis>=5.0.0
+google-auth

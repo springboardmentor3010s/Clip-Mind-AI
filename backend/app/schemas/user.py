@@ -15,6 +15,18 @@ class UserLogin(BaseModel):
     password: str
 
 
+class FirebaseLoginRequest(BaseModel):
+    id_token: str
+    role: Optional[str] = None
+    username: Optional[str] = None
+
+
+class FirebaseLoginResponse(BaseModel):
+    access_token: Optional[str] = None
+    token_type: Optional[str] = None
+    needs_role: bool = False
+
+
 class UserResponse(BaseModel):
     id: str
     username: str

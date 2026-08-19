@@ -1,169 +1,172 @@
-# ClipMind AI — Milestone 4 Evaluation & Quickstart Guide (Windows & Cross-Platform)
+# ClipMind AI
 
-This branch (`milestone-4`) combines **Milestone 2, 3 & 4 Features**:
-- **Milestone 2**: OpenAI Whisper automatic speech-to-text transcription, FFmpeg audio extraction, interactive transcript viewer/editor, TXT export, and HuggingFace BART AI text summarization.
-- **Milestone 3**: Key Moments NLP extraction, Global Cross-Video Transcript Search Engine, and Analytics Dashboard.
-- **Milestone 4 (Week 7 & 8 — Testing, Deployment & Documentation)**: automated backend/frontend test suites, Redis-backed response caching, a more efficient analytics dashboard, chronological key-moment chaptering, clickable key-moment markers on the video scrubber, Docker Compose deployment, and CI pipelines.
+An AI-powered video summarization platform. Upload a video and ClipMind AI
+transcribes it, summarizes it, extracts key moments and keywords, and turns
+all of that into something Learners can study and Educators can curate and
+manage across classrooms — with a real role-based access model
+(Learner / Educator / Administrator) enforced end to end.
 
----
+- **In-depth architecture** (data flow, RBAC, deployment topology): [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
+- **Backend implementation & API reference**: [`docs/BACKEND.md`](./docs/BACKEND.md) (or the live, always-current Swagger UI at `http://localhost:8000/docs` once the backend is running)
+- **Frontend implementation details**: [`docs/FRONTEND.md`](./docs/FRONTEND.md)
 
-## 💡 Easy Branch Switcher (Windows / Cross-Platform)
-If you are on Windows, double-click `switch-milestone.bat` (or run `./switch-milestone.sh` on macOS/Linux) to switch between milestone branches interactively!
+## Features
 
----
+- Whisper-based speech-to-text transcription, HuggingFace DistilBART
+  summarization (Quick + Detailed), extractive key-moment detection and
+  keyword extraction — all running locally, no external AI API calls.
+- Full-text search across every transcript.
+- Granular bookmarking — a whole video, a specific summary, or a single
+  highlight.
+- Study Mode: auto-generated flashcards / fill-in-blank / MCQs, curatable
+  and persisted by Educators.
+- Classrooms: Educators group Learners and assign specific videos to a
+  cohort, with classroom-scoped engagement analytics.
+- Admin Panel: user & role management, platform-wide analytics, AI
+  processing job visibility, storage management, and enforced platform
+  settings (maintenance mode, registration toggle, upload size limit).
+- Firebase Authentication — email/password and Google sign-in, with
+  self-service password reset (see [Authentication](#authentication)).
+- Shareable read-only links for a video's summary.
 
-## 🐳 Milestone 4: Docker Deployment
+## Tech stack
 
-The whole stack (Postgres, Redis, backend, frontend) can be brought up with a single command — no local Python/Node setup required.
+| | |
+|---|---|
+| **Frontend** | Next.js (App Router) + React, Tailwind CSS v4, hand-built Material 3 Expressive design system, Framer Motion |
+| **Auth** | Firebase Authentication (client), verified server-side via `google-auth` — no service-account secret needed |
+| **Backend** | FastAPI (Python), SQLAlchemy ORM |
+| **Database** | PostgreSQL |
+| **Cache** | Redis (optional — the app runs identically without it) |
+| **Object storage** | Cloudflare R2 (S3-compatible), multipart upload |
+| **AI/NLP** | OpenAI Whisper, HuggingFace DistilBART, `rake-nltk` keyword extraction — all local, via `transformers` |
+| **Containerization** | Docker + Docker Compose |
 
-1. Create a `.env` file in the repo root (docker-compose reads it automatically) with your Cloudflare R2 credentials — see `backend/.env.example` for the full list: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, `R2_BUCKET_NAME`.
-2. Build and start everything:
-   ```bash
-   make up        # equivalent to: docker-compose up -d --build
-   ```
-3. Visit `http://localhost:3000` (frontend) and `http://localhost:8000/docs` (backend API docs).
-4. Useful commands:
-   ```bash
-   make logs            # tail logs for every service
-   make shell-backend   # shell into the backend container
-   make db-shell        # psql into the Postgres container
-   make down             # stop everything
-   ```
+Full reasoning behind each choice, and how the pieces connect, is in
+[`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
-Redis is used as an **optional** response cache (transcript/summary/analytics reads) — the backend runs identically with or without it, so a plain `venv`-based local run (no Docker) still works exactly as before.
+## Authentication
 
----
+Firebase owns the credential (password storage, reset emails, Google OAuth);
+the backend only ever sees a verified Firebase ID token, exchanges it for
+its own short-lived session JWT, and is the source of truth for **role**
+(Learner/Educator/Administrator lives in Postgres, not Firebase). Forgot
+password is handled entirely by Firebase's built-in reset-email flow — no
+backend involvement.
 
-## ✅ Milestone 4: Running the Test Suites
+The Firebase web config in `frontend/src/lib/firebase.ts` has working
+defaults baked in (Firebase web config values aren't secret — see
+[`frontend/.env.example`](./frontend/.env.example) if you need to point at a
+different Firebase project). The backend needs `FIREBASE_PROJECT_ID` to
+match (see `backend/.env.example`) so it can verify tokens against the
+right project.
 
-**Backend** (hermetic — uses an in-memory SQLite DB and mocks R2/Redis, no external services required):
+**Administrator accounts can't self-register** (by design — see
+`SELF_REGISTERABLE_ROLES` in `backend/app/services/auth_service.py`).
+Bootstrap the first admin by registering normally, then promoting the row
+directly:
+
 ```bash
-cd backend
-venv/bin/pytest tests/ -v
+psql "$DATABASE_URL" -c "
+UPDATE users SET role_id = (SELECT id FROM roles WHERE name = 'Administrator')
+WHERE email = 'your-admin-email@example.com';
+"
 ```
 
-**Frontend**:
+## Running locally
+
+### Option A — Docker (recommended, no local Python/Node setup)
+
+1. Create a `.env` file in the repo root with your Cloudflare R2 credentials
+   (see `backend/.env.example` for the full list).
+2. ```bash
+   docker compose up --build -d
+   ```
+3. Visit `http://localhost:3000` (frontend) and `http://localhost:8000/docs`
+   (backend API docs).
+4. `docker compose logs -f` to tail logs, `docker compose down` to stop
+   (keeps the Postgres volume — data survives), `docker compose down -v` to
+   also wipe it.
+
+If port `5432` is already in use locally, remap just the `db` service in
+`docker-compose.yml` (e.g. `"5433:5432"`) — that's host-only and doesn't
+affect container-to-container networking or your data.
+
+### Option B — Manual (Python + Node)
+
+**Prerequisites:** PostgreSQL running locally, FFmpeg installed (`brew
+install ffmpeg` / `sudo apt install ffmpeg` / see `backend/.env.example` for
+Windows options).
+
 ```bash
-cd frontend
-npm test
-```
-
-Or run both from the repo root: `make test`.
-
-CI (`.github/workflows/backend-ci.yml`, `frontend-ci.yml`) runs both suites automatically on every push/PR touching `backend/` or `frontend/`.
-
----
-
-## 🚀 Step-by-Step Setup & Running Guide
-
-### Step 1: Database Setup (PostgreSQL)
-Make sure PostgreSQL is running locally and create the database:
-
-**Windows (Command Prompt / PowerShell):**
-```cmd
+# Database
 psql -U postgres -c "CREATE DATABASE clipmind;"
+
+# Backend
+cd backend
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env            # fill in R2 credentials
+uvicorn app.main:app --reload --port 8000
+
+# Frontend (new terminal)
+cd frontend
+npm install
+npm run dev
 ```
-*(Or run `CREATE DATABASE clipmind;` in SQL Shell (psql) / pgAdmin).*
 
----
+Open `http://localhost:3000`.
 
-### Step 2: Installing FFmpeg (Required for Whisper Audio Extraction)
-Whisper speech recognition requires **FFmpeg** to extract audio from videos.
+## Running the test suites
 
-- **Windows:**
-  - Option 1 (Winget): Open Command Prompt / PowerShell and run:
-    ```cmd
-    winget install ffmpeg
-    ```
-  - Option 2 (Chocolatey): `choco install ffmpeg`
-  - Option 3: Download prebuilt zip from [gyan.dev/ffmpeg/builds](https://www.gyan.dev/ffmpeg/builds/), extract to `C:\ffmpeg` and add `C:\ffmpeg\bin` to your System PATH environment variables.
-- **macOS:** `brew install ffmpeg`
-- **Linux:** `sudo apt update && sudo apt install -y ffmpeg`
+```bash
+# Backend — hermetic, in-memory SQLite, no external services required
+cd backend && venv/bin/pytest tests/ -v
 
----
+# Frontend
+cd frontend && npm test
+```
 
-### Step 3: Backend Setup & Run
+CI (`.github/workflows/`) runs both automatically on every push/PR touching
+`backend/` or `frontend/`.
 
-1. Open Command Prompt / PowerShell:
-   ```cmd
-   cd backend
+## Deploying
+
+The project ships as two Docker images (backend, frontend) plus Postgres
+and Redis, orchestrated by `docker-compose.yml` — that's the deployment
+unit for any Docker-capable host (a VM, a bare-metal box, etc):
+
+1. Copy the repo (or just `docker-compose.yml` + the `backend`/`frontend`
+   directories) to the target host.
+2. Provide the same `.env` (R2 credentials, `SECRET_KEY`, `FIREBASE_PROJECT_ID`)
+   at the repo root — **never commit this file**; `backend/.env` and root
+   `.env` are both gitignored for exactly this reason.
+3. ```bash
+   docker compose up --build -d
    ```
-2. Activate Python virtual environment:
-   - **Windows:**
-     ```cmd
-     python -m venv venv
-     venv\Scripts\activate
-     ```
-   - **macOS / Linux:**
-     ```bash
-     source venv/bin/activate
-     ```
-3. Install dependencies:
-   ```cmd
-   pip install -r requirements.txt
-   ```
-4. Start FastAPI server:
-   ```cmd
-   uvicorn app.main:app --reload --port 8000
-   ```
+4. Point a reverse proxy (nginx, Caddy, Traefik, etc.) at ports `3000`
+   (frontend) and `8000` (backend) for TLS termination and a real domain —
+   `docker-compose.yml` itself doesn't handle HTTPS.
+5. The backend downloads/loads Whisper + DistilBART model weights on first
+   boot, which can take several minutes — this is expected, not a hang.
 
----
+**Updating an existing deployment without touching data:**
 
-### Step 4: Frontend Setup & Run
+```bash
+git pull origin <branch>
+docker compose up --build -d
+```
 
-1. Open a new Command Prompt / PowerShell window:
-   ```cmd
-   cd frontend
-   ```
-2. Install Node dependencies & start dev server:
-   ```cmd
-   npm install
-   npm run dev
-   ```
-   Open `http://localhost:3000`.
+This rebuilds only the images whose source changed and recreates those
+containers — the `db`/`redis` containers and their volumes are left alone
+unless you explicitly run `docker compose down -v`. Never run the `-v`
+variant on a deployment you want to keep the database for.
 
----
+## Project structure
 
-## 🎯 Showcasing Evaluation Features
-
-### Milestone 2 Features
-1. **Whisper Speech-to-Text Transcription**:
-   - Upload a video file via the Dashboard (`http://localhost:3000/dashboard`).
-   - When upload finishes, the backend automatically extracts audio via FFmpeg and runs `openai/whisper-tiny` locally in the background to produce real, timestamped transcript segments.
-2. **Interactive Transcript Management**:
-   - Open a video detail page (e.g., `http://localhost:3000/dashboard/video/1`).
-   - View transcript segments synchronized with timestamps. Click any segment to seek the video player to that time.
-   - Hover over a segment to edit transcript text live and save it (`PUT /transcript/{video_id}`).
-   - Click **Export TXT** to download the transcript file.
-3. **AI Summarization (NLP)**:
-   - Click **Generate Summary** on the video page.
-   - The backend runs HuggingFace DistilBART in the background to generate both a **Quick Summary** and **Detailed Notes**.
-   - Switch between Quick/Detailed tabs, edit summaries, or click **Export TXT**.
-
-### Milestone 3 Features
-1. **Key Moments Detection (NLP Highlight Extraction)**:
-   - Go to a video details page (e.g., `http://localhost:3000/dashboard/video/1`).
-   - Click **Extract Key Moments**.
-   - The NLP engine analyzes keyword density across transcript segments to extract top key moments with titles, descriptions, and exact start/end timestamps.
-   - Click any key moment card to automatically skip the video player to that timestamp.
-2. **Global Transcript Search Engine**:
-   - Navigate to `http://localhost:3000/dashboard/search`.
-   - Type any keyword or phrase spoken across uploaded videos (e.g., *"learning"* or *"data"*).
-   - View matching segments grouped by video with clickable timestamp links that jump straight to that segment in the video.
-3. **Analytics Dashboard**:
-   - Navigate to `http://localhost:3000/dashboard/analytics`.
-   - View total video views, total document exports, average AI processing speeds, and interactive activity timeline bars.
-
-### Milestone 4 Features
-1. **Improved Key Moment Detection**:
-   - Key moments are now chronological chapters (~5 minute chunks) instead of a handful of isolated "highlight" segments — every part of a video gets a marker, not just the keyword-densest spots.
-   - On a video's detail page, hover/click the colored segments on the video's scrubber to jump straight to that chapter.
-2. **Content Insights**:
-   - `GET /analytics/insights` returns account-wide topic keywords, total storage used, and average video length.
-3. **Response Caching**:
-   - `GET /transcript/{id}`, `GET /summary/{id}`, and `GET /analytics/dashboard` are cached in Redis (when available) and invalidated on every edit/regenerate/delete, so repeated dashboard polling and video-detail page loads don't re-hit Postgres or re-run aggregation queries every time.
-4. **Automated Testing**:
-   - `backend/tests/` covers the upload → transcript → summary → key-moments pipeline, the analytics/insights endpoints, and the keyword-extraction/chaptering logic — all against a hermetic in-memory SQLite DB with R2 calls mocked.
-   - `frontend/__tests__/` covers `SummaryViewer`, `KeywordTags`, and the new `VideoPlayer` key-moment markers with React Testing Library.
-5. **Docker Deployment**:
-   - `docker-compose.yml` brings up Postgres, Redis, the FastAPI backend, and the Next.js frontend (built as a standalone production server) with one command — see the Docker section above.
+```
+backend/    FastAPI app — see docs/ARCHITECTURE.md
+frontend/   Next.js app — see docs/FRONTEND.md
+docs/       Architecture and frontend deep-dive documentation
+```

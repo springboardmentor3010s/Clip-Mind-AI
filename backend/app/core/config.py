@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     r2_bucket_name: str
     r2_public_url: str = ""
 
+    firebase_project_id: str = "clipmind-ai-firebase-gagana"
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding='utf-8', extra="ignore")
 
 import os
