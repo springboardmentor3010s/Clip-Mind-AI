@@ -13,6 +13,7 @@ export default function VideosPage() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState("latest");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     async function loadVideos() {
@@ -70,15 +71,21 @@ export default function VideosPage() {
     loadVideos();
   }, [router]);
 
-  const sortedVideos = useMemo(() => {
-    return [...videos].sort((a, b) => {
-      if (sortOrder === "latest") {
-        return new Date(b.created_at) - new Date(a.created_at);
-      }
+  const filteredAndSortedVideos = useMemo(() => {
+  const filteredVideos = videos.filter((video) =>
+    video.filename
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase().trim())
+  );
 
-      return new Date(a.created_at) - new Date(b.created_at);
-    });
-  }, [videos, sortOrder]);
+  return [...filteredVideos].sort((a, b) => {
+    if (sortOrder === "latest") {
+      return new Date(b.created_at) - new Date(a.created_at);
+    }
+
+    return new Date(a.created_at) - new Date(b.created_at);
+  });
+}, [videos, sortOrder, searchQuery]);
 
   if (loading) {
     return (
@@ -120,154 +127,198 @@ export default function VideosPage() {
               </h2>
             </div>
 
-            <div className="flex items-end gap-4">
+            <div className="flex flex-col sm:flex-row items-end gap-4">
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-600 mb-2">
-                  Sort By
-                </label>
+  {/* Search Videos */}
+  <div className="w-full sm:w-72">
+    <label className="block text-sm font-semibold text-slate-600 mb-2">
+      Search Videos
+    </label>
 
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  className="rounded-xl border border-slate-300 px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                >
-                  <option value="latest">
-                    Latest Uploads
-                  </option>
+    <input
+      type="text"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      placeholder="Search by video name..."
+      className="w-full rounded-xl border border-slate-300 px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+    />
+  </div>
 
-                  <option value="oldest">
-                    Oldest Uploads
-                  </option>
-                </select>
-              </div>
+  {/* Sort Videos */}
+  <div>
+    <label className="block text-sm font-semibold text-slate-600 mb-2">
+      Sort By
+    </label>
 
-              <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center text-3xl">
-                🎥
-              </div>
+    <select
+      value={sortOrder}
+      onChange={(e) => setSortOrder(e.target.value)}
+      className="rounded-xl border border-slate-300 px-4 py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+    >
+      <option value="latest">
+        Latest Uploads
+      </option>
 
-            </div>
+      <option value="oldest">
+        Oldest Uploads
+      </option>
+    </select>
+  </div>
+
+  <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center text-3xl">
+    🎥
+  </div>
+
+</div>
 
           </div>
 
         </div>
 
-        {/* Empty State */}
-        {videos.length === 0 ? (
+        {/* Video States */}
+{videos.length === 0 ? (
 
-          <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-14 text-center">
+  /* No videos uploaded at all */
+  <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-14 text-center">
 
-            <div className="text-6xl mb-6">
-              🎥
+    <div className="text-6xl mb-6">
+      🎥
+    </div>
+
+    <h2 className="text-3xl font-bold text-slate-800">
+      No Videos Uploaded Yet
+    </h2>
+
+    <p className="mt-4 text-slate-500">
+      Upload your first video to get started with ClipMind AI.
+    </p>
+
+    <button
+      onClick={() => router.push("/upload")}
+      className="mt-8 px-8 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-700 text-white font-semibold shadow-lg"
+    >
+      Upload Your First Video
+    </button>
+
+  </div>
+
+) : filteredAndSortedVideos.length === 0 ? (
+
+  /* Videos exist, but search found nothing */
+  <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-12 text-center">
+
+    <div className="text-5xl mb-5">
+      🔍
+    </div>
+
+    <h2 className="text-2xl font-bold text-slate-800">
+      No Matching Videos Found
+    </h2>
+
+    <p className="mt-3 text-slate-500">
+      No uploaded video matches "{searchQuery}".
+    </p>
+
+    <button
+      onClick={() => setSearchQuery("")}
+      className="mt-6 px-6 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition-all"
+    >
+      Clear Search
+    </button>
+
+  </div>
+
+) : (
+
+  /* Display matching videos */
+  <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-8">
+
+    {filteredAndSortedVideos.map((video) => (
+
+      <div
+        key={video.id}
+        className="bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+      >
+
+        <img
+          src={`http://127.0.0.1:8000/${video.thumbnail_path.replace(
+            /\\/g,
+            "/"
+          )}`}
+          alt={video.filename}
+          className="w-full h-56 object-cover"
+          onError={(e) => {
+            e.currentTarget.src =
+              "https://placehold.co/600x350?text=ClipMind+AI";
+          }}
+        />
+
+        <div className="p-6">
+
+          <h2 className="text-xl font-bold text-slate-800 break-words leading-8">
+            {video.filename}
+          </h2>
+
+          <div className="mt-5 space-y-4">
+
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500">
+                Status
+              </span>
+
+              <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
+                {video.status}
+              </span>
             </div>
 
-            <h2 className="text-3xl font-bold text-slate-800">
-              No Videos Uploaded Yet
-            </h2>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500">
+                Duration
+              </span>
 
-            <p className="mt-4 text-slate-500">
-              Upload your first video to get started with ClipMind AI.
-            </p>
+              <span className="font-semibold text-slate-800">
+                {Number(video.duration).toFixed(2)} sec
+              </span>
+            </div>
 
-            <button
-              onClick={() => router.push("/upload")}
-              className="mt-8 px-8 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-700 text-white font-semibold shadow-lg"
-            >
-              Upload Your First Video
-            </button>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500">
+                File Size
+              </span>
 
-          </div>
+              <span className="font-semibold text-slate-800">
+                {(video.file_size / 1024 / 1024).toFixed(2)} MB
+              </span>
+            </div>
 
-        ) : (
+            <div>
+              <p className="text-slate-500">
+                Uploaded
+              </p>
 
-          <div className="grid xl:grid-cols-3 lg:grid-cols-2 gap-8">
-
-            {sortedVideos.map((video) => (
-
-              <div
-                key={video.id}
-                className="bg-white rounded-3xl border border-slate-200 shadow-lg overflow-hidden hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
-              >
-
-                <img
-                  src={`http://127.0.0.1:8000/${video.thumbnail_path.replace(
-                    /\\/g,
-                    "/"
-                  )}`}
-                  alt={video.filename}
-                  className="w-full h-56 object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "https://placehold.co/600x350?text=ClipMind+AI";
-                  }}
-                />
-
-                <div className="p-6">
-
-                  <h2 className="text-xl font-bold text-slate-800 break-words leading-8">
-                    {video.filename}
-                  </h2>
-
-                  <div className="mt-5 space-y-4">
-
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">
-                        Status
-                      </span>
-
-                      <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
-                        {video.status}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">
-                        Duration
-                      </span>
-
-                      <span className="font-semibold text-slate-800">
-                        {Number(video.duration).toFixed(2)} sec
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">
-                        File Size
-                      </span>
-
-                      <span className="font-semibold text-slate-800">
-                        {(video.file_size / 1024 / 1024).toFixed(2)} MB
-                      </span>
-                    </div>
-
-                    <div>
-                      <p className="text-slate-500">
-                        Uploaded
-                      </p>
-
-                      <p className="font-medium text-slate-700">
-                        {new Date(video.created_at).toLocaleString()}
-                      </p>
-                    </div>
-
-                  </div>
-
-                  <button
-                    onClick={() => router.push(`/videos/${video.id}`)}
-                    className="mt-8 w-full bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white py-3 rounded-2xl font-semibold shadow-lg transition-all duration-300"
-                  >
-                    Open Workspace
-                  </button>
-
-                </div>
-
-              </div>
-
-            ))}
+              <p className="font-medium text-slate-700">
+                {new Date(video.created_at).toLocaleString()}
+              </p>
+            </div>
 
           </div>
 
-        )}
+          <button
+            onClick={() => router.push(`/videos/${video.id}`)}
+            className="mt-8 w-full bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white py-3 rounded-2xl font-semibold shadow-lg transition-all duration-300"
+          >
+            Open Workspace
+          </button>
+
+        </div>
+
+      </div>
+
+    ))}
+
+  </div>
+
+)}
 
       </div>
     </DashboardLayout>

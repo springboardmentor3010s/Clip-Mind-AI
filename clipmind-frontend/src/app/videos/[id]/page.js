@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import {
@@ -13,23 +13,30 @@ import {
   getKeyMoments,
   generateKeyMoments,
   getHighlightReport,
+  generateHighlightReport,
   getKeywords,
+  generateKeywords,
 } from "@/services/videoService";
 
 export default function VideoDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
 
+  const videoRef = useRef(null);
+
   const [video, setVideo] = useState(null);
 
   const [transcript, setTranscript] = useState(null);
   const [transcriptSegments, setTranscriptSegments] = useState([]);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchMatchCount, setSearchMatchCount] = useState(0);
+
   const [shortSummary, setShortSummary] = useState(null);
   const [detailedSummary, setDetailedSummary] = useState(null);
 
-  const [transcriptLoading, setTranscriptLoading] = useState(true);
-  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [transcriptLoading, setTranscriptLoading] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   const [transcriptError, setTranscriptError] = useState("");
   const [summaryError, setSummaryError] = useState("");
@@ -39,9 +46,9 @@ export default function VideoDetailsPage() {
   const [keywords, setKeywords] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [keyMomentsLoading, setKeyMomentsLoading] = useState(true);
-  const [highlightLoading, setHighlightLoading] = useState(true);
-  const [keywordsLoading, setKeywordsLoading] = useState(true);
+  const [keyMomentsLoading, setKeyMomentsLoading] = useState(false);
+  const [highlightLoading, setHighlightLoading] = useState(false);
+  const [keywordsLoading, setKeywordsLoading] = useState(false);
 
   const [generatingKeyMoments, setGeneratingKeyMoments] = useState(false);
 
@@ -51,17 +58,43 @@ export default function VideoDetailsPage() {
 
   const [activeSection, setActiveSection] = useState(null);
 
-  useEffect(() => {
+
+
+//   useEffect(() => {
+//   if (id) {
+//     loadVideo();
+//     loadTranscript();
+//     loadTranscriptSegments();
+//     loadSummaries();
+//     loadKeyMoments();
+//     loadHighlightReport();
+//     loadKeywords();
+//   }
+// }, [id]);
+
+    useEffect(() => {
   if (id) {
     loadVideo();
-    loadTranscript();
-    loadTranscriptSegments();
-    loadSummaries();
-    loadKeyMoments();
-    loadHighlightReport();
-    loadKeywords();
   }
 }, [id]);
+
+useEffect(() => {
+  if (!searchQuery.trim() || !transcript?.transcript_text) {
+    setSearchMatchCount(0);
+    return;
+  }
+
+  const escapedQuery = searchQuery.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+
+  const regex = new RegExp(escapedQuery, "gi");
+  const matches = transcript.transcript_text.match(regex);
+
+  setSearchMatchCount(matches ? matches.length : 0);
+}, [searchQuery, transcript]);
+
 
   async function loadVideo() {
     try {
@@ -191,6 +224,69 @@ async function loadKeywords() {
   }
 }
 
+async function handleSectionChange(section) {
+  setActiveSection(section);
+
+  if (section === "transcript") {
+    await Promise.all([
+      loadTranscript(),
+      loadTranscriptSegments(),
+    ]);
+  }
+
+  if (section === "summary") {
+    await loadSummaries();
+  }
+
+  if (section === "keyMoments") {
+    await loadOrGenerateKeyMoments();
+  }
+
+  if (section === "highlights") {
+    await loadOrGenerateHighlights();
+  }
+
+  if (section === "keywords") {
+    await loadOrGenerateKeywords();
+  }
+}
+
+async function loadOrGenerateKeyMoments() {
+  try {
+    setKeyMomentsLoading(true);
+    setKeyMomentError("");
+
+    const existingKeyMoments = await getKeyMoments(id);
+
+    if (existingKeyMoments && existingKeyMoments.length > 0) {
+      setKeyMoments(existingKeyMoments);
+      return existingKeyMoments;
+    }
+
+    const generatedKeyMoments = await generateKeyMoments(id, 5);
+
+    setKeyMoments(generatedKeyMoments);
+
+    return generatedKeyMoments;
+
+  } catch (error) {
+    console.error(
+      "Failed to load or generate key moments:",
+      error
+    );
+
+    setKeyMomentError(
+      error.response?.data?.detail ||
+      "Unable to load or generate key moments."
+    );
+
+    return [];
+
+  } finally {
+    setKeyMomentsLoading(false);
+  }
+}
+
 const handleDownloadTranscript = async () => {
   try {
     const response = await downloadTranscript(id);
@@ -289,6 +385,103 @@ const handleDownloadSummary = async (summaryType) => {
     }
   }
 
+  const playKeyMoment = async (startTime) => {
+  const videoElement = videoRef.current;
+
+  if (!videoElement) {
+    return;
+  }
+
+  const timestamp = Number(startTime);
+
+  if (Number.isNaN(timestamp)) {
+    console.error("Invalid key moment timestamp:", startTime);
+    return;
+  }
+
+  videoElement.currentTime = timestamp;
+
+  videoElement.scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+  });
+
+  try {
+    await videoElement.play();
+  } catch (error) {
+    console.error(
+      "Unable to automatically play video:",
+      error
+    );
+  }
+};
+
+  async function loadOrGenerateKeywords() {
+  try {
+    setKeywordsLoading(true);
+    setKeywordError("");
+
+    const existingKeywords = await getKeywords(id);
+
+    if (existingKeywords && existingKeywords.length > 0) {
+      setKeywords(existingKeywords);
+      return;
+    }
+
+    const generatedKeywords = await generateKeywords(id, 15);
+
+    setKeywords(generatedKeywords);
+
+  } catch (error) {
+    console.error(
+      "Failed to load or generate keywords:",
+      error
+    );
+
+    setKeywordError(
+      error.response?.data?.detail ||
+      "Unable to load or generate keywords."
+    );
+
+  } finally {
+    setKeywordsLoading(false);
+  }
+}
+
+
+async function loadOrGenerateHighlights() {
+  try {
+    setHighlightLoading(true);
+    setHighlightError("");
+
+    let moments = await getKeyMoments(id);
+
+    if (!moments || moments.length === 0) {
+      moments = await generateKeyMoments(id, 5);
+      setKeyMoments(moments);
+    }
+
+    const report = await generateHighlightReport(id);
+
+    setHighlightReport(report);
+
+  } catch (error) {
+    console.error(
+      "Failed to load or generate highlight report:",
+      error
+    );
+
+    setHighlightError(
+      error.response?.data?.detail ||
+      "Unable to load or generate highlight report."
+    );
+
+  } finally {
+    setHighlightLoading(false);
+  }
+}
+
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -339,6 +532,7 @@ const handleDownloadSummary = async (summaryType) => {
         <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
 
           <video
+            ref={videoRef}
             controls
             className="w-full h-[500px] bg-black"
             poster={`http://127.0.0.1:8000/${video.thumbnail_path?.replace(
@@ -447,7 +641,7 @@ const handleDownloadSummary = async (summaryType) => {
   <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
 
     <button
-      onClick={() => setActiveSection("transcript")}
+      onClick={() => handleSectionChange("transcript")}
       className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
         activeSection === "transcript"
           ? "bg-violet-600 text-white shadow-lg"
@@ -458,7 +652,7 @@ const handleDownloadSummary = async (summaryType) => {
     </button>
 
     <button
-      onClick={() => setActiveSection("summary")}
+      onClick={() => handleSectionChange("summary")}
       className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
         activeSection === "summary"
           ? "bg-emerald-600 text-white shadow-lg"
@@ -469,7 +663,7 @@ const handleDownloadSummary = async (summaryType) => {
     </button>
 
     <button
-      onClick={() => setActiveSection("keyMoments")}
+      onClick={() => handleSectionChange("keyMoments")}
       className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
         activeSection === "keyMoments"
           ? "bg-purple-600 text-white shadow-lg"
@@ -480,7 +674,7 @@ const handleDownloadSummary = async (summaryType) => {
     </button>
 
     <button
-      onClick={() => setActiveSection("highlights")}
+      onClick={() => handleSectionChange("highlights")}
       className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
         activeSection === "highlights"
           ? "bg-sky-600 text-white shadow-lg"
@@ -491,7 +685,7 @@ const handleDownloadSummary = async (summaryType) => {
     </button>
 
     <button
-      onClick={() => setActiveSection("keywords")}
+      onClick={() => handleSectionChange("keywords")}
       className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
         activeSection === "keywords"
           ? "bg-orange-600 text-white shadow-lg"
@@ -538,6 +732,35 @@ const handleDownloadSummary = async (summaryType) => {
   )}
 
 </div>
+<div className="mt-6">
+  <div className="relative">
+    <input
+      type="text"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      placeholder="Search within transcript..."
+      className="w-full border border-slate-300 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-violet-500"
+    />
+
+    {searchQuery && (
+      <button
+        type="button"
+        onClick={() => setSearchQuery("")}
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+      >
+        ✕
+      </button>
+    )}
+  </div>
+
+  {searchQuery.trim() && (
+    <p className="mt-2 text-sm text-slate-500">
+      {searchMatchCount > 0
+        ? `${searchMatchCount} match${searchMatchCount !== 1 ? "es" : ""} found`
+        : "No matches found"}
+    </p>
+  )}
+</div>
 
       {transcriptLoading && (
         <div className="mt-8 text-center py-10 text-slate-500">
@@ -555,7 +778,10 @@ const handleDownloadSummary = async (summaryType) => {
         <div className="mt-8 bg-slate-50 rounded-2xl p-6">
 
           <p className="text-slate-700 leading-8 whitespace-pre-wrap">
-            {transcript.transcript_text}
+            {highlightSearchText(
+              transcript.transcript_text,
+              searchQuery
+            )}
           </p>
 
         </div>
@@ -568,6 +794,7 @@ const handleDownloadSummary = async (summaryType) => {
       )}
 
     </div>
+
 
 
     {/* Transcript Segments */}
@@ -727,7 +954,7 @@ const handleDownloadSummary = async (summaryType) => {
 
             {/* Generate Button */}
 
-            {keyMoments.length === 0 &&
+            {/* {keyMoments.length === 0 &&
               !keyMomentsLoading && (
                 <button
                   onClick={handleGenerateKeyMoments}
@@ -738,7 +965,7 @@ const handleDownloadSummary = async (summaryType) => {
                     ? "Generating..."
                     : "Generate Key Moments"}
                 </button>
-              )}
+              )} */}
 
           </div>
 
@@ -786,6 +1013,7 @@ const handleDownloadSummary = async (summaryType) => {
 
                   <div
                     key={moment.id}
+                    onClick={() => playKeyMoment(moment.start_time)}
                     className="border border-slate-200 rounded-2xl p-6 hover:border-violet-300 hover:shadow-md transition-all"
                   >
 
@@ -852,6 +1080,9 @@ const handleDownloadSummary = async (summaryType) => {
                       </span>
 
                     </div>
+                    <p className="mt-4 text-sm font-medium text-violet-600">
+                      ▶ Click this key moment to play from {formatTime(moment.start_time)}
+                    </p>
 
                   </div>
 
@@ -941,70 +1172,31 @@ const handleDownloadSummary = async (summaryType) => {
 
                 {/* Highlights */}
 
-                {highlightReport.highlights?.map(
-                  (highlight, index) => (
+                <div className="space-y-4">
+              {highlightReport.highlights?.map((highlight, index) => (
+    <div
+      key={index}
+      className="border border-slate-200 rounded-2xl p-6 hover:border-violet-300 hover:shadow-md transition-all"
+    >
+      <div className="flex gap-4 items-start">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold">
+          {index + 1}
+        </div>
 
-                    <div
-                      key={index}
-                      className="border border-slate-200 rounded-2xl p-6 hover:border-violet-300 hover:shadow-md transition-all"
-                    >
+        <div>
+          <h3 className="text-lg font-bold text-slate-800">
+            Highlight {index + 1}
+          </h3>
 
-                      <div className="flex flex-col md:flex-row md:justify-between gap-4">
+          <p className="mt-2 text-slate-600 leading-7">
+            {highlight}
+          </p>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
 
-                        <div>
-
-                          <h3 className="text-xl font-bold text-slate-800">
-                            {highlight.title}
-                          </h3>
-
-                          <p className="mt-3 text-slate-600 leading-7">
-                            {highlight.segment_text}
-                          </p>
-
-                        </div>
-
-
-                        <span className="flex-shrink-0 h-fit px-4 py-2 rounded-full bg-violet-100 text-violet-700 font-semibold text-sm">
-                          Importance:{" "}
-                          {Number(
-                            highlight.importance_score
-                          ).toFixed(3)}
-                        </span>
-
-                      </div>
-
-
-                      {/* Timestamp */}
-
-                      <div className="mt-5 flex flex-wrap gap-3">
-
-                        <span className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 font-semibold">
-                          {formatTime(highlight.start_time)}
-                        </span>
-
-                        <span className="flex items-center text-slate-400">
-                          →
-                        </span>
-
-                        <span className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 font-semibold">
-                          {formatTime(highlight.end_time)}
-                        </span>
-
-                        <span className="px-4 py-2 rounded-lg bg-sky-100 text-sky-700 font-semibold">
-                          Duration:{" "}
-                          {Number(
-                            highlight.duration ??
-                            highlight.end_time - highlight.start_time
-                          ).toFixed(1)}
-                          s
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                  )
-                )}
 
               </div>
 
@@ -1168,3 +1360,33 @@ function formatTime(seconds) {
   ).padStart(2, "0")}`;
 }
 
+function highlightSearchText(text, searchQuery) {
+  if (!searchQuery || !searchQuery.trim()) {
+    return text;
+  }
+
+  const escapedQuery = searchQuery.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+
+  const regex = new RegExp(`(${escapedQuery})`, "gi");
+
+  const parts = text.split(regex);
+
+  return parts.map((part, index) => {
+    const isMatch =
+      part.toLowerCase() === searchQuery.toLowerCase();
+
+    return isMatch ? (
+      <mark
+        key={index}
+        className="bg-yellow-300 text-slate-900 px-1 rounded"
+      >
+        {part}
+      </mark>
+    ) : (
+      part
+    );
+  });
+}

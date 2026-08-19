@@ -214,6 +214,46 @@ export const getKeywords = async (videoId) => {
   return response.data;
 };
 
+/**
+ * Generate keywords for a video
+ */
+export const generateKeywords = async (
+  videoId,
+  maxKeywords = 15
+) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.post(
+    `/videos/${videoId}/keywords/generate?max_keywords=${maxKeywords}`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+/**
+ * Generate highlight report for a video
+ */
+export const generateHighlightReport = async (videoId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.post(
+    `/videos/${videoId}/highlight-report/generate`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
 
 /**
  * Get transcript segments of a video
