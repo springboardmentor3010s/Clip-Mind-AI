@@ -1,0 +1,125 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f7f9fc;
+  color: #1a1a1a;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100vh;
+  padding: 0 10%;
+}
+
+/* HERO */
+.hero {
+  max-width: 500px;
+}
+
+.hero h1 {
+  font-size: 52px;
+  margin-bottom: 10px;
+  color: #2b59ff;
+}
+
+.hero p {
+  font-size: 18px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* CARD */
+.card {
+  width: 320px;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.toggle {
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.toggle button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  background: #f1f1f1;
+  transition: 0.2s;
+}
+
+.toggle .active {
+  background: #2b59ff;
+  color: white;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input, select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+}
+
+button {
+  padding: 10px;
+  border: none;
+  background: #2b59ff;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+button:hover {
+  background: #1f45d8;
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.role-card {
+  border: 1px solid #e6e6e6;
+  border-radius: 14px;
+  padding: 12px;
+  cursor: pointer;
+  background: #fff;
+  transition: 0.2s ease;
+  min-height: 90px;
+}
+
+.role-card:hover {
+  transform: translateY(-2px);
+  border-color: #2b59ff;
+  box-shadow: 0 6px 16px rgba(43, 89, 255, 0.12);
+}
+
+.role-card.active {
+  border: 2px solid #2b59ff;
+  background: #eef3ff;
+}
+
+.role-title {
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.role-desc {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.3;
+}

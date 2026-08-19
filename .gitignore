@@ -1,0 +1,13 @@
+backend/app/__pycache__/main.cpython-311.pyc
+backend/venv
+frontend/node_modules
+**/__pycache__/
+*.pyc
+*.pyo
+backend/test.db
+.pytest_cache/
+frontend/coverage/
+.next/
+# environment files with secrets
+.env
+backend/.env
