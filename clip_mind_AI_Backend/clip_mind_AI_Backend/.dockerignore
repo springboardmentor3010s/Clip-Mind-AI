@@ -1,0 +1,34 @@
+# Virtualenvs — never copy a Windows venv into a Linux image
+.venv312/
+venv/
+testenv/
+__pycache__/
+*.pyc
+
+# Secrets stay out of the image; values arrive via compose environment.
+# The glob is deliberate — .env.docker and any .env.<stage> must never be
+# baked into a layer, where they would survive in the image history.
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# Local runtime state
+media/
+uploads/
+logs/
+test_media/
+staticfiles/
+db.sqlite3
+
+# Large local test fixtures
+*.mp4
+*.mkv
+*.webm
+
+.git/
+.gitignore
+.vscode/
+.idea/
+.pytest_cache/
+.coverage

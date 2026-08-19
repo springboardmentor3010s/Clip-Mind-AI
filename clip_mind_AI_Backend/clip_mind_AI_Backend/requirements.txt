@@ -1,0 +1,35 @@
+# ClipMind AI — backend dependencies.
+#
+# UTF-8, direct dependencies only. Versions match the verified development
+# environment; transitive packages are resolved by pip. The previous file was
+# a UTF-16 `pip freeze` of the whole venv, which pip cannot parse on Linux.
+
+# ---- Core framework ----
+Django==5.2.16
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.9.0
+drf-spectacular==0.29.0
+python-decouple==3.8
+
+# ---- Database ----
+psycopg2-binary==2.9.12
+
+# ---- Background processing & cache ----
+# Redis caching uses Django's built-in RedisCache backend, so django-redis
+# is intentionally not required.
+celery==5.6.3
+redis==8.0.1
+
+# ---- AI providers ----
+groq==1.5.0
+google-generativeai==0.8.6
+
+# ---- Media processing ----
+yt-dlp==2025.6.30
+imageio-ffmpeg==0.5.1
+pillow==12.3.0
+
+# ---- Production server & static files ----
+gunicorn==23.0.0
+whitenoise==6.7.0
