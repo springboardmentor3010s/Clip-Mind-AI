@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+venv/
+env/
+
+# Ignore ALL Video and Audio files ANYWHERE in the project
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.wav
+*.mp3
+
+# Ignore Uploads & AI Models
+uploads/
+backend/uploads/
+models/
+*.pt
+*.bin
+
+# OS & Cache
+.DS_Store
+__pycache__/
+*.pyc
+dist/
