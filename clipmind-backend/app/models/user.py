@@ -87,3 +87,15 @@ class User(Base):
     back_populates="user",
     cascade="all, delete-orphan",
     )
+
+    classrooms = relationship(
+        "Classroom",
+        back_populates="educator",
+        cascade="all, delete-orphan"
+    )
+
+    classroom_memberships = relationship(
+    "ClassroomMember",
+    back_populates="learner",
+    cascade="all, delete-orphan"
+)

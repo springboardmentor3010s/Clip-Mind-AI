@@ -43,10 +43,25 @@ class Video(Base):
         nullable=False
     )
 
+    classroom_id = Column(
+    Integer,
+    ForeignKey(
+        "classrooms.id",
+        ondelete="SET NULL"
+    ),
+    nullable=True,
+    index=True
+)
+
     owner = relationship(
         "User",
         back_populates="videos"
     )
+
+    classroom = relationship(
+    "Classroom",
+    back_populates="videos"
+)
 
     transcript = relationship(
     "Transcript",

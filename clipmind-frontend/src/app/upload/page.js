@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FaCloudUploadAlt,
@@ -9,6 +9,7 @@ import {
 
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { uploadVideo } from "@/services/videoService";
+import { getMyClassrooms } from "@/services/classroomService";
 
 
 export default function UploadPage() {
@@ -23,7 +24,35 @@ export default function UploadPage() {
   const [uploadedVideo, setUploadedVideo] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  const [classrooms, setClassrooms] = useState([]);
+  const [selectedClassroomId, setSelectedClassroomId] = useState("");
+  const [classroomsLoading, setClassroomsLoading] = useState(true);
 
+  useEffect(() => {
+  const loadClassrooms = async () => {
+    try {
+      setClassroomsLoading(true);
+
+      const data = await getMyClassrooms();
+      setClassrooms(data);
+
+    } catch (error) {
+      console.error(
+        "Failed to load classrooms:",
+        error
+      );
+
+      setMessage("Failed to load classrooms.");
+
+    } finally {
+      setClassroomsLoading(false);
+    }
+  };
+
+  loadClassrooms();
+}, []);
+
+ 
   const selectFile = (file) => {
     if (!file) return;
 
@@ -79,6 +108,7 @@ export default function UploadPage() {
     try {
       const response = await uploadVideo(
         selectedFile,
+        selectedClassroomId,
         setUploadProgress
       );
 
@@ -152,6 +182,44 @@ export default function UploadPage() {
           {!uploadedVideo && (
 
             <>
+
+            {/* Classroom Selection */}
+<div className="mb-8">
+
+  <label className="mb-2 block text-sm font-semibold text-slate-700">
+    Assign to Classroom
+  </label>
+
+  <select
+    value={selectedClassroomId}
+    onChange={(e) =>
+      setSelectedClassroomId(e.target.value)
+    }
+    disabled={classroomsLoading}
+    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-200 disabled:cursor-not-allowed disabled:bg-slate-100"
+  >
+    <option value="">
+      {classroomsLoading
+        ? "Loading classrooms..."
+        : "Select a classroom (optional)"}
+    </option>
+
+    {classrooms.map((classroom) => (
+      <option
+        key={classroom.id}
+        value={classroom.id}
+      >
+        {classroom.name}
+      </option>
+    ))}
+  </select>
+
+  <p className="mt-2 text-sm text-slate-500">
+    Select a classroom if you want to assign this lecture
+    directly to your learners.
+  </p>
+
+</div>
               <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}

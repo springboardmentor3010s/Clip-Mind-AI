@@ -1,26 +1,59 @@
+import time
 from typing import List
 
 from app.schemas.transcript_segment import TranscriptSegmentResponse
 from app.crud.transcript_segment import get_transcript_segments_by_video
 
 from app.schemas.video import VideoResponse
-from app.crud.transcript import get_transcript_by_video
+from app.crud.transcript import (
+    get_transcript_by_video,
+    update_transcript
+)
 from app.crud.summary import (
+    create_summary,
     get_summary_by_video,
-    get_summary_by_type
+    get_summary_by_type,
+    update_summary
 )
 
 from app.schemas.summary import SummaryResponse
-from app.schemas.transcript import TranscriptResponse
+from app.schemas.transcript import (
+    TranscriptResponse,
+    TranscriptUpdate
+)
+
+from app.schemas.summary_share import (
+    SummaryShareCreate,
+    SummaryShareResponse
+)
+
+from app.crud.summary_share import (
+    create_summary_share,
+    get_shared_summaries_for_learner
+)
+
+from app.models.summary import Summary
+from app.models.video import Video
+from app.models.classroom import Classroom
+from app.models.summary_share import SummaryShare
+
 from app.services.upload_service import (
     save_uploaded_video,
     process_video_in_background
 )
+
+from app.services.summarization_service import (
+    generate_educational_summary
+)
+
 from app.crud.activity_history import get_user_activities
 from app.services.activity_service import log_activity
-from app.core.enums import ActivityType
+from app.core.enums import (
+    ActivityType,
+    SummaryType,
+    UserRole
+)
 from app.auth.authorization import require_roles
-from app.core.enums import UserRole
 # import os
 
 from fastapi import (
@@ -28,6 +61,7 @@ from fastapi import (
     BackgroundTasks,
     Depends,
     File,
+    Form,
     HTTPException,
     UploadFile
 )
@@ -61,6 +95,8 @@ from app.crud.video import (
 
 from app.auth.jwt_handler import create_access_token
 from app.auth.oauth2 import get_current_user
+
+from app.crud.classroom import get_classroom_by_id_and_educator
 
 
 router = APIRouter()
@@ -256,6 +292,7 @@ def get_activity_history(
 async def upload_video(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
+    classroom_id: int | None = Form(None),
     current_user=Depends(
         require_roles(
             UserRole.CONTENT_CREATOR,
@@ -266,11 +303,38 @@ async def upload_video(
     db: Session = Depends(get_db)
 ):
 
+        # ---------------------------------------------------------
+    # Validate classroom selection
+    # ---------------------------------------------------------
+
+    if classroom_id is not None:
+
+        # Only educators can assign videos to classrooms
+        if current_user.role != UserRole.EDUCATOR:
+            raise HTTPException(
+                status_code=403,
+                detail="Only educators can upload videos to classrooms"
+            )
+
+        classroom = get_classroom_by_id_and_educator(
+            db=db,
+            classroom_id=classroom_id,
+            educator_id=current_user.id
+        )
+
+        if classroom is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Classroom not found or does not belong to you"
+            )
+
+
     # Save the video and create the database record
     video = save_uploaded_video(
         db=db,
         file=file,
         current_user=current_user,
+        classroom_id=classroom_id
     )
 
     # Start AI processing in the background
@@ -292,7 +356,8 @@ async def upload_video(
         "video": {
             "id": video.id,
             "filename": video.filename,
-            "status": video.status
+            "status": video.status,
+            "classroom_id": video.classroom_id
         }
     }
 
@@ -435,6 +500,74 @@ def get_video_transcript(
 
     return transcript
 
+@router.put(
+    "/videos/{video_id}/transcript",
+    response_model=TranscriptResponse
+)
+def edit_video_transcript(
+    video_id: int,
+    transcript_data: TranscriptUpdate,
+    current_user=Depends(
+        require_roles(UserRole.EDUCATOR)
+    ),
+    db: Session = Depends(get_db)
+):
+
+    # ---------------------------------------------------------
+    # Educator can edit only their own video
+    # ---------------------------------------------------------
+
+    video = get_video_by_id(
+        db=db,
+        video_id=video_id,
+        owner_id=current_user.id
+    )
+
+    if video is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Video not found"
+        )
+
+    # ---------------------------------------------------------
+    # Get existing transcript
+    # ---------------------------------------------------------
+
+    transcript = get_transcript_by_video(
+        db=db,
+        video=video
+    )
+
+    if transcript is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Transcript not found"
+        )
+
+    # ---------------------------------------------------------
+    # Update transcript
+    # ---------------------------------------------------------
+
+    updated_transcript = update_transcript(
+        db=db,
+        transcript=transcript,
+        transcript_text=transcript_data.transcript_text
+    )
+
+    # ---------------------------------------------------------
+    # Log activity
+    # ---------------------------------------------------------
+
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.TRANSCRIPT_UPDATED,
+        entity_name=video.filename
+    )
+
+    return updated_transcript
+
+
 @router.get(
     "/videos/{video_id}/transcript/download"
 )
@@ -568,6 +701,121 @@ def get_video_transcript_segments(
     )
 
     return segments
+
+# ============================================================
+# GENERATE EDUCATIONAL SUMMARY
+# Educator only
+# ============================================================
+
+@router.post(
+    "/videos/{video_id}/summary/educational",
+    response_model=SummaryResponse
+)
+def generate_video_educational_summary(
+    video_id: int,
+    current_user=Depends(
+        require_roles(UserRole.EDUCATOR)
+    ),
+    db: Session = Depends(get_db)
+):
+
+    # ---------------------------------------------------------
+    # Educator can generate summaries only for their own videos
+    # ---------------------------------------------------------
+
+    video = get_video_by_id(
+        db=db,
+        video_id=video_id,
+        owner_id=current_user.id
+    )
+
+    if video is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Video not found"
+        )
+
+    # ---------------------------------------------------------
+    # Get the latest transcript
+    # ---------------------------------------------------------
+
+    transcript = get_transcript_by_video(
+        db=db,
+        video=video
+    )
+
+    if transcript is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Transcript not found"
+        )
+
+    # ---------------------------------------------------------
+    # Generate educational summary
+    # ---------------------------------------------------------
+
+    start_time = time.time()
+
+    summary_text = generate_educational_summary(
+        transcript.transcript_text
+    )
+
+    processing_time = (
+        f"{time.time() - start_time:.2f} sec"
+    )
+
+    # ---------------------------------------------------------
+    # Check whether an educational summary already exists
+    # ---------------------------------------------------------
+
+    existing_summary = get_summary_by_type(
+        db=db,
+        video=video,
+        summary_type=SummaryType.EDUCATIONAL.value
+    )
+
+    # ---------------------------------------------------------
+    # Update existing summary
+    # ---------------------------------------------------------
+
+    if existing_summary is not None:
+
+        summary = update_summary(
+            db=db,
+            summary=existing_summary,
+            summary_text=summary_text,
+            model_name="t5-small",
+            processing_time=processing_time
+        )
+
+    # ---------------------------------------------------------
+    # Create new summary
+    # ---------------------------------------------------------
+
+    else:
+
+        summary = create_summary(
+            db=db,
+            video=video,
+            summary_type=SummaryType.EDUCATIONAL.value,
+            summary_text=summary_text,
+            model_name="t5-small",
+            processing_time=processing_time
+        )
+
+    # ---------------------------------------------------------
+    # Log activity
+    # ---------------------------------------------------------
+
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.SUMMARY_GENERATED,
+        entity_name=f"Educational summary - {video.filename}"
+    )
+
+    return summary
+
 
 @router.get(
     "/videos/{video_id}/summary",
@@ -720,3 +968,90 @@ def download_video_summary(
                 f'attachment; filename="{filename}"'
         }
     )
+
+@router.post(
+    "/summary-shares",
+    response_model=SummaryShareResponse,
+    status_code=201
+)
+def share_summary_with_classroom(
+    share_data: SummaryShareCreate,
+    current_user=Depends(
+        require_roles(UserRole.EDUCATOR)
+    ),
+    db: Session = Depends(get_db)
+):
+    # Check whether the summary exists
+    summary = db.query(Summary).filter(
+        Summary.id == share_data.summary_id
+    ).first()
+
+    if summary is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Summary not found"
+        )
+
+    # Ensure the summary belongs to one of the educator's videos
+    video = db.query(Video).filter(
+        Video.id == summary.video_id,
+        Video.owner_id == current_user.id
+    ).first()
+
+    if video is None:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only share summaries from your own videos"
+        )
+
+    # Ensure the classroom belongs to the logged-in educator
+    classroom = db.query(Classroom).filter(
+        Classroom.id == share_data.classroom_id,
+        Classroom.educator_id == current_user.id
+    ).first()
+
+    if classroom is None:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only share summaries with your own classrooms"
+        )
+
+    # Prevent the same summary from being shared twice
+    existing_share = db.query(SummaryShare).filter(
+        SummaryShare.summary_id == share_data.summary_id,
+        SummaryShare.classroom_id == share_data.classroom_id
+    ).first()
+
+    if existing_share:
+        raise HTTPException(
+            status_code=400,
+            detail="This summary is already shared with this classroom"
+        )
+
+    # Create the share record
+    summary_share = create_summary_share(
+        db=db,
+        summary_id=share_data.summary_id,
+        classroom_id=share_data.classroom_id,
+        shared_by=current_user.id
+    )
+
+    return summary_share
+
+
+@router.get(
+    "/summary-shares/my",
+    response_model=List[SummaryResponse]
+)
+def get_my_shared_summaries(
+    current_user=Depends(
+        require_roles(UserRole.LEARNER)
+    ),
+    db: Session = Depends(get_db)
+):
+    summaries = get_shared_summaries_for_learner(
+        db=db,
+        learner_id=current_user.id
+    )
+
+    return summaries

@@ -6,24 +6,28 @@ export default function RoleMenu({ role }) {
     // LEARNER REQUIREMENTS
     // =========================================================
     case "LEARNER":
-      return [
-        {
-          name: "Dashboard",
-          path: "/dashboard"
-        },
-        {
-          name: "Browse Videos",
-          path: "/videos"
-        },
-        {
-          name: "Learning History",
-          path: "/history"
-        },
-        {
-          name: "Bookmarks",
-          path: "/bookmarks"
-        }
-      ];
+  return [
+    {
+      name: "Dashboard",
+      path: "/dashboard"
+    },
+    {
+      name: "My Classrooms",
+      path: "/my-classrooms"
+    },
+    {
+      name: "Browse Videos",
+      path: "/videos"
+    },
+    {
+      name: "Learning History",
+      path: "/history"
+    },
+    {
+      name: "Bookmarks",
+      path: "/bookmarks"
+    }
+  ];
 
 
     // =========================================================
@@ -76,6 +80,12 @@ export default function RoleMenu({ role }) {
           name: "Dashboard",
           path: "/dashboard"
         },
+
+        {
+          name: "Classrooms",
+          path: "/classrooms"
+        },
+
         {
           name: "Upload Lecture",
           path: "/upload"

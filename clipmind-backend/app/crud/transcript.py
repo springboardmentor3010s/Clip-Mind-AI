@@ -1,4 +1,6 @@
+import os
 from sqlalchemy.orm import Session
+
 
 from app.models.transcript import Transcript
 from app.models.video import Video
@@ -38,3 +40,31 @@ def get_transcript_by_video(
         )
         .first()
     )
+
+def update_transcript(
+    db: Session,
+    transcript: Transcript,
+    transcript_text: str
+):
+    # Update database transcript
+    transcript.transcript_text = transcript_text
+
+    db.commit()
+    db.refresh(transcript)
+
+    # Keep the physical transcript file in sync
+    if transcript.transcript_file_path:
+        os.makedirs(
+            os.path.dirname(transcript.transcript_file_path)
+            or ".",
+            exist_ok=True
+        )
+
+        with open(
+            transcript.transcript_file_path,
+            "w",
+            encoding="utf-8"
+        ) as file:
+            file.write(transcript_text)
+
+    return transcript

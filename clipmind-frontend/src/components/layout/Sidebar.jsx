@@ -50,6 +50,10 @@ export default function Sidebar() {
       case "Dashboard":
         return <FaHome />;
 
+      case "Classrooms":
+        case "My Classrooms":
+          return <FaUsers />;
+
 
       // =====================================================
       // VIDEO / UPLOAD

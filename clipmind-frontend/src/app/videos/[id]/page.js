@@ -270,12 +270,27 @@ async function loadOrGenerateKeyMoments() {
 
     const existingKeyMoments = await getKeyMoments(id);
 
-    if (existingKeyMoments && existingKeyMoments.length > 0) {
+    // If key moments already exist, everyone can view them
+    if (
+      existingKeyMoments &&
+      existingKeyMoments.length > 0
+    ) {
       setKeyMoments(existingKeyMoments);
       return existingKeyMoments;
     }
 
-    const generatedKeyMoments = await generateKeyMoments(id, 5);
+    // Learners can only view existing key moments
+    if (role === "LEARNER") {
+      setKeyMomentError(
+        "Key moments have not been generated for this lecture yet."
+      );
+
+      return [];
+    }
+
+    // Authorized roles can generate key moments
+    const generatedKeyMoments =
+      await generateKeyMoments(id, 5);
 
     setKeyMoments(generatedKeyMoments);
 
@@ -289,7 +304,7 @@ async function loadOrGenerateKeyMoments() {
 
     setKeyMomentError(
       error.response?.data?.detail ||
-      "Unable to load or generate key moments."
+      "Unable to load key moments."
     );
 
     return [];

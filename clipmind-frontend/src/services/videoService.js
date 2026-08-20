@@ -3,30 +3,41 @@ import api from "@/lib/axios";
 /**
  * Upload a video file
  */
-export const uploadVideo = async (file, onUploadProgress) => {
-  const token = localStorage.getItem("access_token");
-
+export const uploadVideo = async (
+  file,
+  classroomId,
+  onUploadProgress
+) => {
   const formData = new FormData();
+
   formData.append("file", file);
 
-  const response = await api.post("/upload", formData, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "multipart/form-data",
-    },
+  // Add classroom only when one is selected
+  if (classroomId) {
+    formData.append(
+      "classroom_id",
+      classroomId
+    );
+  }
 
-    onUploadProgress: (progressEvent) => {
-      if (!progressEvent.total) return;
+  const response = await api.post(
+    "/upload",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
 
-      const percentCompleted = Math.round(
-        (progressEvent.loaded * 100) / progressEvent.total
-      );
+      onUploadProgress: (progressEvent) => {
+        const progress = Math.round(
+          (progressEvent.loaded * 100) /
+          progressEvent.total
+        );
 
-      if (onUploadProgress) {
-        onUploadProgress(percentCompleted);
-      }
-    },
-  });
+        onUploadProgress(progress);
+      },
+    }
+  );
 
   return response.data;
 };

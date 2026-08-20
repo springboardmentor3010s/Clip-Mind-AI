@@ -40,6 +40,7 @@ def save_uploaded_video(
     db: Session,
     file,
     current_user,
+    classroom_id=None
 ):
     # Validate uploaded file
     if not is_valid_video(file.filename):
@@ -80,6 +81,7 @@ def save_uploaded_video(
         duration=duration,
         file_size=file_size,
         owner_id=current_user.id,
+        classroom_id=classroom_id
     )
 
     return video

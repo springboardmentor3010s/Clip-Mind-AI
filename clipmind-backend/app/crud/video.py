@@ -14,6 +14,7 @@ def create_video(
     duration: float = None,
     file_size: int = None,
     owner_id: int = None,
+    classroom_id: int | None = None
 ):
     video = Video(
         filename=filename,
@@ -23,7 +24,8 @@ def create_video(
         duration=duration,
         file_size=file_size,
         status=VideoStatus.PROCESSING.value,
-        owner_id=owner_id
+        owner_id=owner_id,
+        classroom_id=classroom_id
     )
 
     db.add(video)

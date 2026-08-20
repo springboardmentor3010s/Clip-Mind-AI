@@ -59,3 +59,20 @@ def get_summary_by_type(
         )
         .first()
     )
+
+def update_summary(
+    db: Session,
+    summary: Summary,
+    summary_text: str,
+    model_name: str,
+    processing_time: str = None
+):
+
+    summary.summary_text = summary_text
+    summary.model_name = model_name
+    summary.processing_time = processing_time
+
+    db.commit()
+    db.refresh(summary)
+
+    return summary
