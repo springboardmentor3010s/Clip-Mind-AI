@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from sqlalchemy.orm import Session
 
 from app.core.database import engine, Base, ensure_column
+from app.core.config import settings
 from app.models import user, role
 from app.api.auth import router as auth_router
 from app.api.upload import router as upload_router
@@ -80,11 +81,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+origins = settings.cors_origins
 
 app.add_middleware(
     CORSMiddleware,

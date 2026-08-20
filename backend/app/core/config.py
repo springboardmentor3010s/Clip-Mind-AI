@@ -15,7 +15,18 @@ class Settings(BaseSettings):
 
     firebase_project_id: str = "clipmind-ai-firebase-gagana"
 
+    # Comma-separated list of extra allowed CORS origins, e.g. a deployment's
+    # public IP/domain — http://localhost:3000 and 127.0.0.1:3000 are always
+    # allowed regardless, for local dev.
+    extra_cors_origins: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding='utf-8', extra="ignore")
+
+    @property
+    def cors_origins(self) -> list[str]:
+        base = ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:3000"]
+        extra = [o.strip() for o in self.extra_cors_origins.split(",") if o.strip()]
+        return base + extra
 
 import os
 
