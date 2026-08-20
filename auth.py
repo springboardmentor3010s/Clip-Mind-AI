@@ -1,91 +1,44 @@
 """
-Authentication router: register, login, logout.
+Authentication schemas (Pydantic models).
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Request
-from sqlalchemy.orm import Session
+from datetime import datetime
+from typing import Optional
 
-from app.database.database import get_db
-from app.schemas.auth import RegisterRequest, LoginRequest, Token
-from app.services.auth_service import AuthService
-from app.services.activity_service import log_activity
+from pydantic import BaseModel, Field, EmailStr, field_validator
 
-
-router = APIRouter(
-    prefix="/api/auth",
-    tags=["Authentication"],
-)
+class Token(BaseModel):
+    """JWT token response."""
+    access_token: str
+    token_type: str = "bearer"
 
 
-@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
-def register(
-    payload: RegisterRequest,
-    request: Request,
-    db: Session = Depends(get_db),
-):
-    """
-    Register a new user account.
-
-    - **email**: User's email (must be unique)
-    - **username**: Username (must be unique, 3-100 chars)
-    - **full_name**: Full name
-    - **password**: Password (min 8 chars)
-    - **role_name**: One of Learner, Content Creator, Educator
-    """
-    try:
-        user = AuthService.register_user(db, payload)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
-        )
-
-    log_activity(
-        db, user_id=user.id, action="register",
-        resource_type="user", resource_id=user.id,
-        description=f"New account registered as {user.email}",
-        request=request,
-    )
-    token = AuthService.create_token(user)
-    return Token(access_token=token, token_type="bearer")
+class TokenPayload(BaseModel):
+    """Decoded JWT token payload."""
+    sub: Optional[str] = None
+    exp: Optional[int] = None
+    iat: Optional[int] = None
+    role: Optional[str] = None
 
 
-@router.post("/login", response_model=Token)
-def login(
-    payload: LoginRequest,
-    request: Request,
-    db: Session = Depends(get_db),
-):
-    """
-    Authenticate and receive a JWT access token.
-
-    - **email**: User's email
-    - **password**: User's password
-    - **role_name**: Optional role name to filter login (e.g., Administrator)
-    """
-    user = AuthService.authenticate_user(db, payload.email, payload.password, payload.role_name)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    log_activity(
-        db, user_id=user.id, action="login",
-        resource_type="user", resource_id=user.id,
-        description=f"User {user.email} logged in as {user.role}",
-        request=request,
-    )
-    token = AuthService.create_token(user)
-    return Token(access_token=token, token_type="bearer")
+class LoginRequest(BaseModel):
+    """Login request body."""
+    email: EmailStr
+    password: str = Field(..., min_length=1)
+    role_name: Optional[str] = Field(default=None)
 
 
-@router.post("/logout")
-def logout():
-    """
-    Logout the current user.
+class RegisterRequest(BaseModel):
+    """Registration request body."""
+    email: EmailStr
+    username: str = Field(..., min_length=3, max_length=100)
+    full_name: str = Field(..., min_length=1, max_length=255)
+    password: str = Field(..., min_length=8, max_length=128)
+    role_name: str = Field(default="Learner")
 
-    Note: With JWT, logout is handled client-side by deleting the token.
-    This endpoint exists for API completeness.
-    """
-    return {"message": "Successfully logged out. Please delete your token client-side."}
+    @field_validator("role_name")
+    @classmethod
+    def validate_role(cls, v: str) -> str:
+        allowed_roles = ["Learner", "Content Creator", "Educator"]
+        if v not in allowed_roles:
+            raise ValueError(f"Role must be one of: {', '.join(allowed_roles)}")
+        return v

@@ -1,26 +1,45 @@
 """
-Transcript model.
+Transcript schemas (Pydantic models).
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, func, ForeignKey
-from sqlalchemy.types import JSON
-from sqlalchemy.orm import relationship
+from datetime import datetime
+from typing import List, Optional
 
-from app.database.database import Base
+from pydantic import BaseModel
 
-class Transcript(Base):
-    __tablename__ = "transcripts"
+class Segment(BaseModel):
+    """A single timestamped transcript segment (from Whisper)."""
+    id: Optional[int] = None
+    start: float = 0.0
+    end: float = 0.0
+    text: str = ""
 
-    id = Column(Integer, primary_key=True, index=True)
-    video_id = Column(Integer, ForeignKey("videos.id"), nullable=False, unique=True)
-    transcript = Column(Text, nullable=False)
-    language = Column(String(20), default="en", nullable=False)
-    confidence = Column(Integer, nullable=True)
-    segments = Column(JSON, nullable=True)  # Whisper segments: [{id, start, end, text}, ...]
-    created_at = Column(DateTime, default=func.now(), nullable=False)
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
 
-    # Relationship
-    video = relationship("Video", back_populates="transcript")
+class TranscriptBase(BaseModel):
+    """Base transcript schema."""
+    transcript: str
+    language: str = "en"
 
-    def __repr__(self):
-        return f"<Transcript(id={self.id}, video_id={self.video_id})>"
+
+class TranscriptCreate(TranscriptBase):
+    """Schema for creating a transcript."""
+    video_id: int
+
+
+class TranscriptRead(TranscriptBase):
+    """Schema for reading a transcript."""
+    id: int
+    video_id: int
+    confidence: Optional[int] = None
+    segments: Optional[List[Segment]] = None
+    created_at: datetime
+    updated_at: datetime
+    word_count: Optional[int] = None
+
+    model_config = {"from_attributes": True}
+
+
+class TranscriptUpdate(BaseModel):
+    """Schema for updating a transcript."""
+    transcript: Optional[str] = None
+    language: Optional[str] = None
+    confidence: Optional[int] = None

@@ -1,43 +1,58 @@
 """
-Video model.
+Video schemas (Pydantic models).
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, func, ForeignKey, Float, Boolean
-from sqlalchemy.orm import relationship
+from datetime import datetime
+from typing import Optional
 
-from app.database.database import Base
+from pydantic import BaseModel, Field
 
-class Video(Base):
-    __tablename__ = "videos"
+class VideoBase(BaseModel):
+    """Base video schema."""
+    title: str = Field(..., min_length=1, max_length=255)
+    description: Optional[str] = None
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-    filename = Column(String(255), nullable=False)
-    file_path = Column(String(500), nullable=False)
-    file_size = Column(Integer, nullable=True)
-    duration = Column(Float, nullable=True)
-    thumbnail_url = Column(String(500), nullable=True)
-    thumbnail_path = Column(String(500), nullable=True)
-    audio_path = Column(String(500), nullable=True)
-    video_url = Column(String(500), nullable=True)
-    status = Column(String(50), default="uploaded", nullable=False)
-    is_published = Column(Boolean, default=True, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, default=func.now(), nullable=False)
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
 
-    # Relationships
-    user = relationship("User", back_populates="videos")
-    transcript = relationship("Transcript", back_populates="video", uselist=False, cascade="all, delete-orphan")
-    summary = relationship("Summary", back_populates="video", uselist=False, cascade="all, delete-orphan")
-    key_moments = relationship("KeyMoment", back_populates="video", cascade="all, delete-orphan")
-    keywords = relationship("Keyword", back_populates="video", cascade="all, delete-orphan")
-    analytics = relationship("Analytics", back_populates="video", uselist=False, cascade="all, delete-orphan")
-    bookmarks = relationship("Bookmark", back_populates="video", cascade="all, delete-orphan")
-    watch_history = relationship("WatchHistory", back_populates="video", cascade="all, delete-orphan")
-    processing_jobs = relationship("ProcessingJob", back_populates="video", cascade="all, delete-orphan")
-    summary_shares = relationship("SummaryShare", back_populates="video", cascade="all, delete-orphan")
-    learning_materials = relationship("LearningMaterial", back_populates="video", cascade="all, delete-orphan")
+class VideoCreate(VideoBase):
+    """Schema for creating a video (upload)."""
+    pass
 
-    def __repr__(self):
-        return f"<Video(id={self.id}, title='{self.title}')>"
+
+class VideoRead(VideoBase):
+    """Schema for reading a video."""
+    id: int
+    filename: str
+    file_path: str
+    file_size: Optional[int] = None
+    duration: Optional[float] = None
+    thumbnail_url: Optional[str] = None
+    thumbnail_path: Optional[str] = None
+    audio_path: Optional[str] = None
+    video_url: Optional[str] = None
+    status: str
+    is_published: bool = True
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class VideoUpdate(BaseModel):
+    """Schema for updating a video."""
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    status: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    is_published: Optional[bool] = None
+
+
+class VideoUploadResponse(BaseModel):
+    """Schema for video upload response."""
+    id: int
+    title: str
+    filename: str
+    file_size: Optional[int] = None
+    status: str
+    message: str
+
+    model_config = {"from_attributes": True}

@@ -1,61 +1,120 @@
 """
-SQLAlchemy model for storing AI-detected key moments (YouTube-style chapters).
+KeyMoment Pydantic schemas.
+
+Updated to support YouTube-style chapters with importance field.
 """
 
 from datetime import datetime
-from sqlalchemy import (
-    Column,
-    DateTime,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-)
-from sqlalchemy.orm import relationship
+from typing import Optional
 
-from app.database.database import Base
+from pydantic import BaseModel, ConfigDict, Field
 
+class KeyMomentBase(BaseModel):
+    """
+    Base schema for a key moment (YouTube-style chapter).
+    """
 
-class KeyMoment(Base):
-    __tablename__ = "key_moments"
-
-    id = Column(Integer, primary_key=True)
-
-    video_id = Column(
-        Integer,
-        ForeignKey("videos.id", ondelete="CASCADE"),
-        nullable=False,
+    start_time: float = Field(
+        ...,
+        ge=0,
+        description="Start timestamp (seconds) in the video."
     )
 
-    start_time = Column(Float, nullable=False)
+    end_time: float | None = Field(
+        default=None,
+        ge=0,
+        description="End timestamp (seconds) in the video."
+    )
 
-    end_time = Column(Float)
+    title: str = Field(
+        ...,
+        min_length=1,
+        max_length=255,
+        description="Chapter title (max 6 words, never empty)."
+    )
 
-    title = Column(String(255))
+    description: Optional[str] = Field(
+        default=None,
+        description="1-2 sentence description of the chapter."
+    )
 
-    description = Column(Text)
-
-    importance = Column(
-        String(20),
+    importance: Optional[str] = Field(
         default="Medium",
-        nullable=True,
-        comment="Importance level: Low, Medium, High, Very High",
+        description="Importance level: Low, Medium, High, Very High."
     )
 
-    confidence = Column(Float)
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+class KeyMomentCreate(KeyMomentBase):
+    """
+    Schema for creating a key moment.
+    """
 
-    video = relationship(
-        "Video",
-        back_populates="key_moments",
+    video_id: int
+
+    confidence: Optional[float] = Field(
+        default=0.0,
+        ge=0,
+        le=1,
     )
 
-    def __repr__(self):
-        return (
-            f"<KeyMoment(id={self.id}, "
-            f"video_id={self.video_id}, "
-            f"title='{self.title}', "
-            f"importance='{self.importance}')>"
-        )
+
+class KeyMomentUpdate(BaseModel):
+    """
+    Schema for updating a key moment.
+    """
+
+    start_time: Optional[float] = Field(
+        default=None,
+        ge=0,
+    )
+
+    end_time: float | None = Field(
+        default=None,
+        ge=0,
+    )
+
+    title: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=255,
+    )
+
+    description: Optional[str] = None
+
+    importance: Optional[str] = Field(
+        default=None,
+        description="Importance level: Low, Medium, High, Very High."
+    )
+
+    confidence: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=1,
+    )
+
+
+class KeyMomentRead(KeyMomentBase):
+    """
+    Schema returned by the API.
+    Relies on database-level NOT NULL or model-level defaults.
+    """
+
+    id: int
+
+    video_id: int
+
+    confidence: float
+
+    title: str = Field(
+        default="Key Discussion",
+        max_length=255,
+    )
+
+    importance: str = Field(
+        default="Medium",
+        description="Importance level: Low, Medium, High, Very High."
+    )
+
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

@@ -1,40 +1,25 @@
 """
-SQLAlchemy model for storing extracted transcript keywords.
+Keyword schemas for request/response validation.
 """
 
-from datetime import datetime
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from pydantic import BaseModel, Field
 
-from app.database.database import Base
+class KeywordExtractRequest(BaseModel):
+    """Request body for extracting keywords from a transcript."""
+
+    transcript: str = Field(..., description="The transcript text to extract keywords from")
+    top_n: int = Field(default=20, ge=1, le=100, description="Number of top keywords to return")
 
 
-class Keyword(Base):
-    __tablename__ = "keywords"
+class KeywordItem(BaseModel):
+    """A single extracted keyword with its frequency count."""
 
-    id = Column(Integer, primary_key=True)
+    keyword: str
+    count: int
 
-    video_id = Column(
-        Integer,
-        ForeignKey("videos.id", ondelete="CASCADE"),
-        nullable=False,
-    )
 
-    keyword = Column(String(255), nullable=False, index=True)
+class KeywordExtractResponse(BaseModel):
+    """Response containing extracted keywords from the transcript."""
 
-    count = Column(Integer, nullable=False, default=0)
-
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    video = relationship(
-        "Video",
-        back_populates="keywords",
-    )
-
-    def __repr__(self):
-        return (
-            f"<Keyword(id={self.id}, "
-            f"video_id={self.video_id}, "
-            f"keyword='{self.keyword}', "
-            f"count={self.count})>"
-        )
+    keywords: list[KeywordItem]
+    total: int

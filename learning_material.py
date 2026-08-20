@@ -1,43 +1,54 @@
 """
-LearningMaterial model.
+Learning material schemas (Pydantic models).
 
-Represents study material that an educator creates from a video transcript
-(e.g. key terms, flashcards, and key takeaways) to help students learn.
+Study materials an educator creates from a video transcript:
+key terms, flashcards, key takeaways, and a short summary.
 """
-from sqlalchemy import Column, Integer, String, DateTime, func, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.types import JSON
+from datetime import datetime
+from typing import List, Optional
 
-from app.database.database import Base
+from pydantic import BaseModel
 
-class LearningMaterial(Base):
-    __tablename__ = "learning_materials"
+class KeyTermItem(BaseModel):
+    """A single key term with a short definition."""
+    term: str
+    definition: str = ""
 
-    id = Column(Integer, primary_key=True, index=True)
-    video_id = Column(
-        Integer,
-        ForeignKey("videos.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-    title = Column(String(255), nullable=False)
-    # JSON blob: { summary, key_terms[], flashcards[], takeaways[] }
-    content = Column(JSON, nullable=False)
-    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, default=func.now(), nullable=False)
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
 
-    # Relationships
-    video = relationship("Video", back_populates="learning_materials")
-    creator = relationship("User")
-    shares = relationship(
-        "LearningMaterialShare",
-        back_populates="material",
-        cascade="all, delete-orphan",
-    )
+class FlashcardItem(BaseModel):
+    """A single flashcard (front question / back answer)."""
+    front: str
+    back: str = ""
 
-    def __repr__(self):
-        return (
-            f"<LearningMaterial(id={self.id}, video_id={self.video_id}, "
-            f"title='{self.title}')>"
-        )
+
+class LearningMaterialContent(BaseModel):
+    """The structured content of a learning material."""
+    summary: str = ""
+    key_terms: List[KeyTermItem] = []
+    flashcards: List[FlashcardItem] = []
+    takeaways: List[str] = []
+
+
+class LearningMaterialCreate(BaseModel):
+    """Request body for creating a learning material with custom content."""
+    title: str
+    content: LearningMaterialContent
+
+
+class LearningMaterialRead(BaseModel):
+    """Response schema for a learning material."""
+    id: int
+    video_id: int
+    title: str
+    content: LearningMaterialContent
+    created_by: int
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class LearningMaterialUpdate(BaseModel):
+    """Request body for updating a learning material."""
+    title: Optional[str] = None
+    content: Optional[LearningMaterialContent] = None

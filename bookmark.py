@@ -1,41 +1,27 @@
-"""
-Bookmark model.
+from datetime import datetime
+from typing import Optional
+from pydantic import BaseModel
 
-Represents a user's saved/bookmarked video (save-for-later functionality).
-"""
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, UniqueConstraint
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from app.database.database import Base
+class VideoMini(BaseModel):
+    """Minimal video info returned with bookmark responses."""
+    id: int
+    title: str
+    description: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    duration: Optional[float] = None
 
-class Bookmark(Base):
-    __tablename__ = "bookmarks"
+    class Config:
+        from_attributes = True
 
-    id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(
-        Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False
-    )
+class BookmarkCreate(BaseModel):
+    video_id: int
 
-    video_id = Column(
-        Integer,
-        ForeignKey("videos.id", ondelete="CASCADE"),
-        nullable=False
-    )
 
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now()
-    )
+class BookmarkResponse(BaseModel):
+    id: int
+    video: VideoMini
+    created_at: datetime
 
-    __table_args__ = (
-        UniqueConstraint(
-            "user_id", "video_id",
-            name="uq_bookmark_user_video"
-        ),
-    )
-
-    user = relationship("User", back_populates="bookmarks")
-    video = relationship("Video", back_populates="bookmarks")
+    class Config:
+        from_attributes = True

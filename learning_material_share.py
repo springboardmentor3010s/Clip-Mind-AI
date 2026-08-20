@@ -1,45 +1,34 @@
 """
-LearningMaterialShare model.
+Learning material share schemas (Pydantic models).
 
 Represents a shareable link an educator creates for a learning material
 (study notes) so that students/learners can view the notes without needing
 editor access.
 """
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Boolean,
-    DateTime,
-    func,
-    ForeignKey,
-)
-from sqlalchemy.orm import relationship
+from datetime import datetime
 
-from app.database.database import Base
+from pydantic import BaseModel
 
-class LearningMaterialShare(Base):
-    __tablename__ = "learning_material_shares"
+from app.schemas.learning_material import LearningMaterialContent
 
-    id = Column(Integer, primary_key=True, index=True)
-    material_id = Column(
-        Integer,
-        ForeignKey("learning_materials.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-    # Unique public token used in the share URL.
-    token = Column(String(128), unique=True, nullable=False, index=True)
-    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=func.now(), nullable=False)
+class LearningMaterialShareRead(BaseModel):
+    """Response schema for a learning material share link (owner-facing)."""
+    id: int
+    material_id: int
+    token: str
+    is_active: bool
+    created_by: int
+    created_at: datetime
 
-    # Relationships
-    material = relationship("LearningMaterial", back_populates="shares")
-    creator = relationship("User")
+    model_config = {"from_attributes": True}
 
-    def __repr__(self):
-        return (
-            f"<LearningMaterialShare(id={self.id}, material_id={self.material_id}, "
-            f"token='{self.token}', active={self.is_active})>"
-        )
+
+class SharedLearningMaterialView(BaseModel):
+    """Public payload returned when a student opens a learning material share link."""
+    video_id: int
+    video_title: str
+    educator_name: str
+    material_id: int
+    title: str
+    content: LearningMaterialContent
+    shared_at: datetime

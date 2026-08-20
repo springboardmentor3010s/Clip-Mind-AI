@@ -1,74 +1,71 @@
 """
-WatchHistory model.
-
-Tracks per-user learning history: which videos a user has watched,
-how long they watched, and their progress (for a "Continue Watching"
-/ learning history experience).
+WatchHistory schemas (Pydantic models).
 """
-from sqlalchemy import (
-    Column,
-    Integer,
-    Float,
-    DateTime,
-    ForeignKey,
-    UniqueConstraint,
-    func,
-)
-from sqlalchemy.orm import relationship
+from datetime import datetime
+from typing import Optional
 
-from app.database.database import Base
+from pydantic import BaseModel, Field
 
-class WatchHistory(Base):
-    __tablename__ = "watch_history"
+class VideoMini(BaseModel):
+    """Minimal video info returned with history entries."""
+    id: int
+    title: str
+    description: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    duration: Optional[float] = None
+    video_url: Optional[str] = None
 
-    id = Column(Integer, primary_key=True, index=True)
+    model_config = {"from_attributes": True}
 
-    user_id = Column(
-        Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+
+class WatchHistoryCreate(BaseModel):
+    """Schema for recording/updating a watch-history entry."""
+    watch_duration: float = Field(0.0, ge=0, description="Seconds watched")
+    completion_rate: float = Field(
+        0.0,
+        ge=0,
+        le=1,
+        description="Fraction of the video completed (0.0 - 1.0)",
     )
 
-    video_id = Column(
-        Integer,
-        ForeignKey("videos.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
 
-    # Seconds of video watched (updates as the learner watches).
-    watch_duration = Column(Float, default=0.0, nullable=False)
+class WatchHistoryRead(BaseModel):
+    """Schema for a single history entry."""
+    id: int
+    video_id: int
+    video: VideoMini
+    watch_duration: float
+    completion_rate: float
+    last_watched_at: datetime
+    created_at: datetime
 
-    # 0.0 - 1.0 fraction of the video completed.
-    completion_rate = Column(Float, default=0.0, nullable=False)
+    model_config = {"from_attributes": True}
 
-    last_watched_at = Column(
-        DateTime(timezone=True),
-        default=func.now(),
-        onupdate=func.now(),
-        nullable=False,
-    )
 
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        nullable=False,
-    )
+class ViewerMini(BaseModel):
+    """Minimal viewer info returned with creator history entries."""
+    id: int
+    username: str
+    full_name: str
+    avatar_url: Optional[str] = None
 
-    __table_args__ = (
-        UniqueConstraint(
-            "user_id", "video_id",
-            name="uq_watch_history_user_video",
-        ),
-    )
+    model_config = {"from_attributes": True}
 
-    user = relationship("User", back_populates="watch_history")
-    video = relationship("Video", back_populates="watch_history")
 
-    def __repr__(self):
-        return (
-            f"<WatchHistory(id={self.id}, "
-            f"user_id={self.user_id}, video_id={self.video_id}, "
-            f"completion={self.completion_rate:.0%})>"
-        )
+class CreatorHistoryRead(BaseModel):
+    """Schema for a creator's content history entry.
+
+    Shows how an individual viewer engaged with a video the creator
+    uploaded — i.e. the viewer's watch duration, completion rate, and
+    who the viewer is.
+    """
+    id: int
+    video_id: int
+    video: VideoMini
+    viewer: ViewerMini
+    watch_duration: float
+    completion_rate: float
+    last_watched_at: datetime
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

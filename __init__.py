@@ -1,25 +1,60 @@
 """
-Routers package.
+Pydantic schemas package.
 """
-from app.routers.auth import router as auth_router
-from app.routers.users import router as users_router
-from app.routers.admin import router as admin_router
-from app.routers.video_router import router as video_router
-from app.routers.transcript_router import router as transcript_router
-from app.routers.summary_router import router as summary_router
-from app.routers.key_moment_router import router as key_moment_router
-from app.routers.analytics_router import router as analytics_router
-from app.routers.bookmarks import router as bookmark_router
+from app.schemas.auth import Token, TokenPayload, RegisterRequest, LoginRequest
+from app.schemas.role import RoleBase, RoleCreate, RoleRead, RoleUpdate
+from app.schemas.user import UserBase, UserCreate, UserRead, UserUpdate, UserProfile
+from app.schemas.video import VideoBase, VideoCreate, VideoRead, VideoUpdate, VideoUploadResponse
+from app.schemas.transcript import TranscriptBase, TranscriptCreate, TranscriptRead, TranscriptUpdate
+from app.schemas.transcript_validation import (
+    TranscriptValidationMetrics,
+    TranscriptValidationFlags,
+    TranscriptValidationResponse,
+)
+from app.schemas.summary import SummaryBase, SummaryCreate, SummaryRead, SummaryUpdate
+from app.schemas.key_moment import KeyMomentBase, KeyMomentCreate, KeyMomentRead, KeyMomentUpdate
+from app.schemas.analytics import AnalyticsBase, AnalyticsCreate, AnalyticsRead, AnalyticsUpdate
+from app.schemas.bookmark import BookmarkCreate, BookmarkResponse
 
 
 __all__ = [
-    "auth_router",
-    "users_router",
-    "admin_router",
-    "video_router",
-    "transcript_router",
-    "summary_router",
-    "key_moment_router",
-    "analytics_router",
-    "bookmark_router",
+    "Token",
+    "TokenPayload",
+    "RegisterRequest",
+    "LoginRequest",
+    "RoleBase",
+    "RoleCreate",
+    "RoleRead",
+    "RoleUpdate",
+    "UserBase",
+    "UserCreate",
+    "UserRead",
+    "UserUpdate",
+    "UserProfile",
+    "VideoBase",
+    "VideoCreate",
+    "VideoRead",
+    "VideoUpdate",
+    "VideoUploadResponse",
+    "TranscriptBase",
+    "TranscriptCreate",
+    "TranscriptRead",
+    "TranscriptUpdate",
+    "TranscriptValidationMetrics",
+    "TranscriptValidationFlags",
+    "TranscriptValidationResponse",
+    "SummaryBase",
+    "SummaryCreate",
+    "SummaryRead",
+    "SummaryUpdate",
+    "KeyMomentBase",
+    "KeyMomentCreate",
+    "KeyMomentRead",
+    "KeyMomentUpdate",
+    "AnalyticsBase",
+    "AnalyticsCreate",
+    "AnalyticsRead",
+    "AnalyticsUpdate",
+    "BookmarkCreate",
+    "BookmarkResponse",
 ]

@@ -1,21 +1,29 @@
 """
-Role model.
+Role schemas (Pydantic models).
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, func
-from sqlalchemy.orm import relationship
+from typing import Optional
 
-from app.database.database import Base
+from pydantic import BaseModel, Field
 
-class Role(Base):
-    __tablename__ = "roles"
+class RoleBase(BaseModel):
+    """Base role schema."""
+    name: str = Field(..., min_length=1, max_length=50)
+    description: Optional[str] = None
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(50), unique=True, nullable=False, index=True)
-    description = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=func.now(), nullable=False)
 
-    # Relationship
-    users = relationship("User", back_populates="role_rel", cascade="all, delete-orphan")
+class RoleCreate(RoleBase):
+    """Schema for creating a role."""
+    pass
 
-    def __repr__(self):
-        return f"<Role(id={self.id}, name='{self.name}')>"
+
+class RoleRead(RoleBase):
+    """Schema for reading a role."""
+    id: int
+
+    model_config = {"from_attributes": True}
+
+
+class RoleUpdate(BaseModel):
+    """Schema for updating a role."""
+    name: Optional[str] = Field(None, min_length=1, max_length=50)
+    description: Optional[str] = None

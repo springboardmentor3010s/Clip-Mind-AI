@@ -1,36 +1,32 @@
 """
-SummaryShare model.
+Summary share schemas (Pydantic models).
 
-Represents a shareable link an educator creates for a video summary so that
-students/learners can view the summary without needing editor access.
+Represents a shareable link an educator creates for a video summary so
+that students/learners can view the summary without needing editor access.
 """
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, func, ForeignKey
-from sqlalchemy.orm import relationship
+from datetime import datetime
+from typing import List, Optional
 
-from app.database.database import Base
+from pydantic import BaseModel
 
-class SummaryShare(Base):
-    __tablename__ = "summary_shares"
+class SummaryShareRead(BaseModel):
+    """Response schema for a summary share link (owner-facing)."""
+    id: int
+    video_id: int
+    token: str
+    is_active: bool
+    created_by: int
+    created_at: datetime
 
-    id = Column(Integer, primary_key=True, index=True)
-    video_id = Column(
-        Integer,
-        ForeignKey("videos.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
-    )
-    # Unique public token used in the share URL.
-    token = Column(String(128), unique=True, nullable=False, index=True)
-    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=func.now(), nullable=False)
+    model_config = {"from_attributes": True}
 
-    # Relationships
-    video = relationship("Video", back_populates="summary_shares")
-    creator = relationship("User")
 
-    def __repr__(self):
-        return (
-            f"<SummaryShare(id={self.id}, video_id={self.video_id}, "
-            f"token='{self.token}', active={self.is_active})>"
-        )
+class SharedSummaryView(BaseModel):
+    """Public payload returned when a student opens a share link."""
+    video_id: int
+    video_title: str
+    educator_name: str
+    short_summary: str
+    detailed_summary: str
+    bullet_points: Optional[List[str]] = None
+    shared_at: datetime
