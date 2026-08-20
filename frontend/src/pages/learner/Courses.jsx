@@ -1,109 +1,204 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import DashboardLayout from "../../components/DashboardLayout";
 import api from "../../api/axios";
-import { useNavigate } from "react-router-dom";
-
 
 function Courses() {
 
-    const [lectures, setLectures] = useState([]);
     const navigate = useNavigate();
-    
+
+    const [courses, setCourses] = useState([]);
+
+    const [search, setSearch] = useState("");
+
+    const [loading, setLoading] = useState(true);
+
+
     useEffect(() => {
 
-        fetchLectures();
+        loadCourses();
 
     }, []);
 
-    const fetchLectures = async () => {
+
+    const loadCourses = async () => {
 
         try {
 
             const res = await api.get(
-                "/educator/shared"
+                "/learner/courses"
             );
 
-            setLectures(res.data);
+            setCourses(res.data);
 
-        }
+        } catch (err) {
 
-        catch (err) {
+            console.error(
+                "Failed to load courses:",
+                err
+            );
 
-            console.log(err);
+        } finally {
+
+            setLoading(false);
 
         }
 
     };
 
+
+    const filteredCourses = courses.filter(
+        (course) =>
+            course.title
+                ?.toLowerCase()
+                .includes(
+                    search.toLowerCase()
+                ) ||
+            course.description
+                ?.toLowerCase()
+                .includes(
+                    search.toLowerCase()
+                )
+    );
+
+
+    if (loading) {
+
+        return (
+
+            <DashboardLayout role="learner">
+
+                <div className="learner-loading">
+
+                    Loading Courses...
+
+                </div>
+
+            </DashboardLayout>
+
+        );
+
+    }
+
+
     return (
 
         <DashboardLayout role="learner">
 
-            <h1>
+            <div className="learner-courses-page">
 
-                Shared Lectures
+                {/* HEADER */}
 
-            </h1>
+                <div className="learner-page-header">
 
-            {
+                    <div>
 
-                lectures.length === 0 ?
+                        <h1>
+                            All Courses
+                        </h1>
 
-                (
+                        <p>
+                            Explore all courses available
+                            on ClipMind AI.
+                        </p>
 
-                    <p>
+                    </div>
 
-                        No lectures have been shared yet.
+                </div>
 
-                    </p>
 
-                )
+                {/* SEARCH */}
 
-                :
+                <div className="learner-course-search">
 
-                (
+                    <input
+                        type="text"
+                        placeholder="Search courses..."
+                        value={search}
+                        onChange={(e) =>
+                            setSearch(
+                                e.target.value
+                            )
+                        }
+                    />
 
-                    lectures.map((lecture) => (
+                </div>
 
-                        <div
-                            className="video-card"
-                            key={lecture.id}
-                        >
 
-                            <h2>
+                {/* COURSES */}
 
-                                {lecture.title}
+                {filteredCourses.length === 0 ? (
 
-                            </h2>
+                    <div className="learner-empty-state">
 
-                            <p>
-
-                                {lecture.description}
-
-                            </p>
-
-                            <button
-
-                                onClick={() => {
-
-                                    navigate(`/learner/lecture/${lecture.id}`);
-
-                                }}
-
-                            >
-
-                                Open Lecture
-
-                            </button>
-
+                        <div>
+                            🎓
                         </div>
 
-                    ))
+                        <h2>
+                            No Courses Found
+                        </h2>
 
-                )
+                        <p>
+                            There are no courses
+                            matching your search.
+                        </p>
 
-            }
+                    </div>
+
+                ) : (
+
+                    <div className="learner-course-grid">
+
+                        {filteredCourses.map(
+                            (course) => (
+
+                            <div
+                                className="learner-course-card"
+                                key={course.id}
+                            >
+
+                                <div className="learner-course-icon">
+
+                                    🎓
+
+                                </div>
+
+
+                                <div className="learner-course-content">
+
+                                    <h2>
+                                        {course.title}
+                                    </h2>
+
+                                    <p>
+                                        {course.description ||
+                                            "No description available."}
+                                    </p>
+
+
+                                    <button
+                                        onClick={() =>
+                                            navigate(
+                                                `/learner/course/${course.id}`
+                                            )
+                                        }
+                                    >
+                                        View Course
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        ))}
+
+                    </div>
+
+                )}
+
+            </div>
 
         </DashboardLayout>
 

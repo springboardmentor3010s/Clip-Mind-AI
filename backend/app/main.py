@@ -17,7 +17,8 @@ from app.api.learner.routes import router as learner_router
 from app.api.enrollment.routes import router as enrollment_router
 from app.models.transcript import Transcript
 from app.api.transcript.routes import router as transcript_router
-from app.api.educator.routes import router as educator_router
+from app.api.classroom.routes import router as classroom_router
+from app.api.admin.routes import router as admin_router
 
 app = FastAPI(
     title="ClipMind AI",
@@ -46,7 +47,9 @@ app.include_router(educator_router)
 app.include_router(learner_router)
 app.include_router(enrollment_router)
 app.include_router(transcript_router)
-app.include_router(educator_router)
+app.include_router(classroom_router)
+app.include_router(admin_router)
+
 
 @app.get("/")
 def home():

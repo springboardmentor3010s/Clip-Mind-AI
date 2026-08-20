@@ -98,11 +98,7 @@ function Analytics() {
                     color="#22c55e"
                 />
 
-                <StatCard
-                    title="Processing"
-                    value={stats.processing}
-                    color="#3b82f6"
-                />
+                
 
                 <StatCard
                     title="Failed"

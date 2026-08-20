@@ -1,5 +1,5 @@
 import json
-import time
+import os
 
 from sqlalchemy.sql import func
 
@@ -17,25 +17,60 @@ def process_uploaded_video(
     video_id: int,
     filepath: str
 ):
+
     db = SessionLocal()
+
+    audio_path = None
 
     try:
 
         video = (
             db.query(Video)
-            .filter(Video.id == video_id)
+            .filter(
+                Video.id == video_id
+            )
             .first()
         )
-        
+
         if not video:
             return
-        video.duration = get_video_duration(filepath)
+
+        # -----------------------------------------
+        # Initial processing state
+        # -----------------------------------------
+
         video.processing_started = func.now()
+
+        video.processing_stage = (
+            "Starting Processing"
+        )
+
+        video.progress = 5
+
         db.commit()
 
-        # -------------------------------
-        # Extract Audio
-        # -------------------------------
+        # -----------------------------------------
+        # Get duration
+        # -----------------------------------------
+
+        try:
+
+            video.duration = (
+                get_video_duration(filepath)
+            )
+
+            db.commit()
+
+        except Exception as e:
+
+            print(
+                f"Duration detection failed: {e}"
+            )
+
+        # -----------------------------------------
+        # Extract Audio + Transcript
+        # -----------------------------------------
+
         update_status(
             db,
             video.id,
@@ -44,77 +79,132 @@ def process_uploaded_video(
             20
         )
 
-        ai_result = process_video(filepath)
+        ai_result = process_video(
+            filepath
+        )
 
-        # -------------------------------
+        audio_path = (
+            ai_result.get("audio_path")
+        )
+
+        # -----------------------------------------
         # Transcript Generated
-        # -------------------------------
+        # -----------------------------------------
+
         update_status(
             db,
             video.id,
             "Processing",
-            "Generating Transcript",
+            "Transcript Generated",
             50
         )
 
-        # -------------------------------
+        transcript_data = (
+            ai_result.get(
+                "transcript",
+                {}
+            )
+        )
+
+        transcript_text = (
+            transcript_data.get(
+                "text",
+                ""
+            )
+        )
+
+        transcript_segments = (
+            transcript_data.get(
+                "segments",
+                []
+            )
+        )
+
+        # -----------------------------------------
         # Save Transcript
-        # -------------------------------
+        # -----------------------------------------
+
         update_status(
             db,
             video.id,
             "Processing",
             "Saving Transcript",
-            70
+            60
         )
 
         save_transcript(
             db,
             video.id,
-            ai_result["transcript"]["text"],
-            ai_result["transcript"]["segments"]
+            transcript_text,
+            transcript_segments
         )
 
-        # -------------------------------
+        # -----------------------------------------
         # Generate AI Content
-        # -------------------------------
+        # -----------------------------------------
+
         update_status(
             db,
             video.id,
             "Processing",
-            "Generating Summary",
-            90
+            "Generating AI Content",
+            70
         )
 
         ai = generate_ai_content(
-            ai_result["transcript"]["text"]
+            transcript_text
         )
 
-        video.summary = ai["summary"]
+        # -----------------------------------------
+        # Save AI Content
+        # -----------------------------------------
+
+        update_status(
+            db,
+            video.id,
+            "Processing",
+            "Saving AI Insights",
+            90
+        )
+
+        video.summary = (
+            ai.get("summary", "")
+        )
 
         video.topics = json.dumps(
-            ai["topics"]
+            ai.get("topics", [])
         )
 
         video.key_moments = json.dumps(
-            ai["key_moments"]
+            ai.get("key_moments", [])
         )
 
         video.quiz = json.dumps(
-            ai["quiz"]
+            ai.get("quiz", [])
         )
 
         video.flashcards = json.dumps(
-            ai["flashcards"]
+            ai.get("flashcards", [])
         )
 
-        video.processing_completed = func.now()
+        video.processing_stage = (
+            "Finalizing"
+        )
+
+        video.progress = 95
 
         db.commit()
 
-        # -------------------------------
+        # -----------------------------------------
         # Completed
-        # -------------------------------
+        # -----------------------------------------
+
+        video.processing_completed = (
+            func.now()
+        )
+
+        db.commit()
+
         update_status(
             db,
             video.id,
@@ -125,23 +215,76 @@ def process_uploaded_video(
 
     except Exception as e:
 
-        update_status(
-            db,
-            video_id,
-            "Failed",
-            str(e),
-            0
+        db.rollback()
+
+        print(
+            f"Video processing failed "
+            f"for {video_id}: {e}"
         )
 
-        video = (
-            db.query(Video)
-            .filter(Video.id == video_id)
-            .first()
-        )
+        try:
 
-        if video:
-            video.error_message = str(e)
-            db.commit()
+            update_status(
+                db,
+                video_id,
+                "Failed",
+                "Processing Failed",
+                0
+            )
+
+            video = (
+                db.query(Video)
+                .filter(
+                    Video.id == video_id
+                )
+                .first()
+            )
+
+            if video:
+
+                video.error_message = str(e)
+
+                video.processing_stage = (
+                    "Failed"
+                )
+
+                db.commit()
+
+        except Exception as status_error:
+
+            print(
+                "Could not update failure status:",
+                status_error
+            )
 
     finally:
+
+        # -----------------------------------------
+        # Remove temporary audio
+        # -----------------------------------------
+
+        if audio_path:
+
+            try:
+
+                if os.path.exists(
+                    audio_path
+                ):
+
+                    os.remove(
+                        audio_path
+                    )
+
+                    print(
+                        f"Removed temporary audio: "
+                        f"{audio_path}"
+                    )
+
+            except Exception as cleanup_error:
+
+                print(
+                    "Audio cleanup failed:",
+                    cleanup_error
+                )
+
         db.close()

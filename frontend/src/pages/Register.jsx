@@ -139,7 +139,6 @@ function Register() {
                 Learner
               </option>
 
-
             </select>
 
             <button type="submit">

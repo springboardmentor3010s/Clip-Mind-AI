@@ -10,7 +10,8 @@ from fastapi import (
     Form,
     BackgroundTasks,
 )
-
+from fastapi.responses import PlainTextResponse
+from fastapi import HTTPException
 from app.core.security import (
     verify_password,
     hash_password
@@ -783,3 +784,381 @@ def get_flashcards(
         }
 
     return json.loads(video.flashcards)
+
+@router.get("/lecture/{video_id}")
+def get_creator_lecture(
+    video_id: int,
+    db: Session = Depends(get_db)
+):
+
+    video = (
+        db.query(Video)
+        .filter(
+            Video.id == video_id
+        )
+        .first()
+    )
+
+    if not video:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Lecture not found"
+        )
+
+
+    transcript = (
+        db.query(Transcript)
+        .filter(
+            Transcript.video_id == video.id
+        )
+        .first()
+    )
+
+
+    # -----------------------------------------------------
+    # Segments live in Transcript.transcript_json, stored as
+    # a JSON-encoded string (Text column) — not a "segments"
+    # attribute, which never existed on the model.
+    # -----------------------------------------------------
+    segments = []
+
+    if transcript and transcript.transcript_json:
+
+        try:
+
+            segments = json.loads(
+                transcript.transcript_json
+            )
+
+            if not isinstance(segments, list):
+
+                segments = []
+
+        except Exception:
+
+            segments = []
+
+
+    return {
+
+        "id":
+            video.id,
+
+        "title":
+            video.title,
+
+        "description":
+            video.description,
+
+        "filename":
+            video.filename,
+
+        "duration":
+            video.duration,
+
+        "summary":
+            video.summary,
+
+        "topics":
+            video.topics,
+
+        "quiz":
+            video.quiz,
+
+        "flashcards":
+            video.flashcards,
+
+        "key_moments":
+            video.key_moments,
+
+        "learning_material":
+            getattr(
+                video,
+                "learning_material",
+                None
+            ),
+
+        "segments":
+            segments
+
+    }
+    
+# =====================================================
+# DOWNLOAD TRANSCRIPT
+# =====================================================
+
+@router.get("/lecture/{video_id}/download-transcript")
+def download_transcript(
+    video_id: int,
+    db: Session = Depends(get_db)
+):
+
+    video = (
+        db.query(Video)
+        .filter(Video.id == video_id)
+        .first()
+    )
+
+    if not video:
+        raise HTTPException(
+            status_code=404,
+            detail="Lecture not found"
+        )
+
+    transcript = (
+        db.query(Transcript)
+        .filter(
+            Transcript.video_id == video.id
+        )
+        .first()
+    )
+
+    if not transcript:
+        raise HTTPException(
+            status_code=404,
+            detail="Transcript not available"
+        )
+
+    return PlainTextResponse(
+        transcript.transcript_text or "",
+        headers={
+            "Content-Disposition":
+                f'attachment; filename="{video.title}_transcript.txt"'
+        }
+    )
+
+
+# =====================================================
+# DOWNLOAD SUMMARY
+# =====================================================
+
+@router.get("/lecture/{video_id}/download-summary")
+def download_summary(
+    video_id: int,
+    db: Session = Depends(get_db)
+):
+
+    video = (
+        db.query(Video)
+        .filter(Video.id == video_id)
+        .first()
+    )
+
+    if not video:
+        raise HTTPException(
+            status_code=404,
+            detail="Lecture not found"
+        )
+
+    if not video.summary:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Summary not available"
+        )
+
+    return PlainTextResponse(
+        video.summary,
+        headers={
+            "Content-Disposition":
+                f'attachment; filename="{video.title}_summary.txt"'
+        }
+    )
+    
+# =====================================================
+# CREATOR ANALYTICS
+# =====================================================
+
+@router.get("/analytics")
+def get_creator_analytics(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+
+    videos = (
+        db.query(Video)
+        .filter(
+            Video.user_id == user_id
+        )
+        .all()
+    )
+
+    total_videos = len(videos)
+
+    completed = sum(
+        1 for video in videos
+        if video.status == "Completed"
+    )
+
+    processing = sum(
+        1 for video in videos
+        if video.status == "Processing"
+    )
+
+    failed = sum(
+        1 for video in videos
+        if video.status == "Failed"
+    )
+
+    total_views = sum(
+        video.views or 0
+        for video in videos
+    )
+
+    total_storage = sum(
+        video.file_size or 0
+        for video in videos
+    )
+
+    total_key_moments = 0
+
+    for video in videos:
+
+        if video.key_moments:
+
+            try:
+
+                moments = json.loads(
+                    video.key_moments
+                )
+
+                total_key_moments += len(
+                    moments
+                )
+
+            except Exception:
+
+                pass
+
+    most_viewed = None
+
+    if videos:
+
+        most_viewed_video = max(
+            videos,
+            key=lambda video:
+                video.views or 0
+        )
+
+        most_viewed = {
+
+            "id":
+                most_viewed_video.id,
+
+            "title":
+                most_viewed_video.title,
+
+            "views":
+                most_viewed_video.views or 0
+
+        }
+
+    return {
+
+        "total_videos":
+            total_videos,
+
+        "total_views":
+            total_views,
+
+        "completed":
+            completed,
+
+        "processing":
+            processing,
+
+        "failed":
+            failed,
+
+        "total_storage":
+            total_storage,
+
+        "total_key_moments":
+            total_key_moments,
+
+        "most_viewed":
+            most_viewed,
+
+        "videos": [
+
+            {
+                "id":
+                    video.id,
+
+                "title":
+                    video.title,
+
+                "views":
+                    video.views or 0,
+
+                "status":
+                    video.status,
+
+                "uploaded_at":
+                    video.uploaded_at
+
+            }
+
+            for video in sorted(
+                videos,
+                key=lambda video:
+                    video.views or 0,
+                reverse=True
+            )
+
+        ]
+
+    }
+    
+# =====================================================
+# UPLOAD HISTORY
+# =====================================================
+
+@router.get("/upload-history")
+def get_upload_history(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+
+    videos = (
+        db.query(Video)
+        .filter(
+            Video.user_id == user_id
+        )
+        .order_by(
+            Video.uploaded_at.desc()
+        )
+        .all()
+    )
+
+    return [
+
+        {
+
+            "id":
+                video.id,
+
+            "title":
+                video.title,
+
+            "description":
+                video.description,
+
+            "status":
+                video.status,
+
+            "uploaded_at":
+                video.uploaded_at,
+
+            "file_size":
+                video.file_size,
+
+            "views":
+                video.views or 0
+
+        }
+
+        for video in videos
+
+    ]

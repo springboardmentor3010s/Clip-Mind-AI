@@ -1,87 +1,197 @@
-import Sidebar from "../../components/Sidebar";
-import DashboardNavbar from "../../components/DashboardNavbar";
+import { useEffect, useState } from "react";
+
+import DashboardLayout from "../../components/DashboardLayout";
 import StatCard from "../../components/StatCard";
+
+import api from "../../api/axios";
+
 
 function AdminDashboard() {
 
-  return (
+    const [stats, setStats] = useState(null);
 
-    <div className="dashboard">
 
-      <Sidebar role="admin" />
+    useEffect(() => {
 
-      <div className="dashboard-content">
+        loadDashboard();
 
-        <DashboardNavbar />
+    }, []);
 
-        <div className="dashboard-body">
 
-          <h1>Welcome, Administrator 👋</h1>
+    const loadDashboard = async () => {
 
-          <p>
-            Monitor platform activity and manage users.
-          </p>
+        try {
 
-          <div className="stats-grid">
+            const res = await api.get(
+                "/admin/dashboard"
+            );
 
-            <StatCard
-              title="Users"
-              value="1024"
-              color="#2563eb"
-            />
+            setStats(res.data);
 
-            <StatCard
-              title="Videos"
-              value="547"
-              color="#16a34a"
-            />
+        }
 
-            <StatCard
-              title="Storage"
-              value="1.8 TB"
-              color="#9333ea"
-            />
+        catch (err) {
 
-            <StatCard
-              title="Reports"
-              value="9"
-              color="#f97316"
-            />
+            console.error(
+                "Failed to load admin dashboard:",
+                err
+            );
 
-          </div>
+        }
 
-          <div className="summary-card">
+    };
 
-            <h2>Recent Users</h2>
 
-            <ul>
-              <li>Sathwik</li>
-              <li>Rahul</li>
-              <li>Ananya</li>
-            </ul>
+    if (!stats) {
 
-          </div>
+        return (
 
-          <div className="summary-card">
+            <DashboardLayout role="admin">
 
-            <h2>Recent Uploads</h2>
+                <h2>
+                    Loading Admin Dashboard...
+                </h2>
 
-            <ul>
-              <li>AI Introduction.mp4</li>
-              <li>Deep Learning.mp4</li>
-              <li>Neural Networks.mp4</li>
-            </ul>
+            </DashboardLayout>
 
-          </div>
+        );
 
-        </div>
+    }
 
-      </div>
 
-    </div>
+    return (
 
-  );
+        <DashboardLayout role="admin">
+
+            <div className="admin-dashboard">
+
+                <div className="admin-header">
+
+                    <div>
+
+                        <h1>
+                            Admin Dashboard
+                        </h1>
+
+                        <p>
+                            Monitor and manage the
+                            ClipMind AI platform.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {/* USERS */}
+
+                <h2 className="admin-section-title">
+                    Users
+                </h2>
+
+                <div className="stats-grid">
+
+                    <StatCard
+                        title="Creators"
+                        value={
+                            stats.users.creators
+                        }
+                    />
+
+                    <StatCard
+                        title="Educators"
+                        value={
+                            stats.users.educators
+                        }
+                    />
+
+                    <StatCard
+                        title="Learners"
+                        value={
+                            stats.users.learners
+                        }
+                    />
+
+                    <StatCard
+                        title="Admins"
+                        value={
+                            stats.users.admins
+                        }
+                    />
+
+                </div>
+
+
+                {/* CONTENT */}
+
+                <h2 className="admin-section-title">
+                    Platform Content
+                </h2>
+
+                <div className="stats-grid">
+
+                    <StatCard
+                        title="Videos"
+                        value={
+                            stats.content.videos
+                        }
+                    />
+
+                    <StatCard
+                        title="Courses"
+                        value={
+                            stats.content.courses
+                        }
+                    />
+
+                    <StatCard
+                        title="Completed"
+                        value={
+                            stats.content.completed
+                        }
+                    />
+
+                    <StatCard
+                        title="Total Views"
+                        value={
+                            stats.content.views
+                        }
+                    />
+
+                </div>
+
+
+                {/* PROCESSING */}
+
+                <h2 className="admin-section-title">
+                    AI Processing
+                </h2>
+
+                <div className="stats-grid">
+
+                    <StatCard
+                        title="Processing"
+                        value={
+                            stats.content.processing
+                        }
+                    />
+
+                    <StatCard
+                        title="Failed"
+                        value={
+                            stats.content.failed
+                        }
+                    />
+
+                </div>
+
+            </div>
+
+        </DashboardLayout>
+
+    );
 
 }
+
 
 export default AdminDashboard;

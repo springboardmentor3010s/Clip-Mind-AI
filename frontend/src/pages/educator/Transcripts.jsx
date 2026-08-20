@@ -42,107 +42,105 @@ function Transcripts() {
 
         <DashboardLayout role="educator">
 
-            <h1>Transcripts</h1>
-
             <div className="content-page">
 
-<h1>Transcripts</h1>
+                <h1>Transcripts</h1>
 
-<table className="educator-table">
+                <table className="educator-table">
 
-                <thead>
+                    <thead>
 
-                    <tr>
+                        <tr>
 
-                        <th>Lecture</th>
+                            <th>Lecture</th>
 
-                        <th>Status</th>
+                            <th>Status</th>
 
-                        <th>Action</th>
+                            <th>Action</th>
 
-                    </tr>
+                        </tr>
 
-                </thead>
+                    </thead>
 
-                <tbody>
+                    <tbody>
 
-                    {
+                        {
 
-                        items.map(item => (
+                            items.map(item => (
 
-                            <tr key={item.video_id}>
+                                <tr key={item.video_id}>
 
-                                <td>{item.title}</td>
+                                    <td>{item.title}</td>
 
-                                <td>
+                                    <td>
 
-<span
+                                        <span
 
-className={
+                                            className={
 
-item.has_transcript
+                                                item.has_transcript
 
-?
+                                                    ?
 
-"status available"
+                                                    "status available"
 
-:
+                                                    :
 
-"status missing"
+                                                    "status missing"
 
-}
+                                            }
 
->
+                                        >
 
-{
+                                            {
 
-item.has_transcript
+                                                item.has_transcript
 
-?
+                                                    ?
 
-"Available"
+                                                    "Available"
 
-:
+                                                    :
 
-"Missing"
+                                                    "Missing"
 
-}
+                                            }
 
-</span>
+                                        </span>
 
-</td>
+                                    </td>
 
-                                <td>
+                                    <td>
 
-                                    <button className="edit-btn"
+                                        <button className="edit-btn"
 
-                                        onClick={() =>
+                                            onClick={() =>
 
-                                            navigate(
+                                                navigate(
 
-                                                `/educator/transcript/${item.video_id}`
+                                                    `/educator/transcript/${item.video_id}`
 
-                                            )
+                                                )
 
-                                        }
+                                            }
 
-                                    >
+                                        >
 
-                                        Edit
+                                            Edit
 
-                                    </button>
+                                        </button>
 
-                                </td>
+                                    </td>
 
-                            </tr>
+                                </tr>
 
-                        ))
+                            ))
 
-                    }
+                        }
 
-                </tbody>
+                    </tbody>
 
-            </table>
+                </table>
 
             </div>
 

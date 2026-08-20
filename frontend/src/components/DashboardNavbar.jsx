@@ -1,25 +1,32 @@
 import { useLocation } from "react-router-dom";
 
+
 function DashboardNavbar() {
 
-    const fullName = localStorage.getItem("full_name");
+    const fullName =
+        localStorage.getItem("full_name") ||
+        "User";
 
     const location = useLocation();
+
 
     const pageTitle = location.pathname
         .split("/")
         .pop()
-        .replace("-", " ");
+        .replaceAll("-", " ");
+
 
     return (
 
         <div className="top-navbar">
 
-            
+            <div className="navbar-spacer">
+            </div>
+
 
             <div className="user-info">
 
-                <span>
+                <span className="user-greeting">
 
                     Hello, {fullName} 👋
 
@@ -32,5 +39,6 @@ function DashboardNavbar() {
     );
 
 }
+
 
 export default DashboardNavbar;

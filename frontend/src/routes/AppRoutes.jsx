@@ -19,7 +19,8 @@ import Flashcards from "../pages/creator/Flashcards";
 import KeyMoments from "../pages/creator/KeyMoments";
 import CreatorAnalytics from "../pages/creator/Analytics";
 import Profile from "../pages/creator/Profile";
-
+import UploadHistory
+    from "../pages/creator/UploadHistory";
 // Educator
 import EducatorDashboard from "../pages/educator/EducatorDashboard";
 import Courses from "../pages/educator/Courses";
@@ -39,13 +40,40 @@ import StudentEngagement from "../pages/educator/StudentEngagement";
 import LectureViewer from "../components/LectureViewer";
 import Transcripts from "../pages/educator/Transcripts";
 import Summaries from "../pages/educator/Summaries";
+import Classrooms from "../pages/educator/Classrooms";
+import ClassroomDetails from "../pages/educator/ClassroomDetails";
 // Learner
-import LearnerDashboard from "../pages/learner/LearnerDashboard";
+import LearnerDashboard
+    from "../pages/learner/Dashboard";
+import LearnerVideos
+    from "../pages/learner/Videos";
+import Bookmarks
+    from "../pages/learner/Bookmarks";
+import LearnerProfile
+    from "../pages/learner/Profile";
 import LearnerCourses from "../pages/learner/Courses";
 import Lecture from "../pages/learner/Lecture";
-
+import LearnerClassrooms from "../pages/learner/Classrooms";
+import JoinClassroom from "../pages/learner/JoinClassroom";
+import LearnerClassroomDetails from "../pages/learner/ClassroomDetails";
+import LearningHistory
+    from "../pages/learner/LearningHistory";
 // Admin
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminUsers
+    from "../pages/admin/Users";
+import AdminAnalytics
+    from "../pages/admin/Analytics";
+import ProcessingJobs
+    from "../pages/admin/ProcessingJobs";
+import AdminContent
+    from "../pages/admin/Content";
+import AdminStorage
+    from "../pages/admin/Storage";
+import AdminAuditLogs
+    from "../pages/admin/AuditLogs";
+import AdminSettings
+    from "../pages/admin/Settings";
 
 function AppRoutes() {
   return (
@@ -68,6 +96,14 @@ function AppRoutes() {
         }
       />
 
+        <Route
+    path="/creator/upload-history"
+    element={
+        <ProtectedRoute allowedRole="creator">
+            <UploadHistory />
+        </ProtectedRoute>
+    }
+/>
       <Route
         path="/upload-content"
         element={
@@ -94,7 +130,14 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
+      <Route
+    path="/creator/lecture/:videoId"
+    element={
+        <ProtectedRoute allowedRole="creator">
+            <LectureViewer />
+        </ProtectedRoute>
+    }
+/>
       <Route
         path="/creator/profile"
         element={
@@ -304,6 +347,24 @@ function AppRoutes() {
         }
       />
 
+      <Route
+    path="/educator/classrooms"
+    element={
+        <ProtectedRoute allowedRole="educator">
+            <Classrooms />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/educator/classroom/:classroomId"
+    element={
+        <ProtectedRoute allowedRole="educator">
+            <ClassroomDetails />
+        </ProtectedRoute>
+    }
+/>
+
       {/* ================= LEARNER ================= */}
 
       <Route
@@ -328,10 +389,19 @@ function AppRoutes() {
         path="/learner/lecture/:videoId"
         element={
           <ProtectedRoute allowedRole="learner">
-            <Lecture />
+            <LectureViewer role="learner" />
           </ProtectedRoute>
         }
       />
+
+      <Route
+    path="/learner/videos"
+    element={
+        <ProtectedRoute allowedRole="learner">
+            <LearnerVideos />
+        </ProtectedRoute>
+    }
+/>
 
       <Route
     path="/educator/lecture/:videoId"
@@ -360,6 +430,59 @@ function AppRoutes() {
     }
 />
 
+<Route
+    path="/learner/classrooms"
+    element={
+        <ProtectedRoute allowedRole="learner">
+            <LearnerClassrooms />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/learner/join-classroom"
+    element={
+        <ProtectedRoute allowedRole="learner">
+            <JoinClassroom />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/learner/classroom/:classroomId"
+    element={
+        <ProtectedRoute allowedRole="learner">
+            <LearnerClassroomDetails />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/learner/history"
+    element={
+        <ProtectedRoute allowedRole="learner">
+            <LearningHistory />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/learner/bookmarks"
+    element={
+        <ProtectedRoute allowedRole="learner">
+            <Bookmarks />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/learner/profile"
+    element={
+        <ProtectedRoute allowedRole="learner">
+            <LearnerProfile />
+        </ProtectedRoute>
+    }
+/>
       {/* ================= ADMIN ================= */}
 
       <Route
@@ -371,6 +494,68 @@ function AppRoutes() {
         }
       />
 
+      <Route
+    path="/admin/users"
+    element={
+        <ProtectedRoute allowedRole="admin">
+            <AdminUsers />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/admin/content"
+    element={
+        <ProtectedRoute allowedRole="admin">
+            <AdminContent />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/admin/analytics"
+    element={
+        <ProtectedRoute allowedRole="admin">
+            <AdminAnalytics />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/admin/processing"
+    element={
+        <ProtectedRoute allowedRole="admin">
+            <ProcessingJobs />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/admin/storage"
+    element={
+        <ProtectedRoute allowedRole="admin">
+            <AdminStorage />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/admin/audit-logs"
+    element={
+        <ProtectedRoute allowedRole="admin">
+            <AdminAuditLogs />
+        </ProtectedRoute>
+    }
+/>
+
+<Route
+    path="/admin/settings"
+    element={
+        <ProtectedRoute allowedRole="admin">
+            <AdminSettings />
+        </ProtectedRoute>
+    }
+/>
     </Routes>
   );
 }

@@ -59,11 +59,6 @@ function UploadContent({ role = "creator" }) {
             return;
         }
 
-        if (role === "educator" && !courseId) {
-            alert("Please select a course.");
-            return;
-        }
-
         const formData = new FormData();
 
         formData.append("title", title);
@@ -72,7 +67,9 @@ function UploadContent({ role = "creator" }) {
         formData.append("user_id", educatorId);
         formData.append("video", video);
 
-        if (role === "educator") {
+        // Course is optional for educators now — only send it
+        // if one was actually selected.
+        if (role === "educator" && courseId) {
             formData.append("course_id", courseId);
         }
 
@@ -209,7 +206,7 @@ function UploadContent({ role = "creator" }) {
 
                         <option value="">
 
-                            Select Course
+                            No Course (Optional)
 
                         </option>
 

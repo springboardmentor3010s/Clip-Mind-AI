@@ -1,10 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { VideoContext } from "../context/VideoContext";
 import api from "../api/axios";
 
 function MyVideos({ onShare }) {
   const { setSelectedVideo } = useContext(VideoContext);
+
+  const navigate = useNavigate();
 
   const [videos, setVideos] = useState([]);
 
@@ -116,77 +118,21 @@ function MyVideos({ onShare }) {
               {video.status === "Uploaded" ||
               video.status === "Completed" ? (
                 <>
-                  {/* Transcript */}
-                  <Link
-                    to={`/creator/transcript/${video.id}`}
-                    onClick={() =>
-                      setSelectedVideo(video)
-                    }
-                  >
-                    <button className="video-btn">
-                      Transcript
-                    </button>
-                  </Link>
+                  {/* Unified lecture viewer: transcript, summary,
+                      topics, quiz, flashcards, key moments and
+                      learning material all live behind one route now. */}
+                  <button
+                    className="video-btn"
+                    onClick={() => {
+                      setSelectedVideo(video);
 
-                  {/* Summary */}
-                  <Link
-                    to={`/creator/summary/${video.id}`}
-                    onClick={() =>
-                      setSelectedVideo(video)
-                    }
+                      navigate(
+                        `/creator/lecture/${video.id}`
+                      );
+                    }}
                   >
-                    <button className="video-btn">
-                      Summary
-                    </button>
-                  </Link>
-
-                  {/* Key Moments */}
-                  <Link
-                    to={`/creator/keymoments/${video.id}`}
-                    onClick={() =>
-                      setSelectedVideo(video)
-                    }
-                  >
-                    <button className="video-btn">
-                      Key Moments
-                    </button>
-                  </Link>
-
-                  {/* Topics */}
-                  <Link
-                    to={`/creator/topics/${video.id}`}
-                    onClick={() =>
-                      setSelectedVideo(video)
-                    }
-                  >
-                    <button className="video-btn">
-                       Topics
-                    </button>
-                  </Link>
-
-                  {/* Quiz */}
-                  <Link
-                    to={`/creator/quiz/${video.id}`}
-                    onClick={() =>
-                      setSelectedVideo(video)
-                    }
-                  >
-                    <button className="video-btn">
-                       Quiz
-                    </button>
-                  </Link>
-
-                  {/* Flashcards */}
-                  <Link
-                    to={`/creator/flashcards/${video.id}`}
-                    onClick={() =>
-                      setSelectedVideo(video)
-                    }
-                  >
-                    <button className="video-btn">
-                       Flashcards
-                    </button>
-                  </Link>
+                    Watch Lecture
+                  </button>
 
                   {/* Analytics */}
                   <Link
@@ -214,12 +160,7 @@ function MyVideos({ onShare }) {
                     Delete
                   </button>
 
-                  <button
-    className="video-btn"
-    onClick={() => onShare && onShare(video.id)}
->
-    Share
-</button>
+                  
                 </>
               ) : (
                 <Link

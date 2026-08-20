@@ -11,11 +11,14 @@ function CreatorDashboard() {
 
     const [stats, setStats] = useState(null);
 
+    const [analytics, setAnalytics] = useState(null);
+
     const userId = localStorage.getItem("user_id");
 
     useEffect(() => {
 
         fetchStats();
+        loadAnalytics();
 
     }, []);
 
@@ -34,6 +37,37 @@ function CreatorDashboard() {
         catch(err){
 
             console.log(err);
+
+        }
+
+    };
+
+    const loadAnalytics = async () => {
+
+        try {
+
+            const res = await api.get(
+                "/creator/analytics",
+                {
+                    params: {
+                        user_id:
+                            localStorage.getItem(
+                                "user_id"
+                            )
+                    }
+                }
+            );
+
+            setAnalytics(res.data);
+
+        }
+
+        catch (err) {
+
+            console.error(
+                "Analytics error:",
+                err
+            );
 
         }
 
@@ -112,6 +146,95 @@ function CreatorDashboard() {
                 />
 
             </div>
+
+            {analytics && (
+
+                <div className="creator-analytics">
+
+                    <div className="creator-analytics-card">
+
+                        <span>Failed</span>
+
+                        <strong>
+                            {analytics.failed}
+                        </strong>
+
+                    </div>
+
+                    {analytics.most_viewed && (
+
+                        <div className="most-viewed-card">
+
+                            <div>
+
+                                <span>
+                                    Most Viewed Content
+                                </span>
+
+                                <h3>
+                                    {
+                                        analytics
+                                            .most_viewed
+                                            .title
+                                    }
+                                </h3>
+
+                            </div>
+
+                            <strong>
+                                👁{" "}
+                                {
+                                    analytics
+                                        .most_viewed
+                                        .views
+                                }{" "}
+                                views
+                            </strong>
+
+                        </div>
+
+                    )}
+
+                    <div className="content-performance">
+
+                        <h2>
+                            Content Performance
+                        </h2>
+
+                        {analytics.videos.map(
+                            (video) => (
+
+                                <div
+                                    className="performance-row"
+                                    key={video.id}
+                                >
+
+                                    <div>
+
+                                        <strong>
+                                            {video.title}
+                                        </strong>
+
+                                        <span>
+                                            {video.status}
+                                        </span>
+
+                                    </div>
+
+                                    <div className="performance-views">
+                                        👁 {video.views || 0}
+                                    </div>
+
+                                </div>
+
+                            )
+                        )}
+
+                    </div>
+
+                </div>
+
+            )}
 
             <MyVideos />
 

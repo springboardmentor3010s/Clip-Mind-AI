@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
+
 import DashboardLayout from "../../components/DashboardLayout";
 import StatCard from "../../components/StatCard";
+
 import api from "../../api/axios";
+
 
 function StudentEngagement() {
 
     const [data, setData] = useState(null);
+
+    const [loading, setLoading] = useState(true);
+
+    const [error, setError] = useState("");
+
 
     useEffect(() => {
 
@@ -13,9 +21,14 @@ function StudentEngagement() {
 
     }, []);
 
+
     const fetchData = async () => {
 
         try {
+
+            setLoading(true);
+
+            setError("");
 
             const res = await api.get(
 
@@ -25,7 +38,10 @@ function StudentEngagement() {
 
                     params: {
 
-                        educator_id: localStorage.getItem("user_id")
+                        educator_id:
+                            localStorage.getItem(
+                                "user_id"
+                            )
 
                     }
 
@@ -39,19 +55,38 @@ function StudentEngagement() {
 
         catch (err) {
 
-            console.log(err);
+            console.error(
+                "Student engagement error:",
+                err
+            );
+
+            setError(
+                err.response?.data?.detail ||
+                "Unable to load student engagement."
+            );
+
+        }
+
+        finally {
+
+            setLoading(false);
 
         }
 
     };
 
-    if (!data) {
+
+    if (loading) {
 
         return (
 
             <DashboardLayout role="educator">
 
-                <h2>Loading...</h2>
+                <div className="analytics-loading">
+
+                    Loading student engagement...
+
+                </div>
 
             </DashboardLayout>
 
@@ -59,145 +94,305 @@ function StudentEngagement() {
 
     }
 
+
+    if (error) {
+
+        return (
+
+            <DashboardLayout role="educator">
+
+                <div className="analytics-error">
+
+                    <h2>
+                        Unable to load engagement
+                    </h2>
+
+                    <p>
+                        {error}
+                    </p>
+
+                    <button
+                        onClick={fetchData}
+                    >
+                        Retry
+                    </button>
+
+                </div>
+
+            </DashboardLayout>
+
+        );
+
+    }
+
+
+    if (!data) {
+        return null;
+    }
+
+
     return (
 
         <DashboardLayout role="educator">
 
-            <h1>
+            <div className="student-engagement-page">
 
-                Student Engagement
+                <div className="analytics-page-header">
 
-            </h1>
+                    <div>
 
-            <div className="stats-grid">
+                        <h1>
+                            Student Engagement
+                        </h1>
 
-                <StatCard
+                        <p>
+                            Monitor learner activity,
+                            classrooms and content
+                            performance.
+                        </p>
 
-                    title="Courses"
+                    </div>
 
-                    value={data.total_courses}
+                </div>
 
-                    color="#2563eb"
 
-                />
+                {/* =================================
+                    ENGAGEMENT STATS
+                ================================= */}
 
-                <StatCard
+                <div className="stats-grid">
 
-                    title="Lectures"
+                    <StatCard
+                        title="Students"
+                        value={
+                            data.total_students
+                        }
+                        color="#2563eb"
+                    />
 
-                    value={data.total_lectures}
+                    <StatCard
+                        title="Classrooms"
+                        value={
+                            data.total_classrooms
+                        }
+                        color="#7c3aed"
+                    />
 
-                    color="#16a34a"
+                    <StatCard
+                        title="Lecture Views"
+                        value={
+                            data.total_views
+                        }
+                        color="#0891b2"
+                    />
 
-                />
+                    <StatCard
+                        title="Completed Lectures"
+                        value={
+                            data.completed_lectures
+                        }
+                        color="#16a34a"
+                    />
 
-                <StatCard
+                </div>
 
-                    title="Shared"
 
-                    value={data.shared_lectures}
+                {/* =================================
+                    CLASSROOMS
+                ================================= */}
 
-                    color="#9333ea"
+                <div className="engagement-card">
 
-                />
+                    <div className="engagement-card-header">
 
-            </div>
+                        <div>
 
-            <div className="video-card">
+                            <h2>
+                                My Classrooms
+                            </h2>
 
-                <h2>
-
-                    Popular Courses
-
-                </h2>
-
-                {
-
-                    data.popular_courses.length === 0 ?
-
-                    <p>No Courses</p>
-
-                    :
-
-                    data.popular_courses.map(course => (
-
-                        <div
-                            key={course.id}
-                            style={{
-                                marginBottom:20
-                            }}
-                        >
-
-                            <strong>
-
-                                {course.title}
-
-                            </strong>
-
-                            <p>
-
-                                Lectures : {course.lectures}
-
-                            </p>
+                            <span className="engagement-card-subtitle">
+                                Classrooms created by you
+                            </span>
 
                         </div>
 
-                    ))
+                        <strong>
+                            {data.total_classrooms}
+                        </strong>
 
-                }
+                    </div>
 
-            </div>
 
-            <div className="video-card">
+                    {data.classrooms.length === 0 ? (
 
-                <h2>
+                        <p className="engagement-empty">
 
-                    Recently Shared Lectures
+                            No classrooms created yet.
 
-                </h2>
+                        </p>
 
-                {
+                    ) : (
 
-                    data.recent_shared.length === 0 ?
+                        <div className="classroom-engagement-list">
 
-                    <p>
+                            {data.classrooms.map(
+                                (classroom) => (
 
-                        No Shared Lectures
+                                <div
+                                    className="classroom-engagement-row"
+                                    key={classroom.id}
+                                >
 
-                    </p>
+                                    <div>
 
-                    :
+                                        <strong>
+                                            {
+                                                classroom.name
+                                            }
+                                        </strong>
 
-                    data.recent_shared.map(
+                                        <p>
+                                            {
+                                                classroom.description ||
+                                                "No description"
+                                            }
+                                        </p>
 
-                        (lecture,index)=>(
+                                    </div>
 
-                            <div
-                                key={index}
-                                style={{
-                                    marginBottom:15
-                                }}
-                            >
 
-                                <strong>
+                                    <div className="classroom-code">
 
-                                    {lecture.lecture}
+                                        Join Code
 
-                                </strong>
+                                        <strong>
+                                            {
+                                                classroom.join_code
+                                            }
+                                        </strong>
 
-                                <p>
+                                    </div>
 
-                                    Status : {lecture.status}
+                                </div>
 
-                                </p>
+                            ))}
 
-                            </div>
+                        </div>
 
-                        )
+                    )}
 
-                    )
+                </div>
 
-                }
+
+                {/* =================================
+                    POPULAR LECTURES
+                ================================= */}
+
+                <div className="engagement-card">
+
+                    <div className="engagement-card-header">
+
+                        <div>
+
+                            <h2>
+                                Most Viewed Lectures
+                            </h2>
+
+                            <span className="engagement-card-subtitle">
+                                Ranked by learner views
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    {data.popular_lectures.length === 0 ? (
+
+                        <p className="engagement-empty">
+
+                            No lectures available.
+
+                        </p>
+
+                    ) : (
+
+                        <div className="popular-course-list">
+
+                            {data.popular_lectures.map(
+                                (lecture, index) => (
+
+                                <div
+                                    className="popular-course-row"
+                                    key={lecture.id}
+                                >
+
+                                    <div className="popular-course-rank">
+                                        {index + 1}
+                                    </div>
+
+
+                                    <div className="popular-course-main">
+
+                                        <div className="popular-course-top">
+
+                                            <strong>
+                                                {
+                                                    lecture.title
+                                                }
+                                            </strong>
+
+                                            <span className="popular-course-count">
+
+                                                👁{" "}
+
+                                                {
+                                                    lecture.views
+                                                }
+
+                                                {" "}
+                                                {lecture.views === 1
+                                                    ? "view"
+                                                    : "views"}
+
+                                            </span>
+
+                                        </div>
+
+
+                                        <div className="popular-course-bar-track">
+
+                                            <div
+                                                className="popular-course-bar-fill"
+                                                style={{
+                                                    width:
+                                                        `${Math.min(
+                                                            lecture.views /
+                                                            Math.max(
+                                                                1,
+                                                                data.popular_lectures[0]?.views || 1
+                                                            ) *
+                                                            100,
+                                                            100
+                                                        )}%`
+                                                }}
+                                            />
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            ))}
+
+                        </div>
+
+                    )}
+
+                </div>
+
 
             </div>
 
@@ -206,5 +401,6 @@ function StudentEngagement() {
     );
 
 }
+
 
 export default StudentEngagement;

@@ -1,6 +1,7 @@
+import json
 import os
 import subprocess
-import json
+
 
 AUDIO_FOLDER = "uploads/audio"
 
@@ -10,7 +11,24 @@ os.makedirs(
 )
 
 
+FFMPEG_PATH = (
+    r"C:\Users\saisa\Downloads"
+    r"\ffmpeg-8.1.2-essentials_build"
+    r"\ffmpeg-8.1.2-essentials_build"
+    r"\bin\ffmpeg.exe"
+)
+
+
+FFPROBE_PATH = (
+    r"C:\Users\saisa\Downloads"
+    r"\ffmpeg-8.1.2-essentials_build"
+    r"\ffmpeg-8.1.2-essentials_build"
+    r"\bin\ffprobe.exe"
+)
+
+
 def extract_audio(video_path: str):
+
     filename = os.path.splitext(
         os.path.basename(video_path)
     )[0]
@@ -21,18 +39,32 @@ def extract_audio(video_path: str):
     )
 
     command = [
-        r"C:\Users\saisa\Downloads\ffmpeg-8.1.2-essentials_build\ffmpeg-8.1.2-essentials_build\bin\ffmpeg.exe",
+
+        FFMPEG_PATH,
+
+        "-hide_banner",
+
+        "-loglevel",
+        "error",
+
         "-y",
+
         "-i",
         video_path,
+
         "-vn",
+
         "-acodec",
         "pcm_s16le",
+
         "-ar",
         "16000",
+
         "-ac",
         "1",
-        audio_path,
+
+        audio_path
+
     ]
 
     subprocess.run(
@@ -43,31 +75,54 @@ def extract_audio(video_path: str):
     return audio_path
 
 
-def get_video_duration(video_path: str):
+def get_video_duration(
+    video_path: str
+):
+
     command = [
-        "ffprobe",
+
+        FFPROBE_PATH,
+
         "-v",
         "quiet",
+
         "-print_format",
         "json",
+
         "-show_format",
+
         video_path
+
     ]
 
     result = subprocess.run(
+
         command,
+
         capture_output=True,
+
         text=True,
+
         check=True
+
     )
 
-    data = json.loads(result.stdout)
+    data = json.loads(
+        result.stdout
+    )
 
     seconds = float(
         data["format"]["duration"]
     )
 
-    minutes = int(seconds // 60)
-    secs = int(seconds % 60)
+    minutes = int(
+        seconds // 60
+    )
 
-    return f"{minutes:02}:{secs:02}"
+    secs = int(
+        seconds % 60
+    )
+
+    return (
+        f"{minutes:02}:{secs:02}"
+    )

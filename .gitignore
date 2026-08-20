@@ -1,36 +1,77 @@
+# =========================
 # Python
-backend/venv/
+# =========================
+
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
 
-# Environment
-backend/.env
+venv/
+.venv/
+env/
+ENV/
 
-# Node
-frontend/node_modules/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# Vite
-frontend/dist/
+# =========================
+# Environment / Secrets
+# =========================
 
-# VS Code
-.vscode/
+.env
+.env.*
+!.env.example
 
+# =========================
+# Logs
+# =========================
+
+logs/
+*.log
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =========================
+# Node / Frontend
+# =========================
+
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# =========================
+# ClipMind AI generated files
+# =========================
+
+backend/uploads/
+uploads/
+
+# Test output
+pytest_results.txt
+
+# =========================
+# Editor
+# =========================
+
+.vscode/*
+!.vscode/extensions.json
+
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# =========================
 # OS
+# =========================
+
 .DS_Store
 Thumbs.db
-
-# Uploads
-backend/uploads/videos/*
-backend/uploads/audio/*
-backend/uploads/transcripts/*
-
-# Keep folders
-!backend/uploads/videos/.gitkeep
-!backend/uploads/audio/.gitkeep
-!backend/uploads/transcripts/.gitkeep
-
-
-
-
-
-
