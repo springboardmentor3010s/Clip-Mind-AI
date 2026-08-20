@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #4F46E5;      /* Indigo — primary stat color */
+  --color-blue: #4F46E5;      /* Indigo — buttons, active states, borders */
+  --color-teal: #10B981;      /* Emerald — success/completed states */
+  --color-amber: #F59E0B;     /* Amber — processing/warning states */
+  --color-purple: #7C3AED;    /* Violet — accent stat color */
+  --color-sidebar: #1E1B3A;   /* Deep Indigo-Black — sidebar background */
+}
+
+body {
+  background: #F5F5FA;
+  color: #1F2937;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient {
+  background: linear-gradient(-45deg, #1E1B3A, #312E81, #4F46E5, #1E1B3A);
+  background-size: 400% 400%;
+  animation: gradientMove 12s ease infinite;
+}
