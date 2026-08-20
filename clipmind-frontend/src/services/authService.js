@@ -29,3 +29,8 @@ export const getCurrentUser = async (token) => {
 
   return response.data;
 };
+
+export const getActivityHistory = async () => {
+  const response = await api.get("/activity-history");
+  return response.data;
+};

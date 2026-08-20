@@ -36,6 +36,7 @@ class ActivityType(str, Enum):
     HIGHLIGHT_REPORT_VIEWED = "highlight_report_viewed"
 
     BOOKMARK_ADDED = "BOOKMARK_ADDED"
+    BOOKMARK_REMOVED = "BOOKMARK_REMOVED"
 
 class VideoStatus(str, Enum):
     UPLOADED = "UPLOADED"

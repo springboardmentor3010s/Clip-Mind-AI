@@ -8,6 +8,7 @@ from app.api.highlight_report import router as highlight_report_router
 from app.api.keyword import router as keyword_router
 from app.api.analytics import router as analytics_router
 from app.api.usage_analytics import router as usage_analytics_router
+from app.api.bookmark import router as bookmark_router
 
 from app.database.base import Base
 from app.database.connection import engine
@@ -20,6 +21,7 @@ from app.models.summary import Summary
 from app.models.transcript_segment import TranscriptSegment
 from app.models.key_moment import KeyMoment
 from app.models.keyword import Keyword
+from app.models.bookmark import Bookmark
 
 
 app = FastAPI(
@@ -90,3 +92,5 @@ app.include_router(keyword_router)
 app.include_router(analytics_router)
 
 app.include_router(usage_analytics_router)
+
+app.include_router(bookmark_router)

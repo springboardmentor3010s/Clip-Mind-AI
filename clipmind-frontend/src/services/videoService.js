@@ -272,3 +272,70 @@ export const getTranscriptSegments = async (videoId) => {
 
   return response.data;
 };
+
+/**
+ * Add a bookmark
+ * Learner only
+ *
+ * contentType:
+ * "SUMMARY" or "HIGHLIGHT"
+ */
+export const createBookmark = async (
+  contentType,
+  contentId
+) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.post(
+    "/bookmarks",
+    {
+      content_type: contentType,
+      content_id: contentId,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+
+/**
+ * Get all bookmarks of the logged-in learner
+ */
+export const getBookmarks = async () => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(
+    "/bookmarks",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+
+/**
+ * Remove a bookmark
+ */
+export const deleteBookmark = async (bookmarkId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.delete(
+    `/bookmarks/${bookmarkId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};

@@ -47,12 +47,13 @@ def get_summary_by_type(
     video: Video,
     summary_type: str
 ):
+    normalized_summary_type = summary_type.upper()
 
     return (
         db.query(Summary)
         .filter(
             Summary.video_id == video.id,
-            Summary.summary_type == summary_type
+            Summary.summary_type == normalized_summary_type
         )
         .first()
     )

@@ -16,6 +16,7 @@ import {
   generateHighlightReport,
   getKeywords,
   generateKeywords,
+  createBookmark,
 } from "@/services/videoService";
 
 export default function VideoDetailsPage() {
@@ -58,6 +59,13 @@ export default function VideoDetailsPage() {
 
   const [activeSection, setActiveSection] = useState(null);
 
+  const [role, setRole] = useState("");
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+
+  useEffect(() => {
+  const storedRole = localStorage.getItem("role") || "";
+  setRole(storedRole);
+}, []);
 
 
 //   useEffect(() => {
@@ -365,6 +373,80 @@ const handleDownloadSummary = async (summaryType) => {
   }
 };
 
+const handleBookmarkSummary = async (summary) => {
+  if (role !== "LEARNER") {
+    return;
+  }
+
+  if (!summary?.id) {
+    alert("Unable to bookmark this summary.");
+    return;
+  }
+
+  try {
+    setBookmarkLoading(true);
+
+    await createBookmark(
+      "SUMMARY",
+      summary.id
+    );
+
+    alert("Summary bookmarked successfully.");
+
+  } catch (error) {
+    console.error(
+      "Failed to bookmark summary:",
+      error
+    );
+
+    alert(
+      error.response?.data?.detail ||
+      "Failed to bookmark summary."
+    );
+
+  } finally {
+    setBookmarkLoading(false);
+  }
+};
+
+
+const handleBookmarkHighlights = async () => {
+  if (role !== "LEARNER") {
+    return;
+  }
+
+  if (!highlightReport) {
+    alert("No highlight report available to bookmark.");
+    return;
+  }
+
+  try {
+    setBookmarkLoading(true);
+
+    await createBookmark(
+      "HIGHLIGHT",
+      Number(id)
+    );
+
+    alert("Highlights bookmarked successfully.");
+
+  } catch (error) {
+    console.error(
+      "Failed to bookmark highlights:",
+      error
+    );
+
+    alert(
+      error.response?.data?.detail ||
+      "Failed to bookmark highlights."
+    );
+
+  } finally {
+    setBookmarkLoading(false);
+  }
+};
+
+
   async function handleGenerateKeyMoments() {
     try {
       setGeneratingKeyMoments(true);
@@ -453,6 +535,25 @@ async function loadOrGenerateHighlights() {
   try {
     setHighlightLoading(true);
     setHighlightError("");
+
+    console.log("Current user role:", role);
+
+    // ----------------------------------------
+    // LEARNER
+    // Can only VIEW an existing highlight report
+    // ----------------------------------------
+    if (role === "LEARNER") {
+      const report = await getHighlightReport(id);
+
+      setHighlightReport(report);
+
+      return;
+    }
+
+    // ----------------------------------------
+    // CONTENT CREATOR / EDUCATOR / ADMIN
+    // Can generate highlights
+    // ----------------------------------------
 
     let moments = await getKeyMoments(id);
 
@@ -722,7 +823,9 @@ async function loadOrGenerateHighlights() {
     </p>
   </div>
 
-  {!transcriptLoading && transcript && (
+  {role === "CONTENT_CREATOR" &&
+    !transcriptLoading &&
+    transcript && (
     <button
       onClick={handleDownloadTranscript}
       className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition"
@@ -862,75 +965,134 @@ async function loadOrGenerateHighlights() {
 
 {activeSection === "summary" && (
   <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8">
-  <h2 className="text-3xl font-bold text-slate-900">
-    AI Summaries
-  </h2>
 
-  <p className="mt-2 text-slate-500">
-    AI-generated summaries of this video.
-  </p>
+    <h2 className="text-3xl font-bold text-slate-900">
+      AI Summaries
+    </h2>
 
-  {summaryLoading ? (
-    <div className="mt-8 text-center py-10 text-slate-500">
-      Loading summaries...
-    </div>
-  ) : summaryError ? (
-    <div className="mt-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl">
-      {summaryError}
-    </div>
-  ) : (
-    <div className="mt-8 space-y-6">
-
-      {/* Short Summary */}
-
-{shortSummary && (
-  <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6">
-
-    <h3 className="text-xl font-bold text-emerald-900">
-      Short Summary
-    </h3>
-
-    <p className="mt-4 text-emerald-800 leading-8 whitespace-pre-wrap">
-      {shortSummary.summary_text}
+    <p className="mt-2 text-slate-500">
+      AI-generated summaries of this video.
     </p>
 
-    <button
-      onClick={() => handleDownloadSummary("short")}
-      className="mt-4 px-5 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition"
-    >
-      ⬇ Download Short Summary
-    </button>
+    {summaryLoading ? (
+
+      <div className="mt-8 text-center py-10 text-slate-500">
+        Loading summaries...
+      </div>
+
+    ) : summaryError ? (
+
+      <div className="mt-6 bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl">
+        {summaryError}
+      </div>
+
+    ) : (
+
+      <div className="mt-8 space-y-6">
+
+        {/* Short Summary */}
+
+        {shortSummary && (
+          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6">
+
+            <h3 className="text-xl font-bold text-emerald-900">
+              Short Summary
+            </h3>
+
+            <p className="mt-4 text-emerald-800 leading-8 whitespace-pre-wrap">
+              {shortSummary.summary_text}
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+
+              {/* Learner: Bookmark only */}
+
+              {role === "LEARNER" && (
+                <button
+                  onClick={() =>
+                    handleBookmarkSummary(shortSummary)
+                  }
+                  disabled={bookmarkLoading}
+                  className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 transition"
+                >
+                  🔖 {bookmarkLoading
+                    ? "Saving..."
+                    : "Bookmark Summary"}
+                </button>
+              )}
+
+              {/* Content Creator: Download */}
+
+              {role === "CONTENT_CREATOR" && (
+                <button
+                  onClick={() =>
+                    handleDownloadSummary("short")
+                  }
+                  className="px-5 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition"
+                >
+                  ⬇ Download Short Summary
+                </button>
+              )}
+
+            </div>
+
+          </div>
+        )}
+
+
+        {/* Detailed Summary */}
+
+        {detailedSummary && (
+          <div className="bg-sky-50 border border-sky-100 rounded-2xl p-6">
+
+            <h3 className="text-xl font-bold text-sky-900">
+              Detailed Summary
+            </h3>
+
+            <p className="mt-4 text-sky-800 leading-8 whitespace-pre-wrap">
+              {detailedSummary.summary_text}
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+
+              {/* Learner: Bookmark only */}
+
+              {role === "LEARNER" && (
+                <button
+                  onClick={() =>
+                    handleBookmarkSummary(detailedSummary)
+                  }
+                  disabled={bookmarkLoading}
+                  className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 transition"
+                >
+                  🔖 {bookmarkLoading
+                    ? "Saving..."
+                    : "Bookmark Summary"}
+                </button>
+              )}
+
+              {/* Content Creator: Download */}
+
+              {role === "CONTENT_CREATOR" && (
+                <button
+                  onClick={() =>
+                    handleDownloadSummary("detailed")
+                  }
+                  className="px-5 py-3 rounded-xl bg-sky-600 text-white font-semibold hover:bg-sky-700 transition"
+                >
+                  ⬇ Download Detailed Summary
+                </button>
+              )}
+
+            </div>
+
+          </div>
+        )}
+
+      </div>
+    )}
 
   </div>
-)}
-
-      {/* Detailed Summary */}
-
-{detailedSummary && (
-  <div className="bg-sky-50 border border-sky-100 rounded-2xl p-6">
-
-    <h3 className="text-xl font-bold text-sky-900">
-      Detailed Summary
-    </h3>
-
-    <p className="mt-4 text-sky-800 leading-8 whitespace-pre-wrap">
-      {detailedSummary.summary_text}
-    </p>
-
-    <button
-      onClick={() => handleDownloadSummary("detailed")}
-      className="mt-4 px-5 py-3 rounded-xl bg-sky-600 text-white font-semibold hover:bg-sky-700 transition"
-    >
-      ⬇ Download Detailed Summary
-    </button>
-
-  </div>
-)}
-
-    </div>
-  )}
-
-</div>
 )}
 
         {/* KEY MOMENTS */}
@@ -1099,15 +1261,31 @@ async function loadOrGenerateHighlights() {
 
             {activeSection === "highlights" && (
   <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8">
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900">
-              Highlight Report
-            </h2>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 
-            <p className="mt-2 text-slate-500">
-              AI-generated highlights and important sections from this video.
-            </p>
-          </div>
+  <div>
+    <h2 className="text-3xl font-bold text-slate-900">
+      Highlight Report
+    </h2>
+
+    <p className="mt-2 text-slate-500">
+      AI-generated highlights and important sections from this video.
+    </p>
+  </div>
+
+  {role === "LEARNER" && highlightReport && (
+    <button
+      onClick={handleBookmarkHighlights}
+      disabled={bookmarkLoading}
+      className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 transition"
+    >
+      🔖 {bookmarkLoading
+        ? "Saving..."
+        : "Bookmark Highlights"}
+    </button>
+  )}
+
+</div>
 
 
           {/* Loading */}
@@ -1390,3 +1568,12 @@ function highlightSearchText(text, searchQuery) {
     );
   });
 }
+
+
+
+
+
+
+
+
+
