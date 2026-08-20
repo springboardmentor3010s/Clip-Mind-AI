@@ -22,8 +22,9 @@ from app.crud.bookmark import (
 from app.models.summary import Summary
 from app.crud.video import get_available_video_by_id
 from app.crud.summary import get_summary_by_type
-from app.services.highlight_service import generate_highlight_report
+from app.services.highlight_report_service import generate_highlight_report
 from app.services.activity_service import log_activity
+from app.crud.key_moment import get_key_moments_by_video
 
 router = APIRouter(
     prefix="/bookmarks",
@@ -51,40 +52,37 @@ def add_bookmark(
 
     content_type = bookmark_data.content_type.upper()
 
-    # ---------------------------------------------------------
+        # ---------------------------------------------------------
     # Validate SUMMARY bookmark
     # ---------------------------------------------------------
 
     if content_type == "SUMMARY":
 
         summary = (
-        db.query(Summary)
-        .filter(
-            Summary.id == bookmark_data.content_id
-        )
-        .first()
-    )
-
-    if summary is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Summary not found"
+            db.query(Summary)
+            .filter(
+                Summary.id == bookmark_data.content_id
+            )
+            .first()
         )
 
-    # Only allow bookmarking valid summary types
-    if summary.summary_type not in ["short", "detailed"]:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid summary type"
-        )
+        if summary is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Summary not found"
+            )
+
+        # Only allow bookmarking valid summary types
+        if str(summary.summary_type).upper() not in ["SHORT", "DETAILED"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid summary type"
+            )
 
     # ---------------------------------------------------------
     # Validate HIGHLIGHT bookmark
     #
-    # Highlights are generated dynamically and do not have
-    # their own database ID.
-    #
-    # Therefore content_id represents the associated video ID.
+    # For highlights, content_id represents the video ID.
     # ---------------------------------------------------------
 
     elif content_type == "HIGHLIGHT":
@@ -99,6 +97,16 @@ def add_bookmark(
                 status_code=404,
                 detail="Video not found or unavailable"
             )
+
+    # ---------------------------------------------------------
+    # Invalid content type
+    # ---------------------------------------------------------
+
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid bookmark content type"
+        )
 
     # ---------------------------------------------------------
     # Prevent duplicate bookmarks
@@ -214,7 +222,7 @@ def get_my_bookmarks(
                 }
             )
 
-        # =====================================================
+                # =====================================================
         # HIGHLIGHT BOOKMARK
         # content_id = Video ID
         # =====================================================
@@ -229,46 +237,62 @@ def get_my_bookmarks(
             if video is None:
                 continue
 
-            # Get short summary for generating highlights
-            summary = get_summary_by_type(
-                db=db,
-                video=video,
-                summary_type="SHORT"
-            )
-
             highlight_items = []
 
-            if summary is not None:
-
-                report = generate_highlight_report(
+            try:
+                # Get the short summary required for
+                # highlight report generation
+                summary = get_summary_by_type(
+                    db=db,
                     video=video,
-                    summary=summary,
-                    key_moments=[]
+                    summary_type="SHORT"
                 )
 
-                highlight_items = report.get(
-                    "highlights",
-                    []
+                if summary is not None:
+
+                    key_moments = get_key_moments_by_video(
+                        db=db,
+                        video=video
+                    )
+
+                    report = generate_highlight_report(
+                        video=video,
+                        summary=summary,
+                        key_moments=key_moments
+                    )
+
+                    if report and isinstance(report, dict):
+                        highlight_items = report.get(
+                            "highlights",
+                            []
+                        )
+
+            except Exception as error:
+                print(
+                    "Failed to load highlight bookmark:",
+                    error
                 )
+
+                # Do not allow one failed highlight generation
+                # to break the entire bookmarks page
+                highlight_items = []
 
             bookmark_results.append(
                 {
                     "id": bookmark.id,
                     "user_id": bookmark.user_id,
-                    "content_type": bookmark.content_type,
-
-                    # For highlights this is the VIDEO ID
+                    "content_type": "HIGHLIGHT",
                     "content_id": bookmark.content_id,
 
+                    # Highlight content belongs to this video
                     "video_id": video.id,
 
                     "video_filename": video.filename,
 
                     "summary_type": None,
 
-                    "content_text": (
-                        "AI-generated highlights from this video."
-                    ),
+                    "content_text":
+                        "AI-generated highlights from this video.",
 
                     "highlight_items": highlight_items,
 

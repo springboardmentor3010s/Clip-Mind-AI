@@ -255,8 +255,12 @@ async function handleSectionChange(section) {
   }
 
   if (section === "keywords") {
-    await loadOrGenerateKeywords();
+  if (role === "LEARNER") {
+    return;
   }
+
+  await loadOrGenerateKeywords();
+}
 }
 
 async function loadOrGenerateKeyMoments() {
@@ -785,16 +789,18 @@ async function loadOrGenerateHighlights() {
       🎯 Highlights
     </button>
 
-    <button
-      onClick={() => handleSectionChange("keywords")}
-      className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
-        activeSection === "keywords"
-          ? "bg-orange-600 text-white shadow-lg"
-          : "bg-orange-50 text-orange-700 hover:bg-orange-100"
-      }`}
-    >
-      🔑 Keywords
-    </button>
+    {role !== "LEARNER" && (
+  <button
+    onClick={() => handleSectionChange("keywords")}
+    className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
+      activeSection === "keywords"
+        ? "bg-orange-600 text-white shadow-lg"
+        : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+    }`}
+  >
+    🔑 Keywords
+  </button>
+)}
 
   </div>
 
@@ -1385,7 +1391,7 @@ async function loadOrGenerateHighlights() {
 
         {/* KEYWORDS */}
 
-            {activeSection === "keywords" && (
+            {role !== "LEARNER" && activeSection === "keywords" && (
   <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8">
           <div>
             <h2 className="text-3xl font-bold text-slate-900">

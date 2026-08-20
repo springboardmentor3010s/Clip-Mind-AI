@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.summary import Summary
@@ -15,7 +16,7 @@ def create_summary(
 
     summary = Summary(
         video_id=video.id,
-        summary_type=summary_type,
+        summary_type=summary_type.upper(),
         summary_text=summary_text,
         model_name=model_name,
         processing_time=processing_time
@@ -47,13 +48,14 @@ def get_summary_by_type(
     video: Video,
     summary_type: str
 ):
-    normalized_summary_type = summary_type.upper()
+    normalized_summary_type = summary_type.strip().lower()
 
     return (
         db.query(Summary)
         .filter(
             Summary.video_id == video.id,
-            Summary.summary_type == normalized_summary_type
+            func.lower(Summary.summary_type) ==
+            normalized_summary_type
         )
         .first()
     )

@@ -28,7 +28,7 @@ export default function BookmarksPage() {
     } catch (err) {
       setError(
         err?.response?.data?.detail ||
-        "Failed to load bookmarks."
+          "Failed to load bookmarks."
       );
     } finally {
       setLoading(false);
@@ -39,29 +39,6 @@ export default function BookmarksPage() {
     fetchBookmarks();
   }, []);
 
-  const handleRemoveBookmark = async (bookmarkId) => {
-    try {
-      setDeletingId(bookmarkId);
-      setError("");
-
-      await deleteBookmark(bookmarkId);
-
-      // Remove only the bookmark that was deleted
-      setBookmarks((currentBookmarks) =>
-        currentBookmarks.filter(
-          (bookmark) => bookmark.id !== bookmarkId
-        )
-      );
-    } catch (err) {
-      setError(
-        err?.response?.data?.detail ||
-        "Failed to remove bookmark."
-      );
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
   const handleOpenVideo = (videoId) => {
     if (!videoId) {
       setError("Unable to open the associated video.");
@@ -71,9 +48,32 @@ export default function BookmarksPage() {
     router.push(`/videos/${videoId}`);
   };
 
+  const handleRemoveBookmark = async (event, bookmarkId) => {
+    event.stopPropagation();
+
+    try {
+      setDeletingId(bookmarkId);
+      setError("");
+
+      await deleteBookmark(bookmarkId);
+
+      setBookmarks((currentBookmarks) =>
+        currentBookmarks.filter(
+          (bookmark) => bookmark.id !== bookmarkId
+        )
+      );
+    } catch (err) {
+      setError(
+        err?.response?.data?.detail ||
+          "Failed to remove bookmark."
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-8">
-
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">
@@ -104,7 +104,6 @@ export default function BookmarksPage() {
       {/* Empty State */}
       {!loading && bookmarks.length === 0 && (
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-
           <h2 className="text-xl font-semibold text-slate-800">
             No bookmarks yet
           </h2>
@@ -115,26 +114,24 @@ export default function BookmarksPage() {
 
           <Link
             href="/videos"
-            className="inline-block mt-6 rounded-xl bg-violet-600 px-6 py-3 font-medium text-white transition hover:bg-violet-700"
+            className="mt-6 inline-block rounded-xl bg-violet-600 px-6 py-3 font-medium text-white transition hover:bg-violet-700"
           >
             Browse Videos
           </Link>
-
         </div>
       )}
 
       {/* Bookmark List */}
       {!loading && bookmarks.length > 0 && (
         <div className="grid gap-5">
-
           {bookmarks.map((bookmark) => (
-
             <div
               key={bookmark.id}
-              onClick={() => handleOpenVideo(bookmark.video_id)}
+              onClick={() =>
+                handleOpenVideo(bookmark.video_id)
+              }
               className="cursor-pointer rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-violet-300 hover:shadow-md"
             >
-
               <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
 
                 {/* Bookmark Content */}
@@ -153,7 +150,7 @@ export default function BookmarksPage() {
 
                   {/* Summary Title */}
                   {bookmark.content_type === "SUMMARY" && (
-                    <h2 className="mt-4 text-xl font-semibold text-slate-800 transition hover:text-violet-600">
+                    <h2 className="mt-4 text-xl font-semibold text-slate-800">
                       {bookmark.summary_type?.toUpperCase() === "SHORT"
                         ? "Short Summary"
                         : "Detailed Summary"}
@@ -162,7 +159,7 @@ export default function BookmarksPage() {
 
                   {/* Highlight Title */}
                   {bookmark.content_type === "HIGHLIGHT" && (
-                    <h2 className="mt-4 text-xl font-semibold text-slate-800 transition hover:text-amber-600">
+                    <h2 className="mt-4 text-xl font-semibold text-slate-800">
                       AI-Generated Highlights
                     </h2>
                   )}
@@ -171,7 +168,8 @@ export default function BookmarksPage() {
                   <p className="mt-3 text-sm font-medium text-slate-600">
                     Video:
                     <span className="ml-2 text-slate-800">
-                      {bookmark.video_filename}
+                      {bookmark.video_filename ||
+                        "Video unavailable"}
                     </span>
                   </p>
 
@@ -179,7 +177,6 @@ export default function BookmarksPage() {
                   {bookmark.content_type === "SUMMARY" &&
                     bookmark.content_text && (
                       <div className="mt-4 rounded-xl bg-slate-50 p-4">
-
                         <p className="text-sm font-semibold text-slate-700">
                           Summary:
                         </p>
@@ -187,23 +184,18 @@ export default function BookmarksPage() {
                         <p className="mt-2 text-sm leading-6 text-slate-600">
                           {bookmark.content_text}
                         </p>
-
                       </div>
                     )}
 
                   {/* Highlight Content */}
                   {bookmark.content_type === "HIGHLIGHT" && (
                     <div className="mt-4 rounded-xl bg-slate-50 p-4">
-
                       <p className="text-sm font-semibold text-slate-700">
                         Highlights:
                       </p>
 
-                      {bookmark.highlight_items &&
-                      bookmark.highlight_items.length > 0 ? (
-
+                      {bookmark.highlight_items?.length > 0 ? (
                         <ul className="mt-3 space-y-2">
-
                           {bookmark.highlight_items.map(
                             (highlight, index) => (
                               <li
@@ -214,23 +206,18 @@ export default function BookmarksPage() {
                               </li>
                             )
                           )}
-
                         </ul>
-
                       ) : (
-
                         <p className="mt-2 text-sm text-slate-500">
                           No highlight details available.
                         </p>
-
                       )}
-
                     </div>
                   )}
 
-                  {/* Click Hint */}
+                  {/* Navigation Hint */}
                   <p className="mt-4 text-sm font-medium text-violet-600">
-                    Click to open video →
+                    Click this bookmark to open the video →
                   </p>
 
                   {/* Saved Date */}
@@ -240,16 +227,15 @@ export default function BookmarksPage() {
                       bookmark.created_at
                     ).toLocaleString()}
                   </p>
-
                 </div>
 
-                {/* Action Buttons */}
+                {/* Actions */}
                 <div
                   className="flex flex-col gap-3 sm:flex-row md:flex-col"
-                  onClick={(event) => event.stopPropagation()}
+                  onClick={(event) =>
+                    event.stopPropagation()
+                  }
                 >
-
-                  {/* Open Video */}
                   <button
                     onClick={() =>
                       handleOpenVideo(bookmark.video_id)
@@ -260,29 +246,29 @@ export default function BookmarksPage() {
                     Open Video
                   </button>
 
-                  {/* Remove Bookmark */}
                   <button
-                    onClick={() =>
-                      handleRemoveBookmark(bookmark.id)
+                    onClick={(event) =>
+                      handleRemoveBookmark(
+                        event,
+                        bookmark.id
+                      )
                     }
-                    disabled={deletingId === bookmark.id}
+                    disabled={
+                      deletingId === bookmark.id
+                    }
                     className="rounded-xl border border-red-300 px-5 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
                   >
                     {deletingId === bookmark.id
                       ? "Removing..."
                       : "Remove Bookmark"}
                   </button>
-
                 </div>
 
               </div>
-
             </div>
           ))}
-
         </div>
       )}
-
     </div>
   );
 }
