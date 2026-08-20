@@ -256,3 +256,30 @@ export function UsersIcon(props) {
     </svg>
   );
 }
+
+export function GraduationCapIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M2.5 9.5 12 5l9.5 4.5-9.5 4.5-9.5-4.5Z" />
+      <path d="M6.5 11.5v4.75c0 1.1 2.46 2.25 5.5 2.25s5.5-1.15 5.5-2.25V11.5" />
+      <path d="M21 9.5v6" />
+    </svg>
+  );
+}
+
+export function PlusIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+export function CopyIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="8.5" y="8.5" width="12" height="12" rx="1.5" />
+      <path d="M15.5 8.5V5.5a1.5 1.5 0 0 0-1.5-1.5H5.5A1.5 1.5 0 0 0 4 5.5v8.5a1.5 1.5 0 0 0 1.5 1.5h3" />
+    </svg>
+  );
+}

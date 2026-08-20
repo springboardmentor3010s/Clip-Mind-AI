@@ -2,6 +2,10 @@
 Video Upload & Processing Module — business logic for saving, validating,
 inspecting, and processing uploaded video files via FFmpeg.
 """
+"""
+Video Upload & Processing Module — business logic for saving, validating,
+inspecting, and processing uploaded video files via FFmpeg.
+"""
 import subprocess
 import uuid
 from pathlib import Path
@@ -10,6 +14,9 @@ from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.models.classroom import Classroom
+from app.models.classroom_membership import ClassroomMembership
+from app.models.classroom_video_share import ClassroomVideoShare
 from app.models.video import Video, VideoStatus
 from app.models.video_share import VideoShare
 from app.models.user import User
@@ -209,9 +216,10 @@ def get_video_or_404(db: Session, video_id: uuid.UUID, owner: User, require_owne
     summary/key-moments, publish, delete).
 
     require_owner=False: also allow read-only access if the video has been
-    published by its owner, OR shared directly with this user — used for
-    the endpoints a Learner needs to view a shared video (details, stream,
-    transcript/summary/key-moments reads, bookmarking, watch-progress pings).
+    published by its owner, shared directly with this user, OR shared with
+    a classroom this user is enrolled in — used for the endpoints a Learner
+    needs to view a shared video (details, stream, transcript/summary/
+    key-moments reads, bookmarking, watch-progress pings).
     """
     video = db.query(Video).filter(Video.id == video_id).first()
     if not video:
@@ -228,6 +236,15 @@ def get_video_or_404(db: Session, video_id: uuid.UUID, owner: User, require_owne
             .first()
         )
         if shared:
+            return video
+
+        classroom_shared = (
+            db.query(ClassroomVideoShare)
+            .join(ClassroomMembership, ClassroomMembership.classroom_id == ClassroomVideoShare.classroom_id)
+            .filter(ClassroomVideoShare.video_id == video_id, ClassroomMembership.student_id == owner.id)
+            .first()
+        )
+        if classroom_shared:
             return video
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Video not found.")
@@ -382,18 +399,126 @@ def revoke_share(db: Session, video_id: uuid.UUID, owner: User, share_id: uuid.U
     db.commit()
 
 
-def list_shared_with_me(db: Session, user: User) -> list[Video]:
-    """Shared with Me: every video explicitly shared with the current user, newest first."""
+def _classroom_share_to_dict(share: ClassroomVideoShare, classroom: Classroom, student_count: int) -> dict:
+    return {
+        "id": share.id,
+        "video_id": share.video_id,
+        "classroom_id": share.classroom_id,
+        "classroom_name": classroom.name,
+        "student_count": student_count,
+        "shared_by_user_id": share.shared_by_user_id,
+        "created_at": share.created_at,
+    }
+
+
+def share_video_with_classroom(db: Session, video_id: uuid.UUID, owner: User, classroom_id: uuid.UUID) -> dict:
+    """
+    Owner-only: share a video with an entire classroom in one shot. The
+    classroom must belong to the sharer — an educator can only share into
+    their own classrooms, never someone else's. Idempotent: re-sharing
+    with the same classroom returns the existing share rather than erroring.
+    """
+    video = get_video_or_404(db, video_id, owner)
+
+    classroom = db.query(Classroom).filter(Classroom.id == classroom_id).first()
+    if not classroom:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Classroom not found.")
+    if classroom.educator_id != owner.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only share into your own classrooms.")
+
+    student_count = db.query(ClassroomMembership).filter(ClassroomMembership.classroom_id == classroom_id).count()
+
+    existing = (
+        db.query(ClassroomVideoShare)
+        .filter(ClassroomVideoShare.video_id == video.id, ClassroomVideoShare.classroom_id == classroom_id)
+        .first()
+    )
+    if existing:
+        return _classroom_share_to_dict(existing, classroom, student_count)
+
+    share = ClassroomVideoShare(video_id=video.id, classroom_id=classroom_id, shared_by_user_id=owner.id)
+    db.add(share)
+    db.commit()
+    db.refresh(share)
+
+    log_action(
+        db,
+        actor_id=owner.id,
+        action="video.shared_with_classroom",
+        target_type="video",
+        target_id=video.id,
+        detail=f"{video.title or video.filename} -> classroom {classroom.name}",
+    )
+
+    return _classroom_share_to_dict(share, classroom, student_count)
+
+
+def list_video_classroom_shares(db: Session, video_id: uuid.UUID, owner: User) -> list[dict]:
+    """Owner-only: list every classroom a video is currently shared with."""
+    get_video_or_404(db, video_id, owner)
     rows = (
-        db.query(Video, User.full_name)
+        db.query(ClassroomVideoShare, Classroom)
+        .join(Classroom, Classroom.id == ClassroomVideoShare.classroom_id)
+        .filter(ClassroomVideoShare.video_id == video_id)
+        .order_by(ClassroomVideoShare.created_at.desc())
+        .all()
+    )
+    return [
+        _classroom_share_to_dict(
+            share,
+            classroom,
+            db.query(ClassroomMembership).filter(ClassroomMembership.classroom_id == classroom.id).count(),
+        )
+        for share, classroom in rows
+    ]
+
+
+def revoke_classroom_share(db: Session, video_id: uuid.UUID, owner: User, share_id: uuid.UUID) -> None:
+    """Owner-only: revoke a video's share with a classroom."""
+    get_video_or_404(db, video_id, owner)
+    share = (
+        db.query(ClassroomVideoShare)
+        .filter(ClassroomVideoShare.id == share_id, ClassroomVideoShare.video_id == video_id)
+        .first()
+    )
+    if not share:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Classroom share not found.")
+    db.delete(share)
+    db.commit()
+
+
+def list_shared_with_me(db: Session, user: User) -> list[Video]:
+    """
+    Shared with Me: every video explicitly shared with the current user
+    directly, OR shared with a classroom they're enrolled in. Newest first,
+    deduplicated (a video shared both ways only appears once).
+    """
+    direct_rows = (
+        db.query(Video, User.full_name, VideoShare.created_at)
         .join(VideoShare, VideoShare.video_id == Video.id)
         .join(User, User.id == Video.owner_id)
         .filter(VideoShare.shared_with_user_id == user.id)
-        .order_by(VideoShare.created_at.desc())
         .all()
     )
+    classroom_rows = (
+        db.query(Video, User.full_name, ClassroomVideoShare.created_at)
+        .join(ClassroomVideoShare, ClassroomVideoShare.video_id == Video.id)
+        .join(ClassroomMembership, ClassroomMembership.classroom_id == ClassroomVideoShare.classroom_id)
+        .join(User, User.id == Video.owner_id)
+        .filter(ClassroomMembership.student_id == user.id)
+        .all()
+    )
+
+    seen: dict[uuid.UUID, tuple] = {}
+    for video, owner_name, shared_at in [*direct_rows, *classroom_rows]:
+        existing = seen.get(video.id)
+        if not existing or shared_at > existing[2]:
+            seen[video.id] = (video, owner_name, shared_at)
+
+    ordered = sorted(seen.values(), key=lambda row: row[2], reverse=True)
+
     videos = []
-    for video, owner_name in rows:
+    for video, owner_name, _shared_at in ordered:
         video.owner_name = owner_name
         videos.append(video)
     return videos

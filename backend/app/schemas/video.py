@@ -49,3 +49,17 @@ class VideoShareOut(BaseModel):
 class VideoShareResult(BaseModel):
     shared: list[VideoShareOut]
     not_found: list[str]
+
+
+class ClassroomShareCreate(BaseModel):
+    classroom_id: uuid.UUID
+
+
+class ClassroomShareOut(BaseModel):
+    id: uuid.UUID
+    video_id: uuid.UUID
+    classroom_id: uuid.UUID
+    classroom_name: str
+    student_count: int
+    shared_by_user_id: uuid.UUID
+    created_at: datetime

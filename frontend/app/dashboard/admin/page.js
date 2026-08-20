@@ -3,16 +3,8 @@
 import { useEffect, useState } from "react";
 import api from "../../../lib/api";
 import { useAuth } from "../../../lib/AuthContext";
-import Select from "../../../components/ui/Select";
 import StatusChip from "../../../components/ui/StatusChip";
 import { TrashIcon } from "../../../components/ui/icons";
-
-const ROLE_OPTIONS = [
-  { value: "content_creator", label: "Content Creator" },
-  { value: "learner", label: "Learner" },
-  { value: "educator", label: "Educator" },
-  { value: "administrator", label: "Administrator" },
-];
 
 const ROLE_LABELS = {
   content_creator: "Content Creator",
@@ -80,12 +72,12 @@ function UsersTab() {
     }
   }
 
-  async function changeRole(user, role) {
-    if (role === user.role) return;
+  async function promoteToAdmin(user) {
+    if (user.role === "administrator") return;
     setUpdatingId(user.id);
     setError("");
     try {
-      const res = await api.patch(`/api/v1/users/${user.id}/role`, { role });
+      const res = await api.patch(`/api/v1/users/${user.id}/role`, { role: "administrator" });
       setUsers((prev) => prev.map((u) => (u.id === user.id ? res.data : u)));
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to update role.");
@@ -131,13 +123,18 @@ function UsersTab() {
                     </td>
                     <td className="px-4 py-3 text-ink/60 dark:text-paper/60">{u.email}</td>
                     <td className="px-4 py-3">
-                      <div className="w-40">
-                        <Select
-                          value={u.role}
-                          onChange={(role) => changeRole(u, role)}
-                          options={ROLE_OPTIONS}
-                          disabled={isSelf || updatingId === u.id}
-                        />
+                      <div className="flex items-center gap-2">
+                        <span className="text-ink dark:text-paper">{ROLE_LABELS[u.role] || u.role}</span>
+                        {u.role !== "administrator" && (
+                          <button
+                            type="button"
+                            onClick={() => promoteToAdmin(u)}
+                            disabled={isSelf || updatingId === u.id}
+                            className="rounded-md border border-line px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-ink/60 transition-colors hover:border-signal hover:text-signal disabled:cursor-not-allowed disabled:opacity-40 dark:border-line-dark dark:text-paper/60"
+                          >
+                            Promote to Admin
+                          </button>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3">

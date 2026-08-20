@@ -59,10 +59,22 @@ def change_user_role(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Admin-only: change a user's role."""
+    """Admin-only: promote a user to Administrator.
+
+    Role changes are restricted to promotions to Administrator only — admins
+    cannot move a user into any other role (content_creator/learner/educator)
+    from this endpoint.
+    """
+    if payload.role != UserRole.ADMINISTRATOR:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Admins can only promote users to Administrator.",
+        )
     if user_id == current_user.id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot change your own role.")
     user = _get_user_or_404(db, user_id)
+    if user.role == UserRole.ADMINISTRATOR:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User is already an Administrator.")
     old_role = user.role.value
     user.role = payload.role
     db.commit()

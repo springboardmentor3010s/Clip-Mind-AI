@@ -33,6 +33,31 @@ from app.services.video_service import (
 )
 from app.services.video_analytics_service import get_video_analytics, record_view
 from app.services.audit_service import log_action
+from app.schemas.video import (
+    ClassroomShareCreate,
+    ClassroomShareOut,
+    VideoOut,
+    VideoPublishUpdate,
+    VideoShareCreate,
+    VideoShareOut,
+    VideoShareResult,
+)
+from app.schemas.video_analytics import VideoAnalytics, ViewPing
+from app.services.video_service import (
+    delete_video_files_and_row,
+    get_video_or_404,
+    get_video_shares,
+    list_published_videos,
+    list_shared_with_me,
+    list_user_videos,
+    list_video_classroom_shares,
+    revoke_classroom_share,
+    revoke_share,
+    save_uploaded_video,
+    set_video_published,
+    share_video,
+    share_video_with_classroom,
+)
 
 router = APIRouter(prefix="/videos", tags=["Videos"])
 
@@ -202,3 +227,35 @@ async def remove_video(
 
     delete_video_files_and_row(db, video)
     log_action(db, actor_id=current_user.id, action="video.deleted", target_type="video", target_id=video_id, detail=video_label)
+
+
+@router.post("/{video_id}/share-classroom", response_model=ClassroomShareOut)
+def share_video_with_classroom_endpoint(
+    video_id: uuid.UUID,
+    payload: ClassroomShareCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Owner-only: share a video with every student enrolled in one of your classrooms."""
+    return share_video_with_classroom(db, video_id, current_user, payload.classroom_id)
+
+
+@router.get("/{video_id}/share-classroom", response_model=list[ClassroomShareOut])
+def list_video_classroom_shares_endpoint(
+    video_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Owner-only: list every classroom a video is currently shared with."""
+    return list_video_classroom_shares(db, video_id, current_user)
+
+
+@router.delete("/{video_id}/share-classroom/{share_id}", status_code=status.HTTP_204_NO_CONTENT)
+def revoke_video_classroom_share_endpoint(
+    video_id: uuid.UUID,
+    share_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Owner-only: revoke a video's share with a classroom."""
+    revoke_classroom_share(db, video_id, current_user, share_id)
