@@ -1,60 +1,29 @@
 """
-Pydantic schemas package.
+Services package.
 """
-from app.schemas.auth import Token, TokenPayload, RegisterRequest, LoginRequest
-from app.schemas.role import RoleBase, RoleCreate, RoleRead, RoleUpdate
-from app.schemas.user import UserBase, UserCreate, UserRead, UserUpdate, UserProfile
-from app.schemas.video import VideoBase, VideoCreate, VideoRead, VideoUpdate, VideoUploadResponse
-from app.schemas.transcript import TranscriptBase, TranscriptCreate, TranscriptRead, TranscriptUpdate
-from app.schemas.transcript_validation import (
-    TranscriptValidationMetrics,
-    TranscriptValidationFlags,
-    TranscriptValidationResponse,
-)
-from app.schemas.summary import SummaryBase, SummaryCreate, SummaryRead, SummaryUpdate
-from app.schemas.key_moment import KeyMomentBase, KeyMomentCreate, KeyMomentRead, KeyMomentUpdate
-from app.schemas.analytics import AnalyticsBase, AnalyticsCreate, AnalyticsRead, AnalyticsUpdate
-from app.schemas.bookmark import BookmarkCreate, BookmarkResponse
+from app.services.auth_service import AuthService
+from app.services.user_service import UserService
+from app.services.video_service import VideoService
+from app.services.ffmpeg_service import FFmpegService
+from app.services.whisper_service import WhisperService
+from app.services.transcript_service import TranscriptService
+from app.services.summary_service import SummaryService
+from app.services.key_moment_service import KeyMomentService
+from app.services.analytics_service import AnalyticsService
+from app.services.bookmark_service import BookmarkService
+from app.services.keyword_service import KeywordService
 
 
 __all__ = [
-    "Token",
-    "TokenPayload",
-    "RegisterRequest",
-    "LoginRequest",
-    "RoleBase",
-    "RoleCreate",
-    "RoleRead",
-    "RoleUpdate",
-    "UserBase",
-    "UserCreate",
-    "UserRead",
-    "UserUpdate",
-    "UserProfile",
-    "VideoBase",
-    "VideoCreate",
-    "VideoRead",
-    "VideoUpdate",
-    "VideoUploadResponse",
-    "TranscriptBase",
-    "TranscriptCreate",
-    "TranscriptRead",
-    "TranscriptUpdate",
-    "TranscriptValidationMetrics",
-    "TranscriptValidationFlags",
-    "TranscriptValidationResponse",
-    "SummaryBase",
-    "SummaryCreate",
-    "SummaryRead",
-    "SummaryUpdate",
-    "KeyMomentBase",
-    "KeyMomentCreate",
-    "KeyMomentRead",
-    "KeyMomentUpdate",
-    "AnalyticsBase",
-    "AnalyticsCreate",
-    "AnalyticsRead",
-    "AnalyticsUpdate",
-    "BookmarkCreate",
-    "BookmarkResponse",
+    "AuthService",
+    "UserService",
+    "VideoService",
+    "FFmpegService",
+    "WhisperService",
+    "TranscriptService",
+    "SummaryService",
+    "KeyMomentService",
+    "AnalyticsService",
+    "BookmarkService",
+    "KeywordService",
 ]
