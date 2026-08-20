@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+
+  html.dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
+}
+
+/* Shared application surfaces. These cover existing pages while allowing new
+   components to opt into Tailwind's `dark:` variants individually. */
+html.dark .bg-white { @apply bg-slate-900; }
+html.dark .bg-gray-50 { @apply bg-slate-950; }
+html.dark .bg-gray-100 { @apply bg-slate-800; }
+html.dark .bg-gray-200 { @apply bg-slate-700; }
+html.dark .border-gray-100, html.dark .border-gray-200, html.dark .border-gray-300 { @apply border-slate-700; }
+html.dark .divide-gray-100, html.dark .divide-gray-200 { @apply divide-slate-700; }
+html.dark .text-gray-800, html.dark .text-gray-900 { @apply text-slate-100; }
+html.dark .text-gray-700 { @apply text-slate-200; }
+html.dark .text-gray-600, html.dark .text-gray-500 { @apply text-slate-400; }
+html.dark input, html.dark select, html.dark textarea { @apply border-slate-600 bg-slate-800 text-slate-100; }
+html.dark ::-webkit-scrollbar-track { background: #0f172a; }
+html.dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+/* Appearance preferences. The selectors intentionally override the existing
+   Tailwind primary utilities so the selected color is reflected app-wide. */
+html[data-primary-color='green'] .bg-primary-600 { background-color: #059669; }
+html[data-primary-color='green'] .bg-primary-700 { background-color: #047857; }
+html[data-primary-color='green'] .bg-primary-100, html[data-primary-color='green'] .bg-primary-50 { background-color: #ecfdf5; }
+html[data-primary-color='green'] .text-primary-600, html[data-primary-color='green'] .text-primary-700 { color: #059669; }
+html[data-primary-color='green'] .border-primary-500 { border-color: #10b981; }
+html[data-primary-color='purple'] .bg-primary-600 { background-color: #7c3aed; }
+html[data-primary-color='purple'] .bg-primary-700 { background-color: #6d28d9; }
+html[data-primary-color='purple'] .bg-primary-100, html[data-primary-color='purple'] .bg-primary-50 { background-color: #f5f3ff; }
+html[data-primary-color='purple'] .text-primary-600, html[data-primary-color='purple'] .text-primary-700 { color: #7c3aed; }
+html[data-primary-color='purple'] .border-primary-500 { border-color: #8b5cf6; }
+
+/* Sidebar gradient — matches the selected primary color from Appearance settings */
+.sidebar-gradient {
+  background: linear-gradient(to bottom, #1e3a8a, #1d4ed8);
+}
+html[data-primary-color='green'] .sidebar-gradient {
+  background: linear-gradient(to bottom, #047857, #059669);
+}
+html[data-primary-color='purple'] .sidebar-gradient {
+  background: linear-gradient(to bottom, #6d28d9, #7c3aed);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
