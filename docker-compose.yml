@@ -1,0 +1,72 @@
+name: clipmind
+
+services:
+
+
+  # ----------------------------------------------------------
+  # FastAPI backend
+  # Uses the existing Windows PostgreSQL database
+  # ----------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: clipmind-backend
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres2004@host.docker.internal:5432/clipmind_ai
+      NLTK_DATA: /app/nltk_data
+      BACKEND_CORS_ORIGINS: "http://localhost:5173,http://localhost:80,http://localhost:8000"
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./app/uploads:/app/app/uploads
+      - audio_data:/app/audio
+      - thumbnails_data:/app/thumbnails
+      - model_cache:/root/.cache
+      - nltk_data:/app/nltk_data
+
+  # ----------------------------------------------------------
+  # React frontend / Nginx
+  # ----------------------------------------------------------
+  frontend:
+    build:
+      context: ./../frontend
+      dockerfile: Dockerfile
+
+      args:
+        VITE_API_URL: ""
+
+    container_name: clipmind-frontend
+
+    restart: unless-stopped
+
+    depends_on:
+      - backend
+
+    ports:
+      - "5173:80"
+
+    volumes:
+      - ./app/uploads:/usr/share/nginx/html/uploads:ro
+
+
+# ----------------------------------------------------------
+# Persistent Docker volumes
+# ----------------------------------------------------------
+volumes:
+  audio_data:
+  thumbnails_data:
+  model_cache:
+  nltk_data:
