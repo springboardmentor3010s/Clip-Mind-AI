@@ -1,0 +1,134 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import {
+  FiBookOpen, FiLoader, FiAlertCircle, FiCheckCircle, FiShare2,
+  FiUser, FiCalendar, FiVideo,
+} from 'react-icons/fi';
+import educatorService from '../services/educatorService.js';
+
+
+const SharedSummary = () => {
+  const { token } = useParams();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const result = await educatorService.getSharedSummary(token);
+        setData(result);
+      } catch (err) {
+        setError(
+          err.response?.data?.detail ||
+            'This share link is invalid or has been revoked.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [token]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="text-gray-500 mt-3">Loading summary...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-20 text-center">
+        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <FiAlertCircle className="text-red-500 text-3xl" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">Unable to open summary</h1>
+        <p className="text-gray-600 mb-6">{error}</p>
+        <Link
+          to="/"
+          className="inline-flex items-center px-5 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm"
+        >
+          Go to ClipMind AI
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pt-8 pb-16">
+      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-full text-xs font-medium mb-4">
+          <FiShare2 />
+          Shared by {data.educator_name}
+        </div>
+
+        {/* Title card */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-7 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 leading-tight">
+            {data.video_title}
+          </h1>
+          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-500">
+            <span className="inline-flex items-center">
+              <FiUser className="mr-1.5 text-green-600" /> {data.educator_name}
+            </span>
+            <span className="inline-flex items-center">
+              <FiVideo className="mr-1.5 text-primary-600" /> Lecture Summary
+            </span>
+            <span className="inline-flex items-center">
+              <FiCalendar className="mr-1.5 text-gray-400" />
+              Shared {new Date(data.shared_at).toLocaleDateString()}
+            </span>
+          </div>
+        </div>
+
+        {/* Short summary */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-7 mb-6">
+          <h2 className="font-semibold text-gray-800 mb-2 flex items-center">
+            <FiBookOpen className="mr-2 text-primary-500" /> What it's about
+          </h2>
+          <p className="text-gray-600 leading-relaxed">{data.short_summary}</p>
+        </div>
+
+        {/* Key points */}
+        {data.bullet_points?.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-7 mb-6">
+            <h2 className="font-semibold text-gray-800 mb-3 flex items-center">
+              <FiCheckCircle className="mr-2 text-green-500" /> Key Points
+            </h2>
+            <ul className="space-y-2.5">
+              {data.bullet_points.map((point, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <span className="mt-1.5 w-2 h-2 rounded-full bg-primary-500 shrink-0" />
+                  <span className="text-sm text-gray-700 leading-relaxed">{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Detailed summary */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-7 mb-6">
+          <h2 className="font-semibold text-gray-800 mb-3 flex items-center">
+            <FiBookOpen className="mr-2 text-primary-500" /> Detailed Summary
+          </h2>
+          <div className="prose prose-sm sm:prose max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
+            {data.detailed_summary}
+          </div>
+        </div>
+
+        <p className="text-center text-xs text-gray-400">
+          Generated by ClipMind AI • Educational summary shared by your instructor
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default SharedSummary;
