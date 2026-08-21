@@ -1,0 +1,68 @@
+services:
+
+  db:
+    image: postgres:16
+    container_name: clipmind-db
+
+    environment:
+      POSTGRES_DB: clipmind
+      POSTGRES_USER: clipmind
+      POSTGRES_PASSWORD: clipmind
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clipmind -d clipmind"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  backend:
+    build:
+      context: ./backend
+
+    container_name: clipmind-backend
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    environment:
+      DATABASE_URL: postgresql://clipmind:clipmind@db:5432/clipmind
+
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+
+      GROQ_API_KEY: ${GROQ_API_KEY}
+
+      FFMPEG_PATH: ffmpeg
+      FFPROBE_PATH: ffprobe
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+
+  frontend:
+    build:
+      context: ./frontend
+
+    container_name: clipmind-frontend
+
+    depends_on:
+      - backend
+
+    ports:
+      - "5173:80"
+
+
+volumes:
+  postgres_data:

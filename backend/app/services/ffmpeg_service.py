@@ -11,20 +11,14 @@ os.makedirs(
 )
 
 
-FFMPEG_PATH = (
-    r"C:\Users\saisa\Downloads"
-    r"\ffmpeg-8.1.2-essentials_build"
-    r"\ffmpeg-8.1.2-essentials_build"
-    r"\bin\ffmpeg.exe"
-)
-
-
-FFPROBE_PATH = (
-    r"C:\Users\saisa\Downloads"
-    r"\ffmpeg-8.1.2-essentials_build"
-    r"\ffmpeg-8.1.2-essentials_build"
-    r"\bin\ffprobe.exe"
-)
+# On Windows (local dev), set these in your .env file, e.g.:
+#   FFMPEG_PATH=C:\Users\saisa\Downloads\ffmpeg-8.1.2-essentials_build\ffmpeg-8.1.2-essentials_build\bin\ffmpeg.exe
+#   FFPROBE_PATH=C:\Users\saisa\Downloads\ffmpeg-8.1.2-essentials_build\ffmpeg-8.1.2-essentials_build\bin\ffprobe.exe
+#
+# In Docker (Linux), leave them unset (or set to "ffmpeg" / "ffprobe") so the
+# binaries installed in the image via PATH are used instead.
+FFMPEG_PATH = os.environ.get("FFMPEG_PATH", "ffmpeg")
+FFPROBE_PATH = os.environ.get("FFPROBE_PATH", "ffprobe")
 
 
 def extract_audio(video_path: str):

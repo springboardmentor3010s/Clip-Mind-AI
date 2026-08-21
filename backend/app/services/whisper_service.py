@@ -1,17 +1,20 @@
 import os
 import json
 
-# Add FFmpeg to PATH only for this Python process
-os.environ["PATH"] += os.pathsep + r"C:\Users\saisa\Downloads\ffmpeg-8.1.2-essentials_build\ffmpeg-8.1.2-essentials_build\bin"
-
 import whisper
+
 
 TRANSCRIPT_FOLDER = "uploads/transcripts"
 
-os.makedirs(TRANSCRIPT_FOLDER, exist_ok=True)
+os.makedirs(
+    TRANSCRIPT_FOLDER,
+    exist_ok=True
+)
 
-# Load Whisper model once
-model = whisper.load_model("tiny")
+
+MODEL_PATH = "/app/models/tiny.pt"
+
+model = whisper.load_model(MODEL_PATH)
 
 
 def merge_segments(segments, interval=6):
@@ -57,7 +60,10 @@ def generate_transcript(audio_path):
 
     result = model.transcribe(audio_path)
 
-    merged_segments = merge_segments(result["segments"], interval=6)
+    merged_segments = merge_segments(
+        result["segments"],
+        interval=6
+    )
 
     filename = os.path.splitext(
         os.path.basename(audio_path)
@@ -73,10 +79,20 @@ def generate_transcript(audio_path):
         f"{filename}.json"
     )
 
-    with open(txt_path, "w", encoding="utf-8") as f:
+    with open(
+        txt_path,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
         f.write(result["text"])
 
-    with open(json_path, "w", encoding="utf-8") as f:
+    with open(
+        json_path,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
         json.dump(
             merged_segments,
             f,
