@@ -90,6 +90,12 @@ export default function RoleMenu({ role }) {
           name: "Upload Lecture",
           path: "/upload"
         },
+
+        {
+          name: "Manage Videos",
+          path: "/videos"
+        },
+        
         {
           name: "Educational Summaries",
           path: "/summaries"

@@ -804,18 +804,7 @@ async function loadOrGenerateHighlights() {
       🎯 Highlights
     </button>
 
-    {role !== "LEARNER" && (
-  <button
-    onClick={() => handleSectionChange("keywords")}
-    className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
-      activeSection === "keywords"
-        ? "bg-orange-600 text-white shadow-lg"
-        : "bg-orange-50 text-orange-700 hover:bg-orange-100"
-    }`}
-  >
-    🔑 Keywords
-  </button>
-)}
+    
 
   </div>
 
