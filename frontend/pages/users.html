@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ClipMind AI | All Users</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"></aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div>
+                <h2>All Users</h2>
+                <p>Manage all registered users</p>
+            </div>
+
+            <div class="admin-profile">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>Administrator</span>
+            </div>
+        </header>
+
+        <!-- Users Table -->
+        <section class="table-card">
+
+            <h3>Registered Users</h3>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+
+                <tbody id="usersTableBody">
+
+                    <tr>
+                        <td colspan="4" style="text-align:center;">
+                            Loading users...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+    </main>
+
+    <!-- JS -->
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/users.js"></script>
+
+</body>
+
+</html>

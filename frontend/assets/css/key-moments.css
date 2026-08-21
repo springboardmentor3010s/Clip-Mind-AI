@@ -1,0 +1,89 @@
+/* ==========================================
+   ClipMind AI - Key Moments
+========================================== */
+
+.video-card{
+    padding:20px;
+}
+
+#videoPlayer{
+    width:100%;
+    border-radius:10px;
+    background:#000;
+}
+
+#generateBtn{
+    background:#4f46e5;
+    color:#fff;
+    border:none;
+    padding:12px 24px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+    transition:.3s;
+}
+
+#generateBtn:hover{
+    background:#4338ca;
+}
+
+#keyMoments{
+    margin-top:20px;
+}
+
+.moment-card{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+
+    padding:18px;
+    margin-bottom:15px;
+
+    border-radius:10px;
+    background:#f8f9fc;
+
+    border-left:5px solid #4f46e5;
+}
+
+.timestamp{
+    font-weight:bold;
+    color:#4f46e5;
+    min-width:90px;
+}
+
+.moment-text{
+    flex:1;
+    color:#333;
+    line-height:1.6;
+}
+
+.play-btn{
+    background:#4f46e5;
+    color:white;
+    border:none;
+    border-radius:6px;
+    padding:10px 15px;
+    cursor:pointer;
+}
+
+.play-btn:hover{
+    background:#3730a3;
+}
+
+.loading{
+    text-align:center;
+    color:#666;
+    padding:40px;
+}
+
+.error{
+    text-align:center;
+    color:red;
+    padding:40px;
+}
+
+.success{
+    color:green;
+    font-weight:bold;
+}

@@ -1,0 +1,258 @@
+/* ===============================
+   ClipMind AI - Navbar
+=============================== */
+
+.navbar{
+
+    position: fixed;
+
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+
+    height: var(--navbar-height);
+
+    background: rgba(255,255,255,.9);
+
+    backdrop-filter: blur(15px);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 30px;
+
+    box-shadow: 0 5px 20px rgba(0,0,0,.08);
+
+    z-index: 999;
+
+    transition: .3s;
+
+}
+
+.sidebar.collapsed ~ .main .navbar{
+
+    left:80px;
+
+}
+
+.nav-left{
+
+    display:flex;
+    align-items:center;
+    gap:18px;
+
+}
+
+.menu-toggle{
+
+    width:42px;
+    height:42px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#EEF2FF;
+
+    color:var(--primary);
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.menu-toggle:hover{
+
+    background:var(--primary);
+
+    color:#fff;
+
+}
+
+.logo{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+.logo i{
+
+    font-size:28px;
+
+    color:var(--primary);
+
+}
+
+.logo h2{
+
+    margin:0;
+
+    font-size:22px;
+
+    color:var(--text);
+
+}
+
+.logo span{
+
+    color:var(--primary);
+
+}
+
+.nav-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+}
+
+.profile{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    cursor:pointer;
+
+    padding:8px 15px;
+
+    border-radius:12px;
+
+    transition:.3s;
+
+}
+
+.profile:hover{
+
+    background:#F1F5F9;
+
+}
+
+.profile img{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+}
+
+.profile-info{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.profile-info h4{
+
+    margin:0;
+
+    font-size:15px;
+
+    color:var(--text);
+
+}
+
+.profile-info span{
+
+    font-size:13px;
+
+    color:#64748B;
+
+}
+
+.profile i{
+
+    color:#64748B;
+
+}
+
+.notification{
+
+    position:relative;
+
+    width:42px;
+
+    height:42px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    border-radius:50%;
+
+    background:#F1F5F9;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.notification:hover{
+
+    background:var(--primary);
+
+    color:#fff;
+
+}
+
+.notification .badge{
+
+    position:absolute;
+
+    top:6px;
+    right:8px;
+
+    width:10px;
+    height:10px;
+
+    background:var(--danger);
+
+    border-radius:50%;
+
+}
+
+@media(max-width:768px){
+
+    .navbar{
+
+        left:0;
+
+        padding:0 15px;
+
+    }
+
+    .logo h2{
+
+        font-size:18px;
+
+    }
+
+    .profile-info{
+
+        display:none;
+
+    }
+
+}

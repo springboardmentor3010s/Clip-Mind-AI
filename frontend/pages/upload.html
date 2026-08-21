@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Upload Video | ClipMind AI</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/upload.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <div id="sidebar"></div>
+
+    <div class="main">
+
+        <div id="navbar"></div>
+
+        <div class="dashboard-container">
+
+            <div class="dashboard-header">
+
+                <div>
+
+                    <h1>Upload Video</h1>
+
+                    <p>Upload your videos for AI processing.</p>
+
+                </div>
+
+            </div>
+
+            <div class="upload-card">
+
+                <form id="uploadForm">
+
+                    <div class="drop-zone" id="dropZone">
+
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                        <h2>Drag & Drop Video</h2>
+
+                        <p>or</p>
+
+                        <label class="choose-btn">
+
+                            Choose File
+
+                            <input
+                                type="file"
+                                id="videoFile"
+                                accept="video/*"
+                                hidden>
+
+                        </label>
+
+                        <small id="fileName">
+                            No file selected
+                        </small>
+
+                    </div>
+
+                    <div class="progress-area">
+
+                        <div class="progress-bar">
+
+                            <div
+                                class="progress-fill"
+                                id="progressFill">
+                            </div>
+
+                        </div>
+
+                        <p id="progressText">
+                            0%
+                        </p>
+
+                    </div>
+
+                    <button
+                        class="upload-btn"
+                        type="submit">
+
+                        <i class="fa-solid fa-upload"></i>
+
+                        Upload Video
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/upload.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Learner Dashboard | ClipMind AI</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/learner.css">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div id="sidebar"></div>
+
+<div class="main">
+
+    <div id="navbar"></div>
+
+    <div class="dashboard-container">
+
+        <div class="dashboard-header">
+
+            <div>
+
+                <h1>Learner Dashboard</h1>
+
+                <p>Watch videos, track your progress and access AI summaries.</p>
+
+            </div>
+
+        </div>
+
+        <!-- Statistics -->
+
+        <div class="card-grid">
+
+            <div class="dashboard-card">
+
+                <i class="fa-solid fa-play-circle"></i>
+
+                <h2 id="videosWatched">0</h2>
+
+                <p>Videos Watched</p>
+
+            </div>
+
+            <div class="dashboard-card">
+
+                <i class="fa-solid fa-book-open"></i>
+
+                <h2 id="summariesRead">0</h2>
+
+                <p>AI Summaries</p>
+
+            </div>
+
+            <div class="dashboard-card">
+
+                <i class="fa-solid fa-bookmark"></i>
+
+                <h2 id="bookmarks">0</h2>
+
+                <p>Bookmarks</p>
+
+            </div>
+
+            <div class="dashboard-card">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                <h2 id="progress">0%</h2>
+
+                <p>Learning Progress</p>
+
+            </div>
+
+        </div>
+
+        <!-- Available Videos -->
+
+        <div class="table-card">
+
+            <h3>Available Videos</h3>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Thumbnail</th>
+                        <th>Title</th>
+                        <th>Duration</th>
+                        <th>Progress</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="videoTable">
+                                        <tr>
+
+                        <td colspan="5"
+                            style="text-align:center;padding:40px;">
+
+                            Loading videos...
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- Progress -->
+
+        <div class="stats-row">
+
+            <div class="chart-card">
+
+                <h3>Learning Progress</h3>
+
+                <canvas id="progressChart"></canvas>
+
+            </div>
+
+            <div class="chart-card">
+
+                <h3>Weekly Activity</h3>
+
+                <canvas id="activityChart"></canvas>
+
+            </div>
+
+        </div>
+
+        <!-- Recent Bookmarks -->
+
+        <div class="table-card mt-3">
+
+            <h3>Recent Bookmarks</h3>
+
+            <div id="bookmarkContainer">
+
+                <p>No bookmarks available.</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/navbar.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="../assets/js/learner.js"></script>
+
+</body>
+
+</html>

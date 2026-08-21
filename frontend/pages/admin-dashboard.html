@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ClipMind AI - Admin Dashboard</title>
+
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Navbar -->
+        <div id="navbar"></div>
+
+        <div class="page-content">
+
+            <h1>Admin Dashboard</h1>
+
+            <!-- Dashboard Cards -->
+            <div class="card-grid">
+
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-users"></i>
+                    <h2 id="totalUsers">0</h2>
+                    <p>Total Users</p>
+                </div>
+
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-video"></i>
+                    <h2 id="totalVideos">0</h2>
+                    <p>Total Videos</p>
+                </div>
+
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-upload"></i>
+                    <h2 id="uploadedVideos">0</h2>
+                    <p>Uploaded</p>
+                </div>
+
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-gear"></i>
+                    <h2 id="processingVideos">0</h2>
+                    <p>Processing</p>
+                </div>
+
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <h2 id="completedVideos">0</h2>
+                    <p>Processed</p>
+                </div>
+
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <h2 id="admins">0</h2>
+                    <p>Admins</p>
+                </div>
+
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-photo-film"></i>
+                    <h2 id="creators">0</h2>
+                    <p>Content Creators</p>
+                </div>
+
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                    <h2 id="educators">0</h2>
+                    <p>Educators</p>
+                </div>
+
+                <div class="dashboard-card">
+                    <i class="fa-solid fa-user-graduate"></i>
+                    <h2 id="learners">0</h2>
+                    <p>Learners</p>
+                </div>
+
+            </div>
+
+            <!-- Charts -->
+            <div class="chart-grid">
+
+                <div class="chart-card">
+                    <h3>User Distribution</h3>
+                    <canvas id="userChart"></canvas>
+                </div>
+
+                <div class="chart-card">
+                    <h3>Video Status</h3>
+                    <canvas id="videoChart"></canvas>
+                </div>
+
+            </div>
+
+            <!-- Recent Users -->
+            <div class="table-card">
+
+                <h2>Recent Users</h2>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Name</th>
+
+                            <th>Email</th>
+
+                            <th>Role</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="recentUsers">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <!-- Recent Videos -->
+            <div class="table-card">
+
+                <h2>Recent Videos</h2>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Title</th>
+
+                            <th>Status</th>
+
+                            <th>Duration</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="recentVideos">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/admin.js"></script>
+
+</body>
+
+</html>

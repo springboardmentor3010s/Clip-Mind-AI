@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ClipMind AI - Analytics</title>
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+
+    <!-- Analytics CSS -->
+    <link rel="stylesheet" href="../assets/css/analytics.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Navbar -->
+        <div id="navbar"></div>
+
+        <!-- Header -->
+        <section class="page-header">
+
+            <h1>
+                <i class="fa-solid fa-chart-column"></i>
+                Video Analytics
+            </h1>
+
+            <p>
+                Complete AI analysis of the uploaded video.
+            </p>
+
+        </section>
+
+        <!-- Export Button -->
+        <div class="export-section">
+
+            <button
+                id="exportBtn"
+                class="btn btn-primary">
+
+                <i class="fa-solid fa-file-pdf"></i>
+                Export PDF
+
+            </button>
+
+        </div>
+
+        <!-- Analytics Container -->
+        <div class="analytics-container">
+
+            <!-- Video Information -->
+            <div class="section-card">
+
+                <h2>
+                    <i class="fa-solid fa-video"></i>
+                    Video Information
+                </h2>
+
+                <div id="videoInfo"></div>
+
+            </div>
+
+            <!-- Statistics -->
+            <div class="section-card">
+
+                <h2>
+                    <i class="fa-solid fa-chart-simple"></i>
+                    Statistics
+                </h2>
+
+                <div
+                    id="statistics"
+                    class="stats-grid">
+
+                </div>
+
+            </div>
+
+            <!-- Transcript -->
+            <div class="section-card">
+
+                <h2>
+                    <i class="fa-solid fa-file-lines"></i>
+                    Transcript
+                </h2>
+
+                <div id="transcript"></div>
+
+            </div>
+
+            <!-- Summary -->
+            <div class="section-card">
+
+                <h2>
+                    <i class="fa-solid fa-robot"></i>
+                    AI Summary
+                </h2>
+
+                <div id="summary"></div>
+
+            </div>
+
+            <!-- Key Moments -->
+            <div class="section-card">
+
+                <h2>
+                    <i class="fa-solid fa-clock"></i>
+                    Key Moments
+                </h2>
+
+                <div id="keyMoments"></div>
+
+            </div>
+
+            <!-- Keywords -->
+            <div class="section-card">
+
+                <h2>
+                    <i class="fa-solid fa-tags"></i>
+                    Keywords
+                </h2>
+
+                <div id="keywords"></div>
+
+            </div>
+
+            <!-- AI Insights -->
+            <div class="section-card">
+
+                <h2>
+                    <i class="fa-solid fa-lightbulb"></i>
+                    AI Insights
+                </h2>
+
+                <ul id="insights"></ul>
+
+            </div>
+
+            <!-- Quality Score -->
+            <div class="section-card">
+
+                <h2>
+                    <i class="fa-solid fa-award"></i>
+                    AI Quality Score
+                </h2>
+
+                <div id="quality"></div>
+
+            </div>
+
+            <!-- Timeline -->
+            <div class="section-card">
+
+                <h2>
+                    <i class="fa-solid fa-list-check"></i>
+                    Processing Timeline
+                </h2>
+
+                <div id="timeline"></div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- JS Files -->
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/analytics.js"></script>
+
+</body>
+
+</html>

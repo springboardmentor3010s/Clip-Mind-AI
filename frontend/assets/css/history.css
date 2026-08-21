@@ -1,0 +1,113 @@
+.main-content{
+    margin-left:260px;
+    padding:30px;
+    background:#f8fafc;
+    min-height:100vh;
+}
+
+.page-header{
+    margin-bottom:25px;
+}
+
+.page-header h1{
+    font-size:30px;
+    color:#1e293b;
+}
+
+.page-header p{
+    color:#64748b;
+    margin-top:8px;
+}
+
+.history-actions{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:20px;
+}
+
+.clear-btn{
+    background:#ef4444;
+    color:#fff;
+    border:none;
+    padding:12px 20px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.history-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:25px;
+}
+
+.history-card{
+    background:#fff;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+}
+
+.history-card img{
+    width:100%;
+    height:190px;
+    object-fit:cover;
+}
+
+.history-body{
+    padding:20px;
+}
+
+.history-body h3{
+    margin-bottom:10px;
+    color:#1e293b;
+}
+
+.history-body p{
+    color:#64748b;
+    margin-bottom:8px;
+}
+
+.progress-bar{
+    width:100%;
+    height:8px;
+    background:#e2e8f0;
+    border-radius:10px;
+    overflow:hidden;
+    margin:12px 0;
+}
+
+.progress-fill{
+    height:100%;
+    background:#2563eb;
+}
+
+.action-btn{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.btn{
+    flex:1;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.watch{
+    background:#2563eb;
+    color:#fff;
+}
+
+.delete{
+    background:#ef4444;
+    color:#fff;
+}
+
+.loading{
+    grid-column:1/-1;
+    text-align:center;
+    color:#64748b;
+    font-size:18px;
+}

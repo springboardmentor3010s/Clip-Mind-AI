@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Creator Dashboard | ClipMind AI</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- Navbar -->
+        <div id="navbar"></div>
+
+        <div class="dashboard-container">
+
+            <div class="dashboard-header">
+
+                <div>
+
+                    <h1>Creator Dashboard</h1>
+
+                    <p>
+                        Welcome,
+                        <span id="creatorName">Creator</span>
+                    </p>
+
+                </div>
+
+                <div class="dashboard-actions">
+
+                    <button class="upload-btn"
+                        onclick="location.href='upload.html'">
+
+                        <i class="fa-solid fa-upload"></i>
+
+                        Upload New Video
+
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- Cards -->
+
+            <div class="card-grid">
+
+                <div class="dashboard-card">
+
+                    <i class="fa-solid fa-video"></i>
+
+                    <h2 id="uploadedVideos">0</h2>
+
+                    <p>Total Videos</p>
+
+                </div>
+
+                <div class="dashboard-card">
+
+                    <i class="fa-solid fa-robot"></i>
+
+                    <h2 id="transcripts">0</h2>
+
+                    <p>AI Summaries</p>
+
+                </div>
+
+                <div class="dashboard-card">
+
+                    <i class="fa-solid fa-star"></i>
+
+                    <h2 id="processedVideos">0</h2>
+
+                    <p>Processed Videos</p>
+
+                </div>
+
+                <div class="dashboard-card">
+
+                    <i class="fa-solid fa-spinner"></i>
+
+                    <h2 id="processingVideos">0</h2>
+
+                    <p>Processing Jobs</p>
+
+                </div>
+
+            </div>
+
+            <!-- Recent Videos -->
+
+            <div class="table-card">
+
+                <h3>Recent Videos</h3>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Thumbnail</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Summary</th>
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="recentVideos">
+
+                        <tr>
+
+                            <td colspan="5" style="text-align:center;">
+                                No videos available
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/dashboard-api.js"></script>
+    <script src="../assets/js/creator.js"></script>
+
+</body>
+
+</html>

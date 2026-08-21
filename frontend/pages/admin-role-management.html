@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ClipMind AI | Role Management</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside id="sidebar">
+        <!-- sidebar.js will load sidebar here -->
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+
+        <!-- Navbar -->
+        <header class="top-navbar">
+
+            <div>
+                <h2>Role Management</h2>
+                <p>Manage user roles across the platform</p>
+            </div>
+
+            <div class="admin-profile">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>Administrator</span>
+            </div>
+
+        </header>
+
+        <!-- Statistics -->
+        <section class="card-grid">
+
+            <div class="dashboard-card">
+                <i class="fa-solid fa-users"></i>
+                <h2 id="totalUsers">0</h2>
+                <p>Total Users</p>
+            </div>
+
+            <div class="dashboard-card">
+                <i class="fa-solid fa-user-graduate"></i>
+                <h2 id="learnerCount">0</h2>
+                <p>Learners</p>
+            </div>
+
+            <div class="dashboard-card">
+                <i class="fa-solid fa-chalkboard-user"></i>
+                <h2 id="educatorCount">0</h2>
+                <p>Educators</p>
+            </div>
+
+            <div class="dashboard-card">
+                <i class="fa-solid fa-video"></i>
+                <h2 id="creatorCount">0</h2>
+                <p>Content Creators</p>
+            </div>
+
+        </section>
+
+        <!-- Users -->
+        <section class="table-card">
+
+            <h3>User Role Management</h3>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Current Role</th>
+                        <th>Change Role</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="roleTableBody">
+
+                    <!-- Loaded by JS -->
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+    </main>
+
+    <!-- JS -->
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/admin-role-management.js"></script>
+
+</body>
+
+</html>

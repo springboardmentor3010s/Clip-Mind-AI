@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ClipMind AI - Learning History</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/history.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <div id="sidebar"></div>
+
+    <main class="main-content">
+
+        <div id="navbar"></div>
+
+        <section class="page-header">
+
+            <h1>
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                Learning History
+            </h1>
+
+            <p>Recently watched videos and your learning progress.</p>
+
+        </section>
+
+        <div class="history-actions">
+
+            <button
+                class="clear-btn"
+                onclick="clearHistory()">
+
+                <i class="fa-solid fa-trash"></i>
+                Clear History
+
+            </button>
+
+        </div>
+
+        <div
+            id="historyContainer"
+            class="history-grid">
+
+            <div class="loading">
+                Loading history...
+            </div>
+
+        </div>
+
+    </main>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/history.js"></script>
+
+</body>
+
+</html>

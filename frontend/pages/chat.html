@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClipMind AI - AI Chat</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/chat.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>🤖 ClipMind AI Chat</h1>
+
+        <div class="video-info">
+            <h2 id="videoTitle">Loading Video...</h2>
+            <p>Ask any question about this video.</p>
+        </div>
+
+        <div id="chatBox" class="chat-box">
+            <div class="message bot">
+                Hello 👋<br>
+                Ask me anything about this video.
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <input
+                type="text"
+                id="question"
+                placeholder="Type your question here..."
+                autocomplete="off"
+            >
+
+            <button
+                type="button"
+                id="sendBtn">
+                Send
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Load API first -->
+    <script src="../assets/js/api.js"></script>
+
+    <!-- Optional -->
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+
+    <!-- Chat -->
+    <script src="../assets/js/chat.js"></script>
+
+</body>
+
+</html>

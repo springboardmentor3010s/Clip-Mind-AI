@@ -1,0 +1,48 @@
+<!-- =====================================
+     ClipMind AI - Sidebar Component
+====================================== -->
+
+<aside class="sidebar" id="sidebarContainer">
+
+    <!-- Logo -->
+    <div class="sidebar-header">
+        <h2>
+            <i class="fa-solid fa-clapperboard"></i>
+            <span>ClipMind AI</span>
+        </h2>
+    </div>
+
+    <!-- User Information -->
+    <div class="sidebar-user">
+
+        <div class="user-avatar">
+            <i class="fa-solid fa-user-circle"></i>
+        </div>
+
+        <div class="user-details">
+            <h4 id="sidebarUsername">Loading...</h4>
+            <p id="sidebarRole">Role</p>
+        </div>
+
+    </div>
+
+    <!-- Navigation -->
+    <ul class="sidebar-menu" id="sidebarMenu">
+        <!-- Loaded dynamically -->
+    </ul>
+
+    <!-- Footer -->
+    <div class="sidebar-footer">
+
+        <button
+            class="logout-btn"
+            onclick="logout()">
+
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Logout
+
+        </button>
+
+    </div>
+
+</aside>

@@ -1,0 +1,200 @@
+/* ===============================
+   ClipMind AI - Sidebar
+=============================== */
+
+.sidebar{
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: var(--sidebar-width);
+    height: 100vh;
+
+    background: #0F172A;
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+
+    transition: .3s;
+    z-index: 1000;
+
+    box-shadow: 5px 0 20px rgba(0,0,0,.15);
+
+}
+
+.sidebar-header{
+
+    height: var(--navbar-height);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-bottom: 1px solid rgba(255,255,255,.08);
+
+    padding: 0 20px;
+}
+
+.sidebar-header h2{
+
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+
+}
+
+.sidebar-header span{
+
+    color: var(--primary);
+
+}
+
+.sidebar-menu{
+
+    flex: 1;
+
+    list-style: none;
+
+    padding: 20px 0;
+
+    overflow-y: auto;
+
+}
+
+.sidebar-menu li{
+
+    margin: 6px 15px;
+
+}
+
+.sidebar-menu li a{
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    color: #CBD5E1;
+
+    padding: 14px 18px;
+
+    border-radius: 12px;
+
+    transition: .3s;
+
+    font-size: 15px;
+    font-weight: 500;
+
+}
+
+.sidebar-menu li a:hover{
+
+    background: rgba(37,99,235,.15);
+
+    color: white;
+
+    transform: translateX(5px);
+
+}
+
+.sidebar-menu li a.active{
+
+    background: var(--primary);
+
+    color: white;
+
+}
+
+.sidebar-menu li a i{
+
+    width: 22px;
+
+    text-align: center;
+
+    font-size: 18px;
+
+}
+
+.sidebar-footer{
+
+    padding: 20px;
+
+    border-top: 1px solid rgba(255,255,255,.08);
+
+}
+
+.sidebar-footer button{
+
+    width: 100%;
+
+    border: none;
+
+    padding: 12px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    background: var(--danger);
+
+    color: white;
+
+    font-weight: 600;
+
+    transition: .3s;
+
+}
+
+.sidebar-footer button:hover{
+
+    opacity: .9;
+
+}
+
+.sidebar.collapsed{
+
+    width: 80px;
+
+}
+
+.sidebar.collapsed .sidebar-header h2,
+.sidebar.collapsed .sidebar-menu li a span{
+
+    display: none;
+
+}
+
+.sidebar.collapsed .sidebar-menu li a{
+
+    justify-content: center;
+
+}
+
+.sidebar.collapsed + .main{
+
+    margin-left: 80px;
+
+}
+
+@media(max-width:768px){
+
+    .sidebar{
+
+        left: -260px;
+
+    }
+
+    .sidebar.show{
+
+        left: 0;
+
+    }
+
+    .main{
+
+        margin-left: 0;
+
+    }
+
+}

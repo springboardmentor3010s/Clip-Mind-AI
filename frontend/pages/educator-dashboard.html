@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Educator Dashboard | ClipMind AI</title>
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet" href="../assets/css/educator.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- Navbar -->
+        <div id="navbar"></div>
+
+        <div class="dashboard-container">
+
+            <!-- Header -->
+            <div class="dashboard-header">
+
+                <div>
+                    <h1>Educator Dashboard</h1>
+                    <p>Manage classrooms, lectures and learners.</p>
+                </div>
+
+            </div>
+
+            <!-- Statistics -->
+            <div class="dashboard-cards">
+
+                <div class="card">
+                    <i class="fa-solid fa-school"></i>
+                    <h2 id="totalClassrooms">0</h2>
+                    <p>Classrooms</p>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-users"></i>
+                    <h2 id="totalLearners">0</h2>
+                    <p>Learners</p>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-video"></i>
+                    <h2 id="totalLectures">0</h2>
+                    <p>Uploaded Lectures</p>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <h2 id="sharedLectures">0</h2>
+                    <p>Shared Lectures</p>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <h2 id="transcripts">0</h2>
+                    <p>Transcripts</p>
+                </div>
+
+                <div class="card">
+                    <i class="fa-solid fa-robot"></i>
+                    <h2 id="summaries">0</h2>
+                    <p>Summaries</p>
+                </div>
+
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+
+                <button onclick="goUpload()">
+                    <i class="fa-solid fa-upload"></i>
+                    Upload Lecture
+                </button>
+
+                <button onclick="goClassrooms()">
+                    <i class="fa-solid fa-school"></i>
+                    My Classrooms
+                </button>
+
+                <button onclick="goMaterials()">
+                    <i class="fa-solid fa-book"></i>
+                    Study Materials
+                </button>
+
+                <button onclick="goShareLecture()">
+                    <i class="fa-solid fa-share"></i>
+                    Share Lecture
+                </button>
+
+                <button onclick="goLearners()">
+                    <i class="fa-solid fa-users"></i>
+                    Learners
+                </button>
+
+                <button onclick="goAnalytics()">
+                    <i class="fa-solid fa-chart-column"></i>
+                    Classroom Analytics
+                </button>
+
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="recent-section">
+
+                <div class="section-header">
+                    <h2>Recent Classroom Activity</h2>
+                </div>
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Classroom</th>
+                            <th>Learners</th>
+                            <th>Lectures</th>
+                            <th>Last Activity</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="activityTable">
+                        <tr>
+                            <td colspan="4" style="text-align:center;padding:30px;">
+                                Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+
+    <!-- Dashboard JS -->
+    <script src="../assets/js/educator.js"></script>
+
+</body>
+
+</html>

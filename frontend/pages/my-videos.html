@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Videos | ClipMind AI</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/my-videos.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
+
+    <!-- Main Content -->
+    <div class="main">
+
+        <!-- Navbar -->
+        <div id="navbar"></div>
+
+        <div class="dashboard-container">
+
+            <!-- Header -->
+            <div class="dashboard-header">
+
+                <div>
+                    <h1>My Videos</h1>
+                    <p>Manage all uploaded videos</p>
+                </div>
+
+                <button
+                    class="upload-btn"
+                    onclick="window.location.href='upload.html'">
+
+                    <i class="fa-solid fa-upload"></i>
+                    Upload Video
+
+                </button>
+
+            </div>
+
+            <!-- Search & Filter -->
+            <div class="filter-card">
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search video title...">
+
+                <select id="statusFilter">
+
+                    <option value="">All Status</option>
+                    <option value="Uploaded">Uploaded</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Processed">Processed</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Failed">Failed</option>
+
+                </select>
+
+            </div>
+
+            <!-- Videos Table -->
+            <div class="table-card">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th style="width:250px;">Video</th>
+                            <th>Title</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Uploaded</th>
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="videoTable">
+
+                        <tr>
+
+                            <td colspan="6" style="text-align:center;padding:40px;">
+
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                Loading videos...
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- JavaScript -->
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/my-videos.js"></script>
+
+</body>
+
+</html>

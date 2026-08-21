@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Key Moments | ClipMind AI</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/key-moments.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- Navbar -->
+        <div id="navbar"></div>
+
+        <div class="dashboard-container">
+
+            <!-- Header -->
+            <div class="dashboard-header">
+
+                <div>
+                    <h1 id="videoTitle">Key Moments</h1>
+                    <p>AI generated important timestamps from your uploaded video.</p>
+                </div>
+
+            </div>
+
+            <!-- Video -->
+
+            <div class="card">
+
+                <video
+                    id="videoPlayer"
+                    width="100%"
+                    controls>
+
+                    Your browser does not support HTML5 video.
+
+                </video>
+
+            </div>
+
+            <!-- Generate Button -->
+
+            <div class="card mt-3" style="text-align:center;">
+
+                <button
+                    id="generateBtn"
+                    class="btn btn-primary"
+                    onclick="generateKeyMoments()">
+
+                    <i class="fa-solid fa-bolt"></i>
+
+                    Generate Key Moments
+
+                </button>
+
+            </div>
+
+            <!-- Key Moments -->
+
+            <div class="card mt-3">
+
+                <h2>
+
+                    <i class="fa-solid fa-clock"></i>
+
+                    Key Moments
+
+                </h2>
+
+                <div id="keyMoments">
+
+                    Loading...
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+
+    <script src="../assets/js/key-moments.js"></script>
+
+</body>
+
+</html>

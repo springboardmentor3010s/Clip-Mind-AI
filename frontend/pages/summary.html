@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Video Summary | ClipMind AI</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/summary.css">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div id="sidebar"></div>
+
+<div class="main">
+
+    <div id="navbar"></div>
+
+    <div class="dashboard-container">
+
+        <div class="dashboard-header">
+
+            <div>
+
+                <h1 id="videoTitle">
+                    Video Summary
+                </h1>
+
+                <p>
+                    AI generated transcript, summary and key moments.
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- Video -->
+
+        <div class="card video-card">
+
+            <video
+                id="videoPlayer"
+                controls
+                width="100%">
+
+                Your browser does not support video playback.
+
+            </video>
+
+        </div>
+
+        <!-- Transcript -->
+
+        <div class="card mt-3">
+
+            <h2>
+
+                <i class="fa-solid fa-file-lines"></i>
+
+                Transcript
+
+            </h2>
+
+            <div id="transcript">
+
+                Loading transcript...
+
+            </div>
+
+        </div>
+
+        <!-- AI Summary -->
+
+        <div class="card mt-3">
+
+            <h2>
+
+                <i class="fa-solid fa-robot"></i>
+
+                AI Summary
+
+            </h2>
+
+            <div id="summary">
+
+                Loading summary...
+
+            </div>
+
+        </div>
+
+        <!-- Key Moments -->
+
+        <div class="card mt-3">
+
+            <h2>
+
+                <i class="fa-solid fa-clock"></i>
+
+                Key Moments
+
+            </h2>
+
+            <div id="keyMoments">
+
+                Loading key moments...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/summary.js"></script>
+
+</body>
+
+</html>

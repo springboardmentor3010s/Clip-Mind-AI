@@ -1,0 +1,106 @@
+/* ==========================
+   Register Page
+========================== */
+
+body{
+    margin:0;
+    padding:0;
+    min-height:100vh;
+    background:linear-gradient(135deg,#0F172A,#111827,#1E293B);
+    overflow-x:hidden;
+}
+
+.register-container{
+    width:100%;
+    min-height:100vh;
+    display:flex;
+}
+
+.register-left{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:70px;
+}
+
+.register-left h1{
+    font-size:52px;
+    margin-bottom:20px;
+    color:#fff;
+}
+
+.register-left p{
+    width:450px;
+    text-align:center;
+    color:#CBD5E1;
+    line-height:1.8;
+}
+
+.register-right{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px;
+}
+
+.register-card{
+
+    width:100%;
+    max-width:500px;
+
+    background:rgba(30,41,59,.92);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:20px;
+
+    backdrop-filter:blur(18px);
+
+    padding:40px;
+
+    box-shadow:0 20px 40px rgba(0,0,0,.45);
+
+}
+
+.register-card h2{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.register-btn{
+    width:100%;
+    margin-top:10px;
+}
+
+.bottom-link{
+    margin-top:20px;
+    text-align:center;
+}
+
+.bottom-link a{
+    color:#3B82F6;
+    font-weight:600;
+}
+
+.bottom-link a:hover{
+    color:#60A5FA;
+}
+
+@media(max-width:992px){
+
+    .register-left{
+        display:none;
+    }
+
+    .register-right{
+        width:100%;
+    }
+
+    .register-card{
+        margin:20px;
+    }
+
+}

@@ -1,0 +1,254 @@
+/* ==========================================
+   ClipMind AI - Watch Video Page
+========================================== */
+
+/* Main Layout */
+.main-content{
+    margin-left:260px;
+    padding:30px;
+    background:#f5f7fb;
+    min-height:100vh;
+    transition:all .3s ease;
+}
+
+.watch-container{
+    display:flex;
+    flex-direction:column;
+    gap:25px;
+}
+
+/* ==========================================
+   Video Player
+========================================== */
+
+.video-section{
+    background:#ffffff;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.video-section video{
+    width:100%;
+    height:auto;
+    border-radius:10px;
+    background:#000;
+}
+
+/* ==========================================
+   Video Details
+========================================== */
+
+.video-details{
+    background:#ffffff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.video-details h2{
+    font-size:34px;
+    color:#0f172a;
+    margin-bottom:15px;
+    font-weight:700;
+}
+
+.video-details p{
+    color:#475569;
+    font-size:17px;
+    line-height:1.8;
+    margin-bottom:10px;
+}
+
+/* ==========================================
+   Buttons
+========================================== */
+
+.action-buttons{
+    margin-top:20px;
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    padding:12px 22px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#2563eb;
+    color:#ffffff;
+    font-size:15px;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn:hover{
+    background:#1d4ed8;
+}
+
+/* ==========================================
+   Transcript / Summary / Key Moments
+========================================== */
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+    gap:25px;
+}
+
+.card{
+    background:#ffffff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    min-height:420px;
+}
+
+.card h3{
+    color:#0f172a;
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:20px;
+}
+
+/* ==========================================
+   Transcript
+========================================== */
+
+#transcript{
+    color:#334155 !important;
+    font-size:17px;
+    line-height:1.9;
+    white-space:pre-wrap;
+    word-break:break-word;
+    user-select:text;
+    opacity:1 !important;
+}
+
+/* ==========================================
+   Summary
+========================================== */
+
+#summary{
+    color:#334155 !important;
+    font-size:17px;
+    line-height:1.9;
+    white-space:pre-wrap;
+    word-break:break-word;
+    user-select:text;
+    opacity:1 !important;
+}
+
+/* ==========================================
+   Key Moments
+========================================== */
+
+#keyMoments{
+    color:#334155 !important;
+    padding-left:22px;
+    font-size:17px;
+    line-height:1.8;
+    opacity:1 !important;
+}
+
+#keyMoments li{
+    margin-bottom:12px;
+    color:#334155 !important;
+}
+
+/* ==========================================
+   Lecture Materials
+========================================== */
+
+.material-section{
+    background:#ffffff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+
+.material-section h3{
+    color:#0f172a;
+    margin-bottom:18px;
+    font-size:24px;
+}
+
+.material-section a{
+    display:inline-block;
+    padding:12px 20px;
+    background:#2563eb;
+    color:#ffffff;
+    text-decoration:none;
+    border-radius:8px;
+    transition:.3s;
+    font-weight:600;
+}
+
+.material-section a:hover{
+    background:#1d4ed8;
+}
+
+/* ==========================================
+   Scrollbars
+========================================== */
+
+.card{
+    max-height:500px;
+    overflow-y:auto;
+}
+
+.card::-webkit-scrollbar{
+    width:8px;
+}
+
+.card::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:8px;
+}
+
+.card::-webkit-scrollbar-thumb:hover{
+    background:#94a3b8;
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media(max-width:992px){
+
+    .main-content{
+        margin-left:0;
+        padding:20px;
+    }
+
+    .info-grid{
+        grid-template-columns:1fr;
+    }
+
+    .video-details h2{
+        font-size:28px;
+    }
+
+}
+
+@media(max-width:768px){
+
+    .video-details{
+        padding:20px;
+    }
+
+    .card{
+        padding:20px;
+        min-height:auto;
+    }
+
+    .action-buttons{
+        flex-direction:column;
+    }
+
+    .btn{
+        width:100%;
+    }
+
+}

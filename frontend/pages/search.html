@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ClipMind AI - Smart Search</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/search.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- Layout -->
+    <div class="layout">
+
+        <!-- Sidebar -->
+        <div id="sidebar"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Navbar -->
+            <div id="navbar"></div>
+
+            <!-- Page Header -->
+            <section class="page-header">
+
+                <h1>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    Smart Search
+                </h1>
+
+                <p>
+                    Search videos using title, transcript, summary and keywords.
+                </p>
+
+            </section>
+
+            <!-- Search Filters -->
+            <section class="search-container">
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search anything...">
+
+                <select id="statusFilter">
+
+                    <option value="">All Status</option>
+                    <option value="Uploaded">Uploaded</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Processed">Processed</option>
+
+                </select>
+
+                <input
+                    type="date"
+                    id="dateFilter">
+
+                <button
+                    id="searchBtn"
+                    class="search-btn">
+
+                    <i class="fa-solid fa-search"></i>
+                    Search
+
+                </button>
+
+            </section>
+
+            <!-- Results -->
+            <section class="results">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Thumbnail</th>
+                            <th>Title</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="resultTable">
+
+                        <tr>
+
+                            <td colspan="6" style="text-align:center;padding:30px;">
+
+                                Search videos...
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/search.js"></script>
+
+</body>
+
+</html>

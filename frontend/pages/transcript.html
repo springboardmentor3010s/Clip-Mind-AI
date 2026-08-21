@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Transcript | ClipMind AI</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/transcript.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- Navbar -->
+        <div id="navbar"></div>
+
+        <div class="page-container">
+
+            <div class="page-header">
+
+                <div>
+                    <h1>Video Transcript</h1>
+                    <p id="videoTitle">Loading...</p>
+                </div>
+
+                <div class="actions">
+
+                    <button id="refreshBtn" class="btn btn-primary">
+                        <i class="fa-solid fa-rotate"></i>
+                        Regenerate
+                    </button>
+
+                    <button id="copyBtn" class="btn btn-success">
+                        <i class="fa-solid fa-copy"></i>
+                        Copy
+                    </button>
+
+                    <button id="downloadBtn" class="btn btn-secondary">
+                        <i class="fa-solid fa-download"></i>
+                        Download
+                    </button>
+
+                    <button id="editBtn" class="btn btn-warning">
+                        <i class="fa-solid fa-pen"></i>
+                        Edit
+                    </button>
+
+                    <button
+                        id="saveBtn"
+                        class="btn btn-success"
+                        style="display:none;">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Save
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- Search -->
+
+            <div class="search-box">
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search in transcript...">
+
+            </div>
+
+            <!-- Loading -->
+
+            <div
+                id="loading"
+                class="loading">
+
+                <i class="fa-solid fa-spinner fa-spin"></i>
+
+                Loading transcript...
+
+            </div>
+
+            <!-- Error -->
+
+            <div
+                id="errorBox"
+                class="error-box"
+                style="display:none;">
+            </div>
+
+            <!-- Transcript -->
+
+            <div class="transcript-card">
+
+                <textarea
+                    id="transcriptText"
+                    rows="22"
+                    readonly>
+Loading...
+                </textarea>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+
+    <script src="../assets/js/transcript-api.js"></script>
+    <script src="../assets/js/transcript.js"></script>
+
+</body>
+
+</html>

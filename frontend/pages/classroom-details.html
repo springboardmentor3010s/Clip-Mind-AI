@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Classroom Analytics | ClipMind AI</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/classroom-analytics.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+
+    <div id="sidebar"></div>
+
+    <div class="main">
+
+        <div id="navbar"></div>
+
+        <div class="page-container">
+
+            <div class="page-header">
+                <h1>Classroom Analytics</h1>
+                <p>Educator Analytics Dashboard</p>
+            </div>
+
+            <!-- Analytics Cards -->
+
+            <div class="dashboard-cards">
+
+                <div class="card">
+                    <h2 id="totalLearners">0</h2>
+                    <p>Total Learners</p>
+                </div>
+
+                <div class="card">
+                    <h2 id="totalVideos">0</h2>
+                    <p>Total Videos</p>
+                </div>
+
+                <div class="card">
+                    <h2 id="processedVideos">0</h2>
+                    <p>Processed Videos</p>
+                </div>
+
+                <div class="card">
+                    <h2 id="uploadedVideos">0</h2>
+                    <p>Uploaded Videos</p>
+                </div>
+
+                <div class="card">
+                    <h2 id="sharedVideos">0</h2>
+                    <p>Shared Videos</p>
+                </div>
+
+                <div class="card">
+                    <h2 id="transcriptsGenerated">0</h2>
+                    <p>Transcripts</p>
+                </div>
+
+                <div class="card">
+                    <h2 id="summariesGenerated">0</h2>
+                    <p>Summaries</p>
+                </div>
+
+                <div class="card">
+                    <h2 id="totalDuration">0</h2>
+                    <p>Total Duration (sec)</p>
+                </div>
+
+                <div class="card">
+                    <h2 id="averageDuration">0</h2>
+                    <p>Average Duration</p>
+                </div>
+
+            </div>
+
+            <!-- Learner Details -->
+
+            <div class="table-card">
+
+                <h2>Shared Learners</h2>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Learner</th>
+                            <th>Shared Videos</th>
+                            <th>Total Videos</th>
+                            <th>Action</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="learnerTable">
+
+                        <tr>
+                            <td colspan="4" style="text-align:center;">
+                                Loading...
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/classroom-analytics.js"></script>
+
+</body>
+
+</html>

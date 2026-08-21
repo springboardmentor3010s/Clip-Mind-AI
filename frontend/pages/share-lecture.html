@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Share Lecture | ClipMind AI</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/sidebar.css">
+    <link rel="stylesheet" href="../assets/css/navbar.css">
+    <link rel="stylesheet" href="../assets/css/share-lecture.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div id="sidebar"></div>
+
+<div class="main">
+
+    <div id="navbar"></div>
+
+    <div class="page-container">
+
+        <div class="page-header">
+            <h1>Share Lecture</h1>
+            <p>Share your uploaded lecture with a learner.</p>
+        </div>
+
+        <div class="share-card">
+
+            <div class="form-group">
+                <label>Select Lecture</label>
+
+                <select id="videoSelect">
+                    <option>Loading lectures...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+
+                <label>Select Learner</label>
+
+                <select id="learnerSelect">
+                    <option>Loading learners...</option>
+                </select>
+
+            </div>
+
+            <button id="shareBtn" class="btn btn-primary">
+
+                <i class="fa-solid fa-share"></i>
+
+                Share Lecture
+
+            </button>
+
+        </div>
+
+        <div class="shared-list">
+
+            <h2>Shared Lectures</h2>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Lecture</th>
+                        <th>Learner</th>
+                        <th>Shared Date</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="sharedTable">
+
+                    <tr>
+
+                        <td colspan="3" align="center">
+
+                            Loading...
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/share-lecture.js"></script>
+
+</body>
+</html>

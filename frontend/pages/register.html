@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register | ClipMind AI</title>
+
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/register.css">
+</head>
+
+<body>
+
+    <div class="register-container">
+
+        <!-- Left -->
+        <div class="register-left">
+            <h1>ClipMind AI</h1>
+
+            <p>
+                Create your account and start processing videos using Artificial Intelligence.
+            </p>
+        </div>
+
+        <!-- Right -->
+        <div class="register-right">
+
+            <div class="register-card">
+
+                <h2>Create Account</h2>
+
+                <form id="registerForm">
+
+                    <div class="input-group">
+                        <label for="full_name">Full Name</label>
+                        <input
+                            type="text"
+                            id="full_name"
+                            placeholder="Enter your full name"
+                            required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="email">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            placeholder="Enter your email"
+                            required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            placeholder="Enter your password"
+                            required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="role">Role</label>
+
+                        <select id="role" required>
+
+                            <option value="" selected disabled>
+                                Select Role
+                            </option>
+
+                            <option value="creator">
+                                Content Creator
+                            </option>
+
+                            <option value="educator">
+                                Educator
+                            </option>
+
+                            <option value="learner">
+                                Learner
+                            </option>
+
+                        </select>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary register-btn">
+                        Register
+                    </button>
+
+                </form>
+
+                <div class="bottom-link">
+                    Already have an account?
+                    <a href="login.html">Login</a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Toast (Only One) -->
+    <div id="toast" class="toast"></div>
+
+    <!-- JavaScript -->
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/register.js"></script>
+
+</body>
+
+</html>
