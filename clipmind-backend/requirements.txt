@@ -1,0 +1,11 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+SQLAlchemy==2.0.32
+pydantic==2.8.2
+python-dotenv==1.0.1
+faster-whisper==1.0.3
+scikit-learn==1.5.1
+networkx==3.3
+numpy==1.26.4
+PyJWT==2.9.0
