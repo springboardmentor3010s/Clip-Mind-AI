@@ -1,0 +1,90 @@
+.recent-card {
+  background: #111827;
+  padding: 25px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+.recent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.recent-header h2 {
+  color: white;
+  font-size: 24px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  color: #94A3B8;
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+td {
+  padding: 18px 16px;
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+tbody tr:hover {
+  background: #1E293B;
+  transition: 0.3s;
+}
+
+/* Status Badge */
+
+.completed,
+.processing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 999px;
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.completed {
+  background: #22c55e;
+}
+
+.processing {
+  background: #f59e0b;
+}
+
+.view-btn {
+  background: #2563EB;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 600;
+}
+
+.view-btn:hover {
+  background: #1D4ED8;
+}
+
+td span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

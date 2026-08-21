@@ -1,0 +1,364 @@
+/* ---------- Google Font ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#050816;
+}
+
+/* ---------- Background ---------- */
+
+.login-page{
+    width:100%;
+    height:100vh;
+    background:linear-gradient(135deg,#050816,#0B1120,#111827);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:60px;
+    overflow:hidden;
+    position:relative;
+}
+
+/* ---------- Animated Circles ---------- */
+
+.bg-circle{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(70px);
+    opacity:.35;
+    animation:float 8s ease-in-out infinite;
+}
+
+.circle1{
+    width:320px;
+    height:320px;
+    background:#2563EB;
+    top:-120px;
+    left:-100px;
+}
+
+.circle2{
+    width:260px;
+    height:260px;
+    background:#9333EA;
+    right:-80px;
+    bottom:-80px;
+}
+
+.circle3{
+    width:180px;
+    height:180px;
+    background:#14B8A6;
+    top:45%;
+    left:45%;
+}
+
+@keyframes float{
+
+    0%{
+        transform:translateY(0px);
+    }
+
+    50%{
+        transform:translateY(-25px);
+    }
+
+    100%{
+        transform:translateY(0px);
+    }
+
+}
+
+/* ---------- Left Panel ---------- */
+
+.left-panel{
+    width:50%;
+    color:white;
+    z-index:5;
+}
+
+.brand-title{
+    font-size:58px;
+    font-weight:800;
+    color:#3B82F6;
+    margin-bottom:25px;
+}
+
+.left-panel h2{
+    font-size:38px;
+    margin-bottom:18px;
+}
+
+.left-panel p{
+    color:#CBD5E1;
+    line-height:1.8;
+    margin-bottom:35px;
+    width:80%;
+}
+
+.feature-box{
+
+    width:340px;
+
+    background:rgba(255,255,255,.08);
+
+    backdrop-filter:blur(20px);
+
+    border:1px solid rgba(255,255,255,.1);
+
+    padding:18px;
+
+    border-radius:16px;
+
+    margin-bottom:15px;
+
+    transition:.3s;
+
+    color:white;
+}
+
+.feature-box:hover{
+
+    transform:translateX(10px);
+
+    background:#2563EB;
+
+}
+
+/* ---------- Login Card ---------- */
+
+.login-card{
+
+    width:430px;
+
+    background:rgba(255,255,255,.08);
+
+    backdrop-filter:blur(20px);
+
+    border:1px solid rgba(255,255,255,.1);
+
+    border-radius:30px;
+
+    padding:40px;
+
+    color:white;
+
+    z-index:5;
+
+    box-shadow:0 20px 50px rgba(0,0,0,.45);
+
+}
+
+.login-card h2{
+
+    text-align:center;
+
+    margin-bottom:8px;
+
+}
+
+.subtitle{
+
+    text-align:center;
+
+    color:#CBD5E1;
+
+    margin-bottom:30px;
+
+}
+
+/* ---------- Inputs ---------- */
+
+.input-box{
+
+    display:flex;
+
+    align-items:center;
+
+    background:#111827;
+
+    border-radius:14px;
+
+    padding:14px 18px;
+
+    margin-bottom:18px;
+
+}
+
+.icon{
+
+    color:#60A5FA;
+
+    margin-right:12px;
+
+    font-size:18px;
+
+}
+
+.input-box input{
+
+    background:none;
+
+    border:none;
+
+    outline:none;
+
+    width:100%;
+
+    color:white;
+
+    font-size:15px;
+
+}
+
+.input-box input::placeholder{
+
+    color:#94A3B8;
+
+}
+
+/* ---------- Buttons ---------- */
+
+.login-btn{
+
+    width:100%;
+
+    border:none;
+
+    border-radius:14px;
+
+    padding:15px;
+
+    background:linear-gradient(90deg,#2563EB,#7C3AED);
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    margin-top:10px;
+
+}
+
+.login-btn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 15px 35px rgba(59,130,246,.45);
+
+}
+
+.google-btn,
+.github-btn{
+
+    width:100%;
+
+    margin-top:15px;
+
+    padding:14px;
+
+    border-radius:14px;
+
+    border:1px solid rgba(255,255,255,.15);
+
+    background:#111827;
+
+    color:white;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.google-btn:hover,
+.github-btn:hover{
+
+    background:#1E293B;
+
+}
+
+.divider{
+
+    text-align:center;
+
+    color:#94A3B8;
+
+    margin:25px 0;
+
+}
+
+.register-text{
+
+    margin-top:22px;
+
+    text-align:center;
+
+    color:#CBD5E1;
+
+}
+
+.register-text a{
+
+    color:#3B82F6;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+}
+
+.message{
+
+    background:#DC2626;
+
+    margin-top:18px;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    text-align:center;
+
+}
+
+/* ---------- Responsive ---------- */
+
+@media(max-width:992px){
+
+.login-page{
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    padding:30px;
+
+}
+
+.left-panel{
+
+    display:none;
+
+}
+
+.login-card{
+
+    width:100%;
+    max-width:430px;
+
+}
+
+}

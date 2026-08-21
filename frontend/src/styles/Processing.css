@@ -1,0 +1,66 @@
+.processing-page{
+background:#0B1120;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+color:white;
+}
+
+.processing-card{
+width:650px;
+background:#111827;
+padding:45px;
+border-radius:20px;
+text-align:center;
+box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+
+.robot-icon{
+font-size:80px;
+color:#3B82F6;
+margin-bottom:20px;
+animation:pulse 2s infinite;
+}
+
+.progress-bar{
+width:100%;
+height:16px;
+background:#1E293B;
+border-radius:20px;
+overflow:hidden;
+margin:35px 0;
+}
+
+.progress-fill{
+height:100%;
+background:linear-gradient(90deg,#2563EB,#7C3AED);
+transition:1s;
+}
+
+.steps{
+text-align:left;
+margin-top:30px;
+}
+
+.steps div{
+padding:10px;
+font-size:17px;
+display:flex;
+gap:12px;
+align-items:center;
+color:#CBD5E1;
+}
+
+.completed{
+color:#22C55E;
+font-weight:600;
+}
+
+@keyframes pulse{
+
+0%{transform:scale(1);}
+50%{transform:scale(1.1);}
+100%{transform:scale(1);}
+
+}

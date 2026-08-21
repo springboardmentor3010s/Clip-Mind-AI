@@ -1,0 +1,273 @@
+.analytics-page{
+    padding:40px;
+    background:#0B1120;
+    min-height:100vh;
+    color:white;
+}
+
+.analytics-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:40px;
+}
+
+.analytics-header h1{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:36px;
+}
+
+.analytics-header p{
+    color:#94A3B8;
+    margin-top:10px;
+}
+
+.analytics-badge{
+    background:linear-gradient(90deg,#2563EB,#7C3AED);
+    padding:14px 22px;
+    border-radius:30px;
+    font-weight:600;
+}
+
+.analytics-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:25px;
+}
+
+.analytics-card{
+    background:#111827;
+    padding:30px;
+    border-radius:20px;
+    text-align:center;
+    border:1px solid rgba(255,255,255,.08);
+    transition:.3s;
+}
+
+.analytics-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 18px 40px rgba(59,130,246,.25);
+}
+
+.analytics-icon{
+    font-size:45px;
+    color:#3B82F6;
+    margin-bottom:18px;
+}
+
+.purple{
+    color:#8B5CF6;
+}
+
+.green{
+    color:#22C55E;
+}
+
+.orange{
+    color:#F59E0B;
+}
+
+.analytics-card h2{
+    font-size:34px;
+    margin-bottom:10px;
+}
+
+.analytics-card p{
+    color:#CBD5E1;
+}
+
+.progress-section{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+    margin-top:40px;
+}
+
+.progress-card{
+    background:#111827;
+    padding:25px;
+    border-radius:18px;
+}
+
+.progress-card h3{
+    margin-bottom:18px;
+}
+
+.progress-bar{
+    width:100%;
+    height:12px;
+    background:#1E293B;
+    border-radius:30px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    border-radius:30px;
+}
+
+.success{
+    width:100%;
+    background:#22C55E;
+}
+
+.storage{
+    width:58%;
+    background:#3B82F6;
+}
+
+.progress-card span{
+    display:block;
+    margin-top:12px;
+    color:#CBD5E1;
+}
+
+.insights-section{
+    margin-top:45px;
+}
+
+.insights-section h2{
+    margin-bottom:25px;
+}
+
+.insights-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:25px;
+}
+
+.insight-card{
+    background:#111827;
+    padding:25px;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.08);
+}
+
+.insight-icon{
+    color:#3B82F6;
+    font-size:32px;
+    margin-bottom:15px;
+}
+
+.insight-card h4{
+    margin-bottom:10px;
+}
+
+.insight-card p{
+    color:#CBD5E1;
+    line-height:1.7;
+}
+
+.activity-card{
+    margin-top:45px;
+    background:#111827;
+    padding:30px;
+    border-radius:20px;
+}
+
+.activity-card h2{
+    margin-bottom:20px;
+}
+
+.activity-card ul{
+    list-style:none;
+    padding:0;
+}
+
+.activity-card li{
+    padding:14px 0;
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.activity-card li:last-child{
+    border:none;
+}
+
+@media(max-width:768px){
+
+.analytics-header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:20px;
+}
+
+.progress-section{
+    grid-template-columns:1fr;
+}
+
+}
+
+/* Charts */
+
+.charts-section{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+    margin-top:35px;
+}
+
+.chart-card{
+    background:#111827;
+    padding:25px;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.08);
+}
+
+.chart-card h3{
+    margin-bottom:20px;
+    color:white;
+}
+
+@media(max-width:900px){
+
+.charts-section{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+.report-card{
+    margin-top:40px;
+    background:#111827;
+    border-radius:20px;
+    padding:30px;
+    border:1px solid rgba(255,255,255,.08);
+}
+
+.report-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:18px;
+    margin-top:20px;
+}
+
+.keyword-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-top:15px;
+}
+
+.keyword-chip{
+    background:#2563EB;
+    color:white;
+    padding:8px 18px;
+    border-radius:30px;
+    font-weight:600;
+}
+
+.insight-text{
+    color:#CBD5E1;
+    line-height:1.8;
+    margin-top:12px;
+}
+
+.report-list{
+    margin-top:15px;
+    line-height:2;
+    color:#E2E8F0;
+}

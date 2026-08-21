@@ -1,0 +1,34 @@
+# Python
+backend/venv/
+backend/.venv/
+backend/__pycache__/
+__pycache__/
+*.pyc
+
+# Environment / secrets
+backend/.env
+.env
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# React
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+
+# Local Node.js installation
+nodejs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploaded lecture videos
+backend/uploads/

@@ -1,0 +1,47 @@
+services:
+
+  db:
+    image: postgres:16
+    container_name: clipmind-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: clipmind_ai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: hellokajal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d clipmind_ai"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: clipmind-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:hellokajal@db:5432/clipmind_ai
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: http://localhost:8000
+    container_name: clipmind-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  postgres_data:
