@@ -12,15 +12,18 @@ Built with a **React + FastAPI + PostgreSQL** stack and fully containerized with
 
 - [Features](#features)
 - [System Architecture](#system-architecture)
+- [Video Processing Workflow](#video-processing-workflow)
+- [Role-Based Access Control (RBAC)](#role-based-access-control-rbac)
 - [Tech Stack](#tech-stack)
 - [AI Processing Pipeline](#ai-processing-pipeline)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
+- [Screenshots](#screenshots)
 - [Environment Variables](#environment-variables)
 - [Accessing the Application](#accessing-the-application)
 - [API Documentation](#api-documentation)
 - [Useful Docker Commands](#useful-docker-commands)
-- [Roadmap](#roadmap)
+- [Future Improvements](#future-improvements)
 - [Contributors](#contributors)
 
 ---
@@ -61,6 +64,59 @@ Built with a **React + FastAPI + PostgreSQL** stack and fully containerized with
 ```
 
 **Processing pipeline:** Upload → FFmpeg audio extraction → Whisper transcription → Transcript storage (TXT/JSON) → AI summarization & key-moment detection → Learning platform
+
+---
+
+## Video Processing Workflow
+
+<p align="center">
+  <img src="docs/images/video processing workflow.png" alt="Video Processing Workflow" width="900"/>
+</p>
+
+---
+
+## Role-Based Access Control (RBAC)
+
+ClipMind AI implements **Role-Based Access Control (RBAC)** to ensure that users can access only the features and resources permitted for their assigned role.
+
+The system supports the following roles:
+
+| Role | Access & Responsibilities |
+|------|----------------------------|
+| **Admin** | Manages the overall platform, users, courses, and system-level resources. |
+| **Educator** | Creates and manages courses, uploads educational videos, and accesses video transcripts, summaries, and analytics. |
+| **Creator** | Uploads and manages videos, and accesses transcripts, summaries, key moments, and content-level analytics. |
+| **Learner** | Accesses enrolled courses and learning materials, watches educational videos, and views generated transcripts and summaries. |
+
+### Access Control Flow
+
+```text
+                    ┌───────────────┐
+                    │     User      │
+                    └───────┬───────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │ Authentication│
+                    │    (JWT)      │
+                    └───────┬───────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │  Verify Role  │
+                    └───────┬───────┘
+                            │
+        ┌───────────┬───────┴───────┬───────────┐
+        ▼            ▼               ▼           ▼
+   ┌─────────┐  ┌───────────┐  ┌─────────┐  ┌─────────┐
+   │  Admin  │  │ Educator  │  │ Creator │  │ Learner │
+   └────┬────┘  └─────┬─────┘  └────┬────┘  └────┬────┘
+        │             │             │            │
+        ▼             ▼             ▼            ▼
+   System-Level    Course &      Content       Learning &
+    Management     Classroom     Upload &      Resources
+                   Management    Analytics      Access
+```
 
 ---
 
@@ -150,6 +206,9 @@ ClipMind-AI/
 │   ├── nginx.conf
 │   └── package.json
 │
+├── docs/
+│   └── images/                    # Dashboard & workflow screenshots
+│
 ├── docker-compose.yml
 └── README.md
 ```
@@ -179,6 +238,30 @@ cd ClipMind-AI
 docker compose build
 docker compose up -d
 ```
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/images/AdminDashboard.png" alt="Admin Dashboard" width="900"/>
+  <br/><em>Admin Dashboard</em>
+</p>
+
+<p align="center">
+  <img src="docs/images/EducatorDashboard.png" alt="Educator Dashboard" width="900"/>
+  <br/><em>Educator Dashboard</em>
+</p>
+
+<p align="center">
+  <img src="docs/images/CreatorDashboard.png" alt="Creator Dashboard" width="900"/>
+  <br/><em>Creator Dashboard</em>
+</p>
+
+<p align="center">
+  <img src="docs/images/LearnerDashboard.png" alt="Learner Dashboard" width="900"/>
+  <br/><em>Learner Dashboard</em>
+</p>
+
+---
 
 ---
 
