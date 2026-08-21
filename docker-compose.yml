@@ -1,0 +1,46 @@
+services:
+  # 1. AI Engine
+  ollama:
+    image: ollama/ollama:latest
+    container_name: clipmind_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: always
+
+  # 2. FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clipmind_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend:/app
+    depends_on:
+      - ollama
+    restart: always
+
+  # 3. React Frontend (Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: clipmind_frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
+    restart: always
+
+volumes:
+  ollama_data:

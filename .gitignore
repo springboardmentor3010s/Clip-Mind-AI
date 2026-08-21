@@ -1,0 +1,16 @@
+node_modules/
+frontend/node_modules/
+venv/
+backend/venv/
+backend/uploads/
+uploads/
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.wav
+*.mp3
+*.pt
+*.bin
+__pycache__/
+dist/
