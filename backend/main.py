@@ -1,8 +1,11 @@
 import os
 import sys
+
 from dotenv import load_dotenv
 
-load_dotenv(override=True)
+if not os.getenv("TESTING"):
+    load_dotenv()
+
 
 # Set HuggingFace Token for local models if present
 if os.getenv("HF_TOKEN"):
@@ -14,7 +17,7 @@ os.environ["PATH"] += os.pathsep + bin_path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api import auth, video, admin, insights
+from api import auth, video, admin, insights, analytics, learner, educator, classroom
 from db.database import SessionLocal, User
 from services.auth_service import get_password_hash
 
@@ -22,18 +25,24 @@ app = FastAPI(title="ClipMind AI Backend")
 
 @app.on_event("startup")
 def create_admin_user():
+    if os.getenv("TESTING"):
+        return
+        
     db = SessionLocal()
     roles_to_seed = [
-        {"name": "Admin", "email": "admin@clipmind.com", "role": "administrator"},
-        {"name": "Content Creator", "email": "creator@clipmind.com", "role": "creator"},
-        {"name": "Learner", "email": "learner@clipmind.com", "role": "learner"},
-        {"name": "Educator", "email": "educator@clipmind.com", "role": "educator"}
+        {"name": "Educator", "email": "educator@clipmind.com", "role": "educator"},
+        {"name": "Content Creator", "email": "creator@clipmind.com", "role": "content_creator"},
+        {"name": "Administrator", "email": "admin@clipmind.com", "role": "administrator"},
+        {"name": "Learner", "email": "learner@clipmind.com", "role": "learner"}
     ]
     
     for user_data in roles_to_seed:
         user = db.query(User).filter(User.email == user_data["email"]).first()
         if not user:
-            hashed_password = get_password_hash("password123")
+            pwd = user_data["role"].replace("administrator", "admin") + "123"
+            if pwd == "content_creator123":
+                pwd = "creator123"
+            hashed_password = get_password_hash(pwd)
             new_user = User(
                 name=user_data["name"],
                 email=user_data["email"],
@@ -46,7 +55,7 @@ def create_admin_user():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,6 +65,10 @@ app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(video.router, prefix="/api/video", tags=["video"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 app.include_router(insights.router, prefix="/api/insights", tags=["insights"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
+app.include_router(learner.router, prefix="/api/learner", tags=["learner"])
+app.include_router(educator.router, prefix="/api/educator", tags=["educator"])
+app.include_router(classroom.router, prefix="/api/classroom", tags=["classroom"])
 
 @app.get("/health")
 def health_check():

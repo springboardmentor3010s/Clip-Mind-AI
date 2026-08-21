@@ -1,98 +1,120 @@
-# ClipMind AI
+# ClipMind AI: Video Summarization & Key Moments Detection Platform
 
-ClipMind AI is a full-stack video intelligence platform for uploading videos, generating transcripts and summaries, detecting key moments, and organizing content through a role-aware dashboard.
+[![Frontend Deployed](https://img.shields.io/badge/Frontend-Live_on_Render-success?style=for-the-badge&logo=render)](https://clipmind-ai-frontend.onrender.com/)
+[![Backend Deployed](https://img.shields.io/badge/Backend-Live_on_Render-blue?style=for-the-badge&logo=fastapi)](https://clipmind-ai-8hkx.onrender.com/docs)
 
-The project is implemented as a Next.js frontend and a FastAPI backend. It uses PostgreSQL for user and video metadata, MongoDB for transcript and summary documents, JWT-based authentication, and FFmpeg for video processing and playback support.
+An AI-powered video summarization platform that automatically analyzes videos, extracts transcripts, generates concise summaries, and identifies important moments within video content.
 
-## What is implemented
+## Live Demo
+- **Frontend (Web App):** [https://clipmind-ai-frontend.onrender.com/](https://clipmind-ai-frontend.onrender.com/)
+- **Backend docs (API Base):** [https://clipmind-ai-8hkx.onrender.com/](https://clipmind-ai-8hkx.onrender.com/docs)
 
-| Milestone | Status | Highlights |
-| --- | --- | --- |
-| Milestone 1 | Completed | Next.js frontend and FastAPI backend wired end to end; JWT login, registration, and role-based access control; four personas; SQLAlchemy models that auto-create user and video tables; video upload flow with validation, file storage, and thumbnail processing; admin controls for listing users and updating roles; responsive glassmorphism UI across the landing page and dashboard |
-| Milestone 2 | Completed | Whisper-based speech-to-text transcription flow; AI-powered summarization using Llama 3 style prompts and Groq-backed processing; transcript and summary storage in MongoDB; decoupled processing flow where users trigger AI insight generation manually; video streaming inside the dashboard; AI response fallback and retry handling for rate-limited services |
+<!-- 
+NOTE FOR EVALUATORS: 
+While the application is fully containerized and deployed to Render, we highly recommend running the local development environment for live demonstrations. 
+Free-tier cloud instances suffer from ephemeral storage wipes (breaking video playback on server sleep), datacenter IP blocking by YouTube (breaking URL imports), and severe cold start timeouts. 
+The local environment accurately reflects the true capabilities and performance of the platform. 
+Please refer to `documentation/Cloud_Constraints.md` for a full technical breakdown of these limitations.
+-->
 
-## Tech Stack
+---
 
-| Layer | Tools |
-| --- | --- |
-| Frontend | Next.js, React, Tailwind CSS, Framer Motion |
-| Backend | FastAPI, SQLAlchemy, Uvicorn |
-| Databases | PostgreSQL, MongoDB |
-| Media | FFmpeg |
-| Auth | JWT, bcrypt |
+## Project Documentation
 
-## Project Structure
+All detailed documentation regarding architecture, milestones, API endpoints, and deployment can be found in the `documentation/` directory:
 
-- `frontend/` - Next.js app
-- `frontend/src/app/` - App Router pages for landing, login, register, and dashboard views
-- `frontend/src/components/` - Shared dashboard UI pieces
-- `backend/` - FastAPI app, models, database helpers, and services
-- `backend/api/` - Auth, video, admin, and insights endpoints
-- `backend/db/` - PostgreSQL and MongoDB connection helpers
-- `backend/services/` - Authentication and video processing logic
-- `backend/uploads/` - Stored uploaded video files
-- `docker-compose.yml` - Local PostgreSQL and MongoDB stack plus backend service
-- `requirements.txt` - Root Python dependency list for the backend
+1. **[Project Milestones](./documentation/Milestones.md)** — Detailed breakdown of what was achieved across all 4 milestones.
+2. **[Tech Stack](./documentation/Tech_Stack.md)** — Overview of the technologies, frameworks, and AI models utilized.
+3. **[Deployment Guide](./documentation/Deployment.md)** — Information on our Docker containerization and Render cloud hosting strategy.
+4. **[API Documentation](./documentation/API_Docs.md)** — Guide to the FastAPI backend endpoints (Auth, Video, AI Processing, Analytics).
 
-## Setup
+## System Architecture
 
-### 1. Backend
+```mermaid
+graph TD
+    subgraph Frontend ["Frontend (Next.js)"]
+        UI["Dashboard UI"]
+        Player["Interactive Video Player"]
+    end
 
-```bash
-cd backend
-pip install -r requirements.txt
+    subgraph Backend ["Backend (FastAPI)"]
+        Auth["JWT Auth Middleware"]
+        API["API Router"]
+        Worker["FastAPI BackgroundTasks"]
+        Audio["FFmpeg Extraction"]
+        YTDLP["yt-dlp Downloader"]
+    end
+
+    subgraph Databases ["Data & Storage Layer"]
+        SQL[("PostgreSQL<br>Users, Roles, Metadata")]
+        NoSQL[("MongoDB<br>Transcripts, Summaries")]
+        Disk[("Local Ephemeral Disk<br>.mp4 Video Storage")]
+    end
+
+    subgraph AI ["Groq LPU API"]
+        Whisper["Whisper-V3 (Speech-to-Text)"]
+        LLaMA["LLaMA-3 (Summarization)"]
+    end
+
+    UI <-->|REST API Requests| Auth
+    Auth -->|Validated Requests| API
+    
+    API -->|Direct File Upload| Disk
+    API -->|Dispatch Task| Worker
+    
+    Worker -->|Import YouTube URL| YTDLP
+    YTDLP -->|Save Downloaded Video| Disk
+    
+    Worker -->|Read Video from Disk| Audio
+    Audio -->|Send Audio Payload| Whisper
+    Whisper -->|Send Raw Transcript| LLaMA
+    
+    API <-->|Store/Fetch structured data| SQL
+    Worker -->|Save AI JSON payloads| NoSQL
+    API <-->|Fetch AI Insights| NoSQL
 ```
 
-Create a `.env` file in `backend/` using `backend/.env.example` as the starting point.
+---
 
-### 2. Frontend
+## Features
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- **Role-Based Access:** Tailored dashboards for Content Creators, Educators, Learners, and Administrators.
+- **Intelligent Processing:** Fast and accurate Speech-to-Text utilizing advanced NLP models (Groq LPU / Whisper).
+- **AI Generation:** Automatic generation of:
+  - Transcripts
+  - Brief and Detailed Summaries
+  - Key Moments with clickable timestamps
+  - Quizzes and Study Guides for Educators
+- **Analytics Dashboard:** Real-time metrics and trending keyword extraction.
 
-### 3. Local databases
+---
 
-```bash
-docker compose up -d postgres mongodb
-```
+## Quick Start (Local Development)
 
-### 4. Run the backend
+If you wish to run the project locally using Docker Compose:
 
-```bash
-cd backend
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/devanshi14malhotra/ClipMind-AI.git
+   cd ClipMind-AI
+   ```
+2. Create a `.env` file in the `backend/` directory based on `.env.example` containing your API keys (Groq, Postgres, MongoDB).
 
-## Environment Variables
+3. **Run the Backend:**
+   Open a terminal and start the FastAPI server:
+   ```bash
+   cd backend
+   # Activate your virtual environment (if using one)
+   pip install -r requirements.txt
+   uvicorn main:app --reload
+   ```
 
-The app expects working API keys and service credentials for the AI features to behave as described in the milestone decks.
+4. **Run the Frontend:**
+   Open a new terminal and start the Next.js development server:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
 
-- `SECRET_KEY`
-- `POSTGRES_URL`
-- `MONGO_URL`
-- `HF_TOKEN`
-- Groq / OpenAI-compatible API keys used by the AI processing workflow
-
-The repository already includes a starter file at [backend/.env.example](backend/.env.example) with the local variable names and example values.
-
-## API Surface
-
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-- `POST /api/video/upload`
-- `GET /api/video/`
-- `GET /api/video/{video_id}`
-- `GET /api/video/stream/{video_id}`
-- `POST /api/video/{video_id}/process`
-- `DELETE /api/video/{video_id}`
-- `GET /api/admin/users`
-- `PUT /api/admin/users/{user_id}/role`
-- `GET /api/insights/transcript/{video_id}`
-- `GET /api/insights/summary/{video_id}`
-
-Devanshi Malhotra, 2026
-
+5. Access the frontend at `http://localhost:3000` and backend at `http://localhost:8000`.
