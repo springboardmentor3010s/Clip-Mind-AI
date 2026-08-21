@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
+.env.local
+backend/.env
+
+# Virtual Environment
+venv/
+.venv/
+backend/venv/
+
+# Uploaded Videos
+backend/uploads/
+
+# Processed Files
+backend/processed/
+
+# Python cache
+backend/**/__pycache__/
