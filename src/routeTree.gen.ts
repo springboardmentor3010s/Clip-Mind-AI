@@ -19,11 +19,15 @@ import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedMomentsRouteImport } from './routes/_authenticated/moments'
+import { Route as AuthenticatedPlatformActivityRouteImport } from './routes/_authenticated/platform-activity'
+import { Route as AuthenticatedPlatformSettingsRouteImport } from './routes/_authenticated/platform-settings'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSummaryRouteImport } from './routes/_authenticated/summary'
+import { Route as AuthenticatedSystemAnalyticsRouteImport } from './routes/_authenticated/system-analytics'
 import { Route as AuthenticatedTranscriptRouteImport } from './routes/_authenticated/transcript'
 import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated/upload'
+import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -74,6 +78,18 @@ const AuthenticatedMomentsRoute = AuthenticatedMomentsRouteImport.update({
   path: '/moments',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPlatformActivityRoute =
+  AuthenticatedPlatformActivityRouteImport.update({
+    id: '/platform-activity',
+    path: '/platform-activity',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPlatformSettingsRoute =
+  AuthenticatedPlatformSettingsRouteImport.update({
+    id: '/platform-settings',
+    path: '/platform-settings',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -89,6 +105,12 @@ const AuthenticatedSummaryRoute = AuthenticatedSummaryRouteImport.update({
   path: '/summary',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSystemAnalyticsRoute =
+  AuthenticatedSystemAnalyticsRouteImport.update({
+    id: '/system-analytics',
+    path: '/system-analytics',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedTranscriptRoute = AuthenticatedTranscriptRouteImport.update({
   id: '/transcript',
   path: '/transcript',
@@ -97,6 +119,11 @@ const AuthenticatedTranscriptRoute = AuthenticatedTranscriptRouteImport.update({
 const AuthenticatedUploadRoute = AuthenticatedUploadRouteImport.update({
   id: '/upload',
   path: '/upload',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 
@@ -110,11 +137,15 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/moments': typeof AuthenticatedMomentsRoute
+  '/platform-activity': typeof AuthenticatedPlatformActivityRoute
+  '/platform-settings': typeof AuthenticatedPlatformSettingsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/summary': typeof AuthenticatedSummaryRoute
+  '/system-analytics': typeof AuthenticatedSystemAnalyticsRoute
   '/transcript': typeof AuthenticatedTranscriptRoute
   '/upload': typeof AuthenticatedUploadRoute
+  '/users': typeof AuthenticatedUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,11 +157,15 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/moments': typeof AuthenticatedMomentsRoute
+  '/platform-activity': typeof AuthenticatedPlatformActivityRoute
+  '/platform-settings': typeof AuthenticatedPlatformSettingsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/summary': typeof AuthenticatedSummaryRoute
+  '/system-analytics': typeof AuthenticatedSystemAnalyticsRoute
   '/transcript': typeof AuthenticatedTranscriptRoute
   '/upload': typeof AuthenticatedUploadRoute
+  '/users': typeof AuthenticatedUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -144,11 +179,15 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/moments': typeof AuthenticatedMomentsRoute
+  '/_authenticated/platform-activity': typeof AuthenticatedPlatformActivityRoute
+  '/_authenticated/platform-settings': typeof AuthenticatedPlatformSettingsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/summary': typeof AuthenticatedSummaryRoute
+  '/_authenticated/system-analytics': typeof AuthenticatedSystemAnalyticsRoute
   '/_authenticated/transcript': typeof AuthenticatedTranscriptRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
+  '/_authenticated/users': typeof AuthenticatedUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -162,11 +201,15 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/history'
     | '/moments'
+    | '/platform-activity'
+    | '/platform-settings'
     | '/profile'
     | '/settings'
     | '/summary'
+    | '/system-analytics'
     | '/transcript'
     | '/upload'
+    | '/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -178,11 +221,15 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/history'
     | '/moments'
+    | '/platform-activity'
+    | '/platform-settings'
     | '/profile'
     | '/settings'
     | '/summary'
+    | '/system-analytics'
     | '/transcript'
     | '/upload'
+    | '/users'
   id:
     | '__root__'
     | '/'
@@ -195,11 +242,15 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/history'
     | '/_authenticated/moments'
+    | '/_authenticated/platform-activity'
+    | '/_authenticated/platform-settings'
     | '/_authenticated/profile'
     | '/_authenticated/settings'
     | '/_authenticated/summary'
+    | '/_authenticated/system-analytics'
     | '/_authenticated/transcript'
     | '/_authenticated/upload'
+    | '/_authenticated/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -282,6 +333,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMomentsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/platform-activity': {
+      id: '/_authenticated/platform-activity'
+      path: '/platform-activity'
+      fullPath: '/platform-activity'
+      preLoaderRoute: typeof AuthenticatedPlatformActivityRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/platform-settings': {
+      id: '/_authenticated/platform-settings'
+      path: '/platform-settings'
+      fullPath: '/platform-settings'
+      preLoaderRoute: typeof AuthenticatedPlatformSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -303,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSummaryRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/system-analytics': {
+      id: '/_authenticated/system-analytics'
+      path: '/system-analytics'
+      fullPath: '/system-analytics'
+      preLoaderRoute: typeof AuthenticatedSystemAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/transcript': {
       id: '/_authenticated/transcript'
       path: '/transcript'
@@ -317,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUploadRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/users': {
+      id: '/_authenticated/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AuthenticatedUsersRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -326,11 +405,15 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedMomentsRoute: typeof AuthenticatedMomentsRoute
+  AuthenticatedPlatformActivityRoute: typeof AuthenticatedPlatformActivityRoute
+  AuthenticatedPlatformSettingsRoute: typeof AuthenticatedPlatformSettingsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSummaryRoute: typeof AuthenticatedSummaryRoute
+  AuthenticatedSystemAnalyticsRoute: typeof AuthenticatedSystemAnalyticsRoute
   AuthenticatedTranscriptRoute: typeof AuthenticatedTranscriptRoute
   AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
+  AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -339,11 +422,15 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedMomentsRoute: AuthenticatedMomentsRoute,
+  AuthenticatedPlatformActivityRoute: AuthenticatedPlatformActivityRoute,
+  AuthenticatedPlatformSettingsRoute: AuthenticatedPlatformSettingsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSummaryRoute: AuthenticatedSummaryRoute,
+  AuthenticatedSystemAnalyticsRoute: AuthenticatedSystemAnalyticsRoute,
   AuthenticatedTranscriptRoute: AuthenticatedTranscriptRoute,
   AuthenticatedUploadRoute: AuthenticatedUploadRoute,
+  AuthenticatedUsersRoute: AuthenticatedUsersRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

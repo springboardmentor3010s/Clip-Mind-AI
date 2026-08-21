@@ -45,7 +45,7 @@ function RegisterPage() {
     <AuthShell title="Create account" subtitle="Choose the role that matches your work.">
       <form onSubmit={submit} className="space-y-4">
         <Input label="Full name" required value={name} onChange={(e) => setName(e.target.value)} icon={<FiUser />} placeholder="Ada Lovelace" />
-        <Input label="Email address" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} icon={<FiMail />} placeholder="name@institute.edu" />
+        <Input label="Email address" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} icon={<FiMail />} placeholder="you@example.com" />
         <Input label="Password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} icon={<FiLock />} placeholder="At least 8 characters" />
 
         <div>

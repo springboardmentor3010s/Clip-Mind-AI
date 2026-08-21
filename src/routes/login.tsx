@@ -42,7 +42,7 @@ function LoginPage() {
   return (
     <AuthShell title="Sign in" subtitle="Access your video summarization workspace.">
       <form onSubmit={submit} className="space-y-4">
-        <Input label="Email address" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} icon={<FiMail />} placeholder="name@institute.edu" />
+        <Input label="Email address" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} icon={<FiMail />} placeholder="you@example.com" />
         <Input label="Password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} icon={<FiLock />} placeholder="••••••••" />
         <div className="flex justify-end">
           <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>

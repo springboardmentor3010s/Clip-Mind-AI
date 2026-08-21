@@ -9,7 +9,7 @@ import {
   FiSettings,
   FiUser,
   FiLayers,
-FiActivity,
+  FiActivity,
 } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
@@ -37,6 +37,18 @@ export function Sidebar() {
 
   const { user } = useAuth();
 
+  /*
+   * Upload is allowed for:
+   * - Content Creator → Upload videos
+   * - Educator → Upload lecture videos
+   *
+   * Learner does not upload content.
+   * Administrator does not use the creator/educator upload workflow.
+   */
+  const canUpload =
+    user?.role === "Content Creator" ||
+    user?.role === "Educator";
+
   return (
     <aside className="hidden lg:flex flex-col w-64 shrink-0 h-[calc(100vh-1.5rem)] sticky top-3 ml-3 mb-3 glass-strong rounded-3xl p-4">
       <Link to="/" className="flex items-center gap-2 px-3 py-2 mb-4">
@@ -56,48 +68,49 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 flex flex-col gap-1">
-  {nav
-    .filter((item) => {
-      if (item.label === "Upload") {
-        return user?.role === "Content Creator";
-      }
-      return true;
-    })
-    .map((item) => {
-          const active = pathname === item.to;
-          const Icon = item.icon;
+        {nav
+          .filter((item) => {
+            if (item.label === "Upload") {
+              return canUpload;
+            }
 
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="relative"
-            >
-              {active && (
-                <motion.div
-                  layoutId="sidebar-active"
-                  className="absolute inset-0 bg-gradient-primary rounded-2xl shadow-glow"
-                  transition={{
-                    type: "spring",
-                    bounce: 0.2,
-                    duration: 0.5,
-                  }}
-                />
-              )}
+            return true;
+          })
+          .map((item) => {
+            const active = pathname === item.to;
+            const Icon = item.icon;
 
-              <div
-                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium transition-colors ${
-                  active
-                    ? "text-white"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="relative"
               >
-                <Icon className="text-base" />
-                {item.label}
-              </div>
-            </Link>
-          );
-        })}
+                {active && (
+                  <motion.div
+                    layoutId="sidebar-active"
+                    className="absolute inset-0 bg-gradient-primary rounded-2xl shadow-glow"
+                    transition={{
+                      type: "spring",
+                      bounce: 0.2,
+                      duration: 0.5,
+                    }}
+                  />
+                )}
+
+                <div
+                  className={`relative flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium transition-colors ${
+                    active
+                      ? "text-white"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Icon className="text-base" />
+                  {item.label}
+                </div>
+              </Link>
+            );
+          })}
       </nav>
 
       <div className="border-t border-border/60 pt-3 flex flex-col gap-1">
