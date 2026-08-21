@@ -20,3 +20,5 @@ testing/__pycache__/
 testing/*.pyc
 __pycache__/
 *.py[cod]
+.env
+.env.example
