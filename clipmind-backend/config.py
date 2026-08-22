@@ -13,7 +13,7 @@ UPLOAD_DIR = os.path.join(BASE_DIR, os.getenv("UPLOAD_DIR", "data/uploads"))
 AUDIO_DIR = os.path.join(BASE_DIR, os.getenv("AUDIO_DIR", "data/audio"))
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{os.path.join(BASE_DIR, 'data', 'clipmind.db')}")
 
-WHISPER_MODEL_SIZE = os.getenv("WHISPER_MODEL_SIZE", "base")
+WHISPER_MODEL_SIZE = os.getenv("WHISPER_MODEL_SIZE", "tiny")
 WHISPER_DEVICE = os.getenv("WHISPER_DEVICE", "cpu")
 WHISPER_COMPUTE_TYPE = os.getenv("WHISPER_COMPUTE_TYPE", "int8")
 
