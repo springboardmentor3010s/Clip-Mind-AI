@@ -112,11 +112,7 @@ async def upload_video(
             detail="Uploaded file is empty.",
         )
 
-    duration_seconds = (
-        ffmpeg_service.probe_duration_seconds(
-            saved_path
-        )
-    )
+    duration_seconds = 0.0
 
     size_mb = round(
         size_bytes / 1048576,
