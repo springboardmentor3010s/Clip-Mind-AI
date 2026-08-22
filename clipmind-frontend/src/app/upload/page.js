@@ -9,8 +9,7 @@ import {
 
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { uploadVideo } from "@/services/videoService";
-import { getMyClassrooms } from "@/services/classroomService";
-
+import { getEducatorClassrooms } from "@/services/classroomService";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -33,7 +32,7 @@ export default function UploadPage() {
     try {
       setClassroomsLoading(true);
 
-      const data = await getMyClassrooms();
+      const data = await getEducatorClassrooms();
       setClassrooms(data);
 
     } catch (error) {
