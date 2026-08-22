@@ -10,6 +10,7 @@ from app.api.analytics import router as analytics_router
 from app.api.usage_analytics import router as usage_analytics_router
 from app.api.bookmark import router as bookmark_router
 from app.api.classroom import router as classroom_router
+from app.api.summary_share import router as summary_share_router
 
 from app.database.base import Base
 from app.database.connection import engine
@@ -99,3 +100,5 @@ app.include_router(usage_analytics_router)
 app.include_router(bookmark_router)
 
 app.include_router(classroom_router)
+
+app.include_router(summary_share_router)

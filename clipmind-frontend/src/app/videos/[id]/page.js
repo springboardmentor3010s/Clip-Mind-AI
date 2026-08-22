@@ -20,6 +20,10 @@ import {
   createBookmark,
 } from "@/services/videoService";
 
+import { getEducatorClassrooms } from "@/services/classroomService";
+
+import { shareSummary } from "@/services/summaryShareService";
+
 export default function VideoDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -75,10 +79,43 @@ export default function VideoDetailsPage() {
   const [role, setRole] = useState("");
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
+  const [classrooms, setClassrooms] = useState([]);
+  const [selectedClassroomId, setSelectedClassroomId] = useState("");
+
+  const [sharingSummaryId, setSharingSummaryId] = useState(null);
+
+  const [shareMessage, setShareMessage] = useState("");
+  const [shareError, setShareError] = useState("");
+
   useEffect(() => {
   const storedRole = localStorage.getItem("role") || "";
   setRole(storedRole);
 }, []);
+
+// ============================================================
+// LOAD EDUCATOR CLASSROOMS
+// ============================================================
+
+useEffect(() => {
+  const loadClassrooms = async () => {
+    if (role !== "EDUCATOR") {
+      return;
+    }
+
+    try {
+      const data = await getEducatorClassrooms();
+
+      setClassrooms(data);
+    } catch (error) {
+      console.error(
+        "Failed to load educator classrooms:",
+        error
+      );
+    }
+  };
+
+  loadClassrooms();
+}, [role]);
 
 
 //   useEffect(() => {
@@ -477,6 +514,63 @@ const handleDownloadSummary = async (summaryType) => {
     );
 
     alert("Failed to download summary.");
+  }
+};
+
+
+// ============================================================
+// SHARE SUMMARY WITH CLASSROOM
+// Educator only
+// ============================================================
+
+const handleShareSummary = async (summary) => {
+  if (role !== "EDUCATOR") {
+    return;
+  }
+
+  if (!summary?.id) {
+    setShareError("Invalid summary selected.");
+    return;
+  }
+
+  if (!selectedClassroomId) {
+    setShareError(
+      "Please select a classroom before sharing."
+    );
+
+    setShareMessage("");
+
+    return;
+  }
+
+  try {
+    setSharingSummaryId(summary.id);
+
+    setShareError("");
+    setShareMessage("");
+
+    await shareSummary(
+      summary.id,
+      Number(selectedClassroomId)
+    );
+
+    setShareMessage(
+      "Summary shared successfully with the classroom."
+    );
+
+  } catch (error) {
+    console.error(
+      "Failed to share summary:",
+      error
+    );
+
+    setShareError(
+      error.response?.data?.detail ||
+      "Failed to share summary."
+    );
+
+  } finally {
+    setSharingSummaryId(null);
   }
 };
 
@@ -1157,6 +1251,58 @@ async function loadOrGenerateHighlights() {
       AI-generated summaries of this video.
     </p>
 
+    {role === "EDUCATOR" && (
+  <div className="mt-6 rounded-2xl border border-violet-200 bg-violet-50 p-5">
+    <h3 className="font-bold text-violet-900">
+      Share with Learners
+    </h3>
+
+    <p className="mt-1 text-sm text-violet-700">
+      Select one of your classrooms. Learners enrolled
+      in that classroom will be able to view the shared summary.
+    </p>
+
+    <select
+      value={selectedClassroomId}
+      onChange={(e) =>
+        setSelectedClassroomId(e.target.value)
+      }
+      className="mt-4 w-full rounded-xl border border-violet-300 bg-white px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500"
+    >
+      <option value="">
+        Select a classroom
+      </option>
+
+      {classrooms.map((classroom) => (
+        <option
+          key={classroom.id}
+          value={classroom.id}
+        >
+          {classroom.name}
+        </option>
+      ))}
+    </select>
+
+    {classrooms.length === 0 && (
+      <p className="mt-3 text-sm text-red-600">
+        You do not have any classrooms yet.
+      </p>
+    )}
+
+    {shareMessage && (
+      <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-green-700">
+        {shareMessage}
+      </div>
+    )}
+
+    {shareError && (
+      <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+        {shareError}
+      </div>
+    )}
+  </div>
+)}
+
     {summaryLoading ? (
 
       <div className="mt-8 text-center py-10 text-slate-500">
@@ -1187,6 +1333,22 @@ async function loadOrGenerateHighlights() {
             </p>
 
             <div className="mt-5 flex flex-wrap gap-3">
+
+              {role === "EDUCATOR" && (
+  <button
+    onClick={() =>
+      handleShareSummary(shortSummary)
+    }
+    disabled={
+      sharingSummaryId === shortSummary.id
+    }
+    className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+  >
+    {sharingSummaryId === shortSummary.id
+      ? "Sharing..."
+      : "📤 Share Short Summary"}
+  </button>
+)}
 
               {/* Learner: Bookmark only */}
 
@@ -1237,6 +1399,22 @@ async function loadOrGenerateHighlights() {
             </p>
 
             <div className="mt-5 flex flex-wrap gap-3">
+
+              {role === "EDUCATOR" && (
+  <button
+    onClick={() =>
+      handleShareSummary(detailedSummary)
+    }
+    disabled={
+      sharingSummaryId === detailedSummary.id
+    }
+    className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+  >
+    {sharingSummaryId === detailedSummary.id
+      ? "Sharing..."
+      : "📤 Share Detailed Summary"}
+  </button>
+)}
 
               {/* Learner: Bookmark only */}
 

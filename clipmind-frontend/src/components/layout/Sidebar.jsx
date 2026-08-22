@@ -87,6 +87,8 @@ export default function Sidebar() {
       // =====================================================
 
       case "Share Summaries":
+      case "Shared Summaries":
+
         return <FaShareAlt />;
 
       case "Educational Summaries":

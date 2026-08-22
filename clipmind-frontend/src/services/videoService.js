@@ -377,3 +377,21 @@ export const deleteBookmark = async (bookmarkId) => {
 
   return response.data;
 };
+
+/**
+ * Get all summaries belonging to a video
+ */
+export const getSummariesByVideo = async (videoId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(
+    `/videos/${videoId}/summaries`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};

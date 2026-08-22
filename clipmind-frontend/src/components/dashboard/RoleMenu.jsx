@@ -20,6 +20,10 @@ export default function RoleMenu({ role }) {
       path: "/videos"
     },
     {
+      name: "Shared Summaries",
+      path: "/shared-summaries"
+    },
+    {
       name: "Learning History",
       path: "/history"
     },

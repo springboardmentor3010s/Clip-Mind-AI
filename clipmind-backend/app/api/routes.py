@@ -32,6 +32,7 @@ from app.crud.summary_share import (
     get_shared_summaries_for_learner
 )
 
+
 from app.models.summary import Summary
 from app.models.video import Video
 from app.models.classroom import Classroom
@@ -817,6 +818,51 @@ def generate_video_educational_summary(
     return summary
 
 
+# ============================================================
+# GET ALL SUMMARIES FOR A VIDEO
+# Educator can access summaries of their own video
+# ============================================================
+
+@router.get(
+    "/videos/{video_id}/summaries",
+    response_model=List[SummaryResponse]
+)
+def get_video_summaries(
+    video_id: int,
+    current_user=Depends(
+        require_roles(UserRole.EDUCATOR)
+    ),
+    db: Session = Depends(get_db)
+):
+
+    # ---------------------------------------------------------
+    # Get the educator's own video
+    # ---------------------------------------------------------
+
+    video = get_video_by_id(
+        db=db,
+        video_id=video_id,
+        owner_id=current_user.id
+    )
+
+    if video is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Video not found"
+        )
+
+    # ---------------------------------------------------------
+    # Get all summaries for this video
+    # ---------------------------------------------------------
+
+    summaries = get_summary_by_video(
+        db=db,
+        video=video
+    )
+
+    return summaries
+
+
 @router.get(
     "/videos/{video_id}/summary",
     response_model=SummaryResponse
@@ -1055,3 +1101,5 @@ def get_my_shared_summaries(
     )
 
     return summaries
+
+
