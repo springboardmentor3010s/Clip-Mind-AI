@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import {
   getVideoById,
   getTranscript,
+  updateTranscript,
   getTranscriptSegments,
   getSummary,
   downloadTranscript,
@@ -29,6 +30,18 @@ export default function VideoDetailsPage() {
 
   const [transcript, setTranscript] = useState(null);
   const [transcriptSegments, setTranscriptSegments] = useState([]);
+
+  const [isEditingTranscript, setIsEditingTranscript] =
+    useState(false);
+
+  const [editedTranscriptText, setEditedTranscriptText] =
+    useState("");
+
+  const [savingTranscript, setSavingTranscript] =
+    useState(false);
+
+  const [saveTranscriptError, setSaveTranscriptError] =
+    useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMatchCount, setSearchMatchCount] = useState(0);
@@ -123,6 +136,11 @@ useEffect(() => {
     const data = await getTranscript(id);
 
     setTranscript(data);
+
+    setEditedTranscriptText(
+      data.transcript_text || ""
+    );
+
   } catch (error) {
     console.error("Failed to load transcript:", error);
 
@@ -134,6 +152,75 @@ useEffect(() => {
     setTranscriptLoading(false);
   }
 }
+
+const handleEditTranscript = () => {
+  if (role !== "EDUCATOR" || !transcript) {
+    return;
+  }
+
+  setEditedTranscriptText(
+    transcript.transcript_text || ""
+  );
+
+  setSaveTranscriptError("");
+  setIsEditingTranscript(true);
+};
+
+
+const handleCancelEditTranscript = () => {
+  setEditedTranscriptText(
+    transcript?.transcript_text || ""
+  );
+
+  setSaveTranscriptError("");
+  setIsEditingTranscript(false);
+};
+
+const handleSaveTranscript = async () => {
+  const trimmedTranscript =
+    editedTranscriptText.trim();
+
+  if (!trimmedTranscript) {
+    setSaveTranscriptError(
+      "Transcript cannot be empty."
+    );
+    return;
+  }
+
+  try {
+    setSavingTranscript(true);
+    setSaveTranscriptError("");
+
+    const updatedTranscript =
+      await updateTranscript(
+        id,
+        trimmedTranscript
+      );
+
+    setTranscript(updatedTranscript);
+
+    setEditedTranscriptText(
+      updatedTranscript.transcript_text
+    );
+
+    setIsEditingTranscript(false);
+
+  } catch (error) {
+    console.error(
+      "Failed to update transcript:",
+      error
+    );
+
+    setSaveTranscriptError(
+      error.response?.data?.detail ||
+      "Failed to update transcript."
+    );
+
+  } finally {
+    setSavingTranscript(false);
+  }
+};
+
 
 async function loadTranscriptSegments() {
   try {
@@ -255,12 +342,13 @@ async function handleSectionChange(section) {
   }
 
   if (section === "keywords") {
-  if (role === "LEARNER") {
+  if (role !== "CONTENT_CREATOR") {
     return;
   }
 
   await loadOrGenerateKeywords();
 }
+
 }
 
 async function loadOrGenerateKeyMoments() {
@@ -804,6 +892,21 @@ async function loadOrGenerateHighlights() {
       🎯 Highlights
     </button>
 
+    {role === "CONTENT_CREATOR" && (
+  <button
+    onClick={() => handleSectionChange("keywords")}
+    className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
+      activeSection === "keywords"
+        ? "bg-orange-600 text-white shadow-lg"
+        : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+    }`}
+  >
+    🔑 Keywords
+  </button>
+)}
+
+    
+
     
 
   </div>
@@ -833,16 +936,31 @@ async function loadOrGenerateHighlights() {
     </p>
   </div>
 
-  {role === "CONTENT_CREATOR" &&
-    !transcriptLoading &&
-    transcript && (
-    <button
-      onClick={handleDownloadTranscript}
-      className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition"
-    >
-      ⬇ Download Transcript
-    </button>
-  )}
+  {!transcriptLoading && transcript && (
+  <div className="flex flex-wrap gap-3">
+
+    {role === "EDUCATOR" && !isEditingTranscript && (
+      <button
+        onClick={handleEditTranscript}
+        className="px-5 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 transition"
+      >
+        ✏️ Edit Transcript
+      </button>
+    )}
+
+    {(role === "CONTENT_CREATOR" ||
+      role === "EDUCATOR") &&
+      !isEditingTranscript && (
+      <button
+        onClick={handleDownloadTranscript}
+        className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition"
+      >
+        ⬇ Download Transcript
+      </button>
+    )}
+
+  </div>
+)}
 
 </div>
 <div className="mt-6">
@@ -887,18 +1005,73 @@ async function loadOrGenerateHighlights() {
         </div>
       )}
 
-      {!transcriptLoading && !transcriptError && transcript && (
-        <div className="mt-8 bg-slate-50 rounded-2xl p-6">
+      {!transcriptLoading &&
+  !transcriptError &&
+  transcript && (
 
-          <p className="text-slate-700 leading-8 whitespace-pre-wrap">
-            {highlightSearchText(
-              transcript.transcript_text,
-              searchQuery
-            )}
-          </p>
+  <div className="mt-8">
+
+    {isEditingTranscript ? (
+
+      <div className="space-y-4">
+
+        <textarea
+          value={editedTranscriptText}
+          onChange={(e) =>
+            setEditedTranscriptText(e.target.value)
+          }
+          className="w-full min-h-[400px] border border-slate-300 rounded-2xl p-5 text-slate-700 leading-8 resize-y focus:outline-none focus:ring-2 focus:ring-violet-500"
+          placeholder="Edit transcript..."
+          disabled={savingTranscript}
+        />
+
+        {saveTranscriptError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl">
+            {saveTranscriptError}
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-3">
+
+          <button
+            onClick={handleSaveTranscript}
+            disabled={savingTranscript}
+            className="px-6 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            {savingTranscript
+              ? "Saving..."
+              : "💾 Save Changes"}
+          </button>
+
+          <button
+            onClick={handleCancelEditTranscript}
+            disabled={savingTranscript}
+            className="px-6 py-3 rounded-xl bg-slate-200 text-slate-700 font-semibold hover:bg-slate-300 disabled:opacity-50 transition"
+          >
+            Cancel
+          </button>
 
         </div>
-      )}
+
+      </div>
+
+    ) : (
+
+      <div className="bg-slate-50 rounded-2xl p-6">
+
+        <p className="text-slate-700 leading-8 whitespace-pre-wrap">
+          {highlightSearchText(
+            transcript.transcript_text,
+            searchQuery
+          )}
+        </p>
+
+      </div>
+
+    )}
+
+  </div>
+)}
 
       {!transcriptLoading && !transcriptError && !transcript && (
         <div className="mt-8 text-center py-10 text-slate-500">
@@ -1395,7 +1568,8 @@ async function loadOrGenerateHighlights() {
 
         {/* KEYWORDS */}
 
-            {role !== "LEARNER" && activeSection === "keywords" && (
+            {role === "CONTENT_CREATOR" &&
+                activeSection === "keywords" && (
   <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8">
           <div>
             <h2 className="text-3xl font-bold text-slate-900">

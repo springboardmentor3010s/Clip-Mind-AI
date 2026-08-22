@@ -93,6 +93,31 @@ export const getTranscript = async (videoId) => {
   return response.data;
 };
 
+/**
+ * Update transcript of a video
+ * Educator only
+ */
+export const updateTranscript = async (
+  videoId,
+  transcriptText
+) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.put(
+    `/videos/${videoId}/transcript`,
+    {
+      transcript_text: transcriptText,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
 
 /**
  * Download transcript of a video
@@ -107,6 +132,8 @@ export const downloadTranscript = async (videoId) => {
 
   return response;
 };
+
+
 
 
 /**
