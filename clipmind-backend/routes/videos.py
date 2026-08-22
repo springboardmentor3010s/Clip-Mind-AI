@@ -143,11 +143,23 @@ async def upload_video(
     db.commit()
     db.refresh(video)
 
-    activity_service.log(
-        db, current_user.id, activity_service.VIDEO_UPLOAD, video_id=video.id, details=video.title
-    )
-
-    return video.to_record()
+    return {
+        "id": video.id,
+        "user_id": video.user_id,
+        "title": video.title,
+        "file_name": video.file_name,
+        "file_path": video.file_path,
+        "audio_path": video.audio_path,
+        "size_mb": video.size_mb,
+        "duration_seconds": video.duration_seconds,
+        "status": video.status,
+        "created_at": video.created_at,
+        "language": video.language,
+        "transcript_json": video.transcript_json,
+        "summary_json": video.summary_json,
+        "moments_json": video.moments_json,
+        "analytics_json": video.analytics_json,
+    }
 
 
 @router.get("/videos")
