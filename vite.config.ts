@@ -9,4 +9,7 @@ export default defineConfig({
     viteReact(),
     tailwindcss(),
   ],
+  server: {
+    allowedHosts: ["clipmind-ai-od4w.onrender.com"],
+  },
 });
