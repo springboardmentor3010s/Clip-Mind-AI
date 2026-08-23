@@ -73,7 +73,12 @@ def add_bookmark(
             )
 
         # Only allow bookmarking valid summary types
-        if str(summary.summary_type).upper() not in ["SHORT", "DETAILED"]:
+        # Only allow bookmarking valid summary types
+        if str(summary.summary_type).upper() not in [
+            "SHORT",
+            "DETAILED",
+            "EDUCATIONAL"
+        ]:
             raise HTTPException(
                 status_code=400,
                 detail="Invalid summary type"

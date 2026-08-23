@@ -44,7 +44,8 @@ from app.services.upload_service import (
 )
 
 from app.services.summarization_service import (
-    generate_educational_summary
+    generate_educational_summary,
+    generate_learning_material
 )
 
 from app.crud.activity_history import get_user_activities
@@ -819,6 +820,146 @@ def generate_video_educational_summary(
 
 
 # ============================================================
+# GENERATE LEARNING MATERIAL
+# Educator only
+# ============================================================
+
+@router.post(
+    "/videos/{video_id}/learning-material"
+)
+def generate_video_learning_material(
+    video_id: int,
+    current_user=Depends(
+        require_roles(UserRole.EDUCATOR)
+    ),
+    db: Session = Depends(get_db)
+):
+
+    # ---------------------------------------------------------
+    # Verify educator owns the video
+    # ---------------------------------------------------------
+
+    video = get_video_by_id(
+        db=db,
+        video_id=video_id,
+        owner_id=current_user.id
+    )
+
+    if video is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Video not found"
+        )
+
+    # ---------------------------------------------------------
+    # Get transcript
+    # ---------------------------------------------------------
+
+    transcript = get_transcript_by_video(
+        db=db,
+        video=video
+    )
+
+    if transcript is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Transcript not found"
+        )
+
+    if not transcript.transcript_text.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Transcript is empty"
+        )
+
+    # ---------------------------------------------------------
+    # Generate material
+    # ---------------------------------------------------------
+
+    try:
+
+        generated_material = generate_learning_material(
+            transcript.transcript_text
+        )
+
+    except Exception as error:
+
+        print(
+            "Learning material generation failed:",
+            error
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to generate learning material"
+        )
+
+    # ---------------------------------------------------------
+    # Save or update
+    # ---------------------------------------------------------
+
+    from app.crud.learning_material import (
+        get_learning_material_by_video,
+        create_learning_material,
+        update_learning_material
+    )
+
+    existing_material = get_learning_material_by_video(
+        db=db,
+        video_id=video.id
+    )
+
+    if existing_material:
+
+        material = update_learning_material(
+            db=db,
+            material=existing_material,
+            overview=generated_material["overview"],
+            key_learning_points=
+                generated_material["key_learning_points"],
+            study_notes=generated_material["study_notes"]
+        )
+
+    else:
+
+        material = create_learning_material(
+            db=db,
+            video_id=video.id,
+            created_by=current_user.id,
+            overview=generated_material["overview"],
+            key_learning_points=
+                generated_material["key_learning_points"],
+            study_notes=generated_material["study_notes"]
+        )
+
+    # ---------------------------------------------------------
+    # Activity
+    # ---------------------------------------------------------
+
+    log_activity(
+        db=db,
+        user=current_user,
+        activity_type=ActivityType.SUMMARY_GENERATED,
+        entity_name=
+            f"Learning material - {video.filename}"
+    )
+
+    return {
+        "id": material.id,
+        "video_id": material.video_id,
+        "video_filename": video.filename,
+        "created_by": material.created_by,
+        "material_type": "LEARNING_MATERIAL",
+        "overview": material.overview,
+        "key_learning_points":
+            material.key_learning_points,
+        "study_notes": material.study_notes,
+        "created_at": material.created_at,
+        "updated_at": material.updated_at
+    }
+
+
+# ============================================================
 # GET ALL SUMMARIES FOR A VIDEO
 # Educator can access summaries of their own video
 # ============================================================
@@ -873,6 +1014,19 @@ def get_video_summary(
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+
+    if type not in [
+        "short",
+        "detailed",
+        "educational"
+    ]:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Invalid summary type. "
+                "Use 'short', 'detailed', or 'educational'."
+            )
+        )
 
     # Learner/Admin can view summaries of available videos
     if current_user.role in [
@@ -934,10 +1088,10 @@ def download_video_summary(
     # ---------------------------------------------------------
     # Validate summary type
     # ---------------------------------------------------------
-    if type not in ["short", "detailed"]:
+    if type not in ["short", "detailed", "educational"]:
         raise HTTPException(
             status_code=400,
-            detail="Invalid summary type. Use 'short' or 'detailed'."
+            detail="Invalid summary type. Use 'short', 'detailed', or 'educational'."
         )
 
     # ---------------------------------------------------------

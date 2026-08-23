@@ -145,15 +145,23 @@ export default function BookmarksPage() {
                         : "bg-amber-100 text-amber-700"
                     }`}
                   >
-                    {bookmark.content_type}
+                    {bookmark.content_type === "SUMMARY"
+                      ? bookmark.summary_type?.toUpperCase() === "EDUCATIONAL"
+                        ? "EDUCATIONAL"
+                        : "SUMMARY"
+                      : "HIGHLIGHT"}
                   </span>
 
                   {/* Summary Title */}
                   {bookmark.content_type === "SUMMARY" && (
-                    <h2 className="mt-4 text-xl font-semibold text-slate-800">
+                    <h2 className="mt-4 text-xl font-semibold text-slate-800 transition hover:text-violet-600">
                       {bookmark.summary_type?.toUpperCase() === "SHORT"
                         ? "Short Summary"
-                        : "Detailed Summary"}
+                        : bookmark.summary_type?.toUpperCase() === "DETAILED"
+                        ? "Detailed Summary"
+                        : bookmark.summary_type?.toUpperCase() === "EDUCATIONAL"
+                        ? "Educational Summary"
+                        : "Summary"}
                     </h2>
                   )}
 

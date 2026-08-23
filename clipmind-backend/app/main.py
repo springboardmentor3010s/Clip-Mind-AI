@@ -27,6 +27,12 @@ from app.models.bookmark import Bookmark
 from app.models.classroom import Classroom
 from app.models.classroom_member import ClassroomMember
 from app.models.summary_share import SummaryShare
+from app.models.learning_material import LearningMaterial
+from app.models.learning_material_share import LearningMaterialShare
+
+from app.api.learning_material import (
+    router as learning_material_router
+)
 
 app = FastAPI(
     title="ClipMind AI Backend",
@@ -102,3 +108,7 @@ app.include_router(bookmark_router)
 app.include_router(classroom_router)
 
 app.include_router(summary_share_router)
+
+app.include_router(
+    learning_material_router
+)

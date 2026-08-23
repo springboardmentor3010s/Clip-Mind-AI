@@ -155,6 +155,28 @@ export const getSummary = async (videoId, summaryType) => {
 };
 
 
+
+/**
+ * Generate educational summary for a video
+ * Educator only
+ */
+export const generateEducationalSummary = async (videoId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.post(
+    `/videos/${videoId}/summary/educational`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+
 /**
  * Download summary of a video
  *
@@ -395,3 +417,89 @@ export const getSummariesByVideo = async (videoId) => {
 
   return response.data;
 };
+
+// ============================================================
+// LEARNING MATERIALS
+// ============================================================
+
+// Generate learning material
+// Educator only
+export const generateLearningMaterial = async (videoId) => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.post(
+    `/videos/${videoId}/learning-material`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+
+// Get educator's generated learning materials
+// Educator only
+export const getMyLearningMaterials = async () => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(
+    "/learning-materials/my",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+
+// Share learning material
+// Educator only
+export const shareLearningMaterial = async (
+  learningMaterialId,
+  classroomId
+) => {
+
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.post(
+    "/learning-materials/share",
+    {
+      learning_material_id: learningMaterialId,
+      classroom_id: Number(classroomId),
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+
+// Get learning materials shared with learner
+// Learner only
+export const getSharedLearningMaterials = async () => {
+
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(
+    "/learning-materials/shared",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+

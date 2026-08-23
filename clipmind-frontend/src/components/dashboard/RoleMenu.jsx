@@ -23,6 +23,11 @@ export default function RoleMenu({ role }) {
       name: "Shared Summaries",
       path: "/shared-summaries"
     },
+
+    {
+    name: "Learning Materials",
+    path: "/learning-materials"
+  },
     {
       name: "Learning History",
       path: "/history"
@@ -101,7 +106,7 @@ export default function RoleMenu({ role }) {
         },
         
         {
-          name: "Educational Summaries",
+          name: "AI Summaries",
           path: "/summaries"
         },
         {

@@ -52,6 +52,7 @@ export default function VideoDetailsPage() {
 
   const [shortSummary, setShortSummary] = useState(null);
   const [detailedSummary, setDetailedSummary] = useState(null);
+  const [educationalSummary, setEducationalSummary] = useState(null);
 
   const [transcriptLoading, setTranscriptLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
@@ -280,20 +281,55 @@ async function loadSummaries() {
     setSummaryLoading(true);
     setSummaryError("");
 
-    const [shortData, detailedData] = await Promise.all([
-      getSummary(id, "short"),
-      getSummary(id, "detailed"),
-    ]);
+    const [shortResult, detailedResult, educationalResult] =
+      await Promise.allSettled([
+        getSummary(id, "short"),
+        getSummary(id, "detailed"),
+        getSummary(id, "educational"),
+      ]);
 
-    setShortSummary(shortData);
-    setDetailedSummary(detailedData);
+    // ---------------------------------------------------------
+    // SHORT SUMMARY
+    // ---------------------------------------------------------
+
+    if (shortResult.status === "fulfilled") {
+      setShortSummary(shortResult.value);
+    } else {
+      setShortSummary(null);
+    }
+
+    // ---------------------------------------------------------
+    // DETAILED SUMMARY
+    // ---------------------------------------------------------
+
+    if (detailedResult.status === "fulfilled") {
+      setDetailedSummary(detailedResult.value);
+    } else {
+      setDetailedSummary(null);
+    }
+
+    // ---------------------------------------------------------
+    // EDUCATIONAL SUMMARY
+    // ---------------------------------------------------------
+
+    if (educationalResult.status === "fulfilled") {
+      setEducationalSummary(
+        educationalResult.value
+      );
+    } else {
+      setEducationalSummary(null);
+    }
+
   } catch (error) {
-    console.error("Failed to load summaries:", error);
+    console.error(
+      "Failed to load summaries:",
+      error
+    );
 
     setSummaryError(
-      error.response?.data?.detail ||
-        "Unable to load summaries."
+      "Unable to load summaries."
     );
+
   } finally {
     setSummaryLoading(false);
   }
@@ -1248,7 +1284,8 @@ async function loadOrGenerateHighlights() {
     </h2>
 
     <p className="mt-2 text-slate-500">
-      AI-generated summaries of this video.
+      AI-generated short, detailed and educational summaries
+      of this video.
     </p>
 
     {role === "EDUCATOR" && (
@@ -1449,6 +1486,86 @@ async function loadOrGenerateHighlights() {
 
           </div>
         )}
+
+        {/* Educational Summary */}
+
+{educationalSummary && (
+  <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
+
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+      <div>
+        <h3 className="text-xl font-bold text-blue-900">
+          Educational Summary
+        </h3>
+
+        <p className="mt-1 text-sm text-blue-700">
+          Student-focused learning material generated from
+          the lecture transcript.
+        </p>
+      </div>
+
+      <span className="inline-flex w-fit rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+        Educational
+      </span>
+
+    </div>
+
+    <p className="mt-4 text-blue-900 leading-8 whitespace-pre-wrap">
+      {educationalSummary.summary_text}
+    </p>
+
+    <div className="mt-5 flex flex-wrap gap-3">
+
+      {/* ------------------------------------------------ */}
+      {/* LEARNER: BOOKMARK EDUCATIONAL SUMMARY */}
+      {/* ------------------------------------------------ */}
+
+      {role === "LEARNER" && (
+        <button
+          onClick={() =>
+            handleBookmarkSummary(
+              educationalSummary
+            )
+          }
+          disabled={bookmarkLoading}
+          className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 transition"
+        >
+          🔖{" "}
+          {bookmarkLoading
+            ? "Saving..."
+            : "Bookmark Educational Summary"}
+        </button>
+      )}
+
+      {/* ------------------------------------------------ */}
+      {/* EDUCATOR: SHARE EDUCATIONAL SUMMARY */}
+      {/* ------------------------------------------------ */}
+
+      {role === "EDUCATOR" && (
+        <button
+          onClick={() =>
+            handleShareSummary(
+              educationalSummary
+            )
+          }
+          disabled={
+            sharingSummaryId ===
+            educationalSummary.id
+          }
+          className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        >
+          {sharingSummaryId ===
+          educationalSummary.id
+            ? "Sharing..."
+            : "📤 Share Educational Summary"}
+        </button>
+      )}
+
+    </div>
+
+  </div>
+)}
 
       </div>
     )}

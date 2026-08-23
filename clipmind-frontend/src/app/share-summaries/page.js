@@ -8,7 +8,8 @@ import {
   getSummariesByVideo,
 } from "@/services/videoService";
 
-import { getMyClassrooms } from "@/services/classroomService";
+import { getEducatorClassrooms } from "@/services/classroomService";
+
 
 import { shareSummary } from "@/services/summaryShareService";
 
@@ -41,7 +42,7 @@ export default function ShareSummariesPage() {
 
         const [videosData, classroomsData] = await Promise.all([
           getMyVideos(),
-          getMyClassrooms(),
+           getEducatorClassrooms(),
         ]);
 
         setVideos(videosData);
