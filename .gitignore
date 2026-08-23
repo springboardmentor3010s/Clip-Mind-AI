@@ -43,8 +43,19 @@ yarn-error.log*
 uploads/
 audio/
 thumbnails/
-transcripts/
-summaries/
+# Backend generated/runtime files
+clipmind-backend/uploads/
+clipmind-backend/audio/
+clipmind-backend/thumbnails/
+clipmind-backend/transcripts/
+clipmind-backend/venv/
+
+# Frontend generated files
+clipmind-frontend/.next/
+clipmind-frontend/node_modules/
+
+# Frontend environment files
+clipmind-frontend/.env.local
 
 # =========================
 # OS / IDE
