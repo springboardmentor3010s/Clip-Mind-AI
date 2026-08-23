@@ -1,0 +1,221 @@
+// ClipMind AI — Prisma Schema (SQLite for local dev)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         String   @default("LEARNER")
+  avatar       String?
+  bio          String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  videos             Video[]
+  bookmarks          Bookmark[]
+  activityLogs       ActivityLog[]
+  summaryRatings     SummaryRating[]
+  taughtClassrooms   Classroom[]       @relation("InstructorClassrooms")
+  enrolledClassrooms ClassroomMember[]
+
+  @@map("users")
+}
+
+model Classroom {
+  id           String   @id @default(uuid())
+  name         String
+  code         String   @unique
+  description  String?
+  subject      String?
+  instructorId String   @map("instructor_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  instructor       User              @relation("InstructorClassrooms", fields: [instructorId], references: [id], onDelete: Cascade)
+  classroomVideos  ClassroomVideo[]
+  members          ClassroomMember[]
+
+  @@map("classrooms")
+}
+
+model ClassroomVideo {
+  id          String   @id @default(uuid())
+  classroomId String   @map("classroom_id")
+  videoId     String   @map("video_id")
+  order       Int      @default(0)
+  addedAt     DateTime @default(now()) @map("added_at")
+
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  video       Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([classroomId, videoId])
+  @@map("classroom_videos")
+}
+
+model ClassroomMember {
+  id          String   @id @default(uuid())
+  classroomId String   @map("classroom_id")
+  userId      String   @map("user_id")
+  joinedAt    DateTime @default(now()) @map("joined_at")
+
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([classroomId, userId])
+  @@map("classroom_members")
+}
+
+model Video {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  title         String
+  description   String?
+  fileName      String   @map("file_name")
+  filePath      String   @map("file_path")
+  thumbnailPath String?  @map("thumbnail_path")
+  audioPath     String?  @map("audio_path")
+  duration      Float?
+  fileSize      Int      @map("file_size")
+  mimeType      String   @map("mime_type")
+  status        String   @default("UPLOADING")
+  isPublic      Boolean  @default(false) @map("is_public")
+  viewCount     Int      @default(0) @map("view_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transcript      Transcript?
+  summary         Summary?
+  keyMoments      KeyMoment[]
+  bookmarks       Bookmark[]
+  jobs            Job[]
+  classroomVideos ClassroomVideo[]
+
+  @@map("videos")
+}
+
+model Transcript {
+  id             String   @id @default(uuid())
+  videoId        String   @unique @map("video_id")
+  content        String
+  language       String   @default("en")
+  wordTimestamps String?  @map("word_timestamps")
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  video          Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@map("transcripts")
+}
+
+model Summary {
+  id              String   @id @default(uuid())
+  videoId         String   @unique @map("video_id")
+  shortSummary    String   @map("short_summary")
+  detailedSummary String   @map("detailed_summary")
+  takeaways       String   @default("[]")
+  keywords        String   @default("[]")
+  topics          String   @default("[]")
+  tone            String?  @default("Informative")
+  readabilityScore Float?  @default(70.0) @map("readability_score")
+  qualityScore     Float?  @default(85.0) @map("quality_score")
+  metrics         String?  @default("{}")
+  status          String   @default("PENDING")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  video           Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  ratings         SummaryRating[]
+
+  @@map("summaries")
+}
+
+model SummaryRating {
+  id        String   @id @default(uuid())
+  summaryId String   @map("summary_id")
+  userId    String   @map("user_id")
+  rating    Int      // 1 to 5 stars
+  feedback  String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  summary   Summary  @relation(fields: [summaryId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([summaryId, userId])
+  @@map("summary_ratings")
+}
+
+model KeyMoment {
+  id              String   @id @default(uuid())
+  videoId         String   @map("video_id")
+  timestampStart  Float    @map("timestamp_start")
+  timestampEnd    Float    @map("timestamp_end")
+  label           String
+  description     String?
+  importanceScore Float    @default(0.5) @map("importance_score")
+  topic           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  video           Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  bookmarks       Bookmark[]
+
+  @@map("key_moments")
+}
+
+model Bookmark {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  videoId     String    @map("video_id")
+  keyMomentId String?   @map("key_moment_id")
+  note        String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video       Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  keyMoment   KeyMoment? @relation(fields: [keyMomentId], references: [id])
+
+  @@unique([userId, videoId, keyMomentId])
+  @@map("bookmarks")
+}
+
+model Job {
+  id        String   @id @default(uuid())
+  videoId   String   @map("video_id")
+  type      String
+  status    String   @default("PENDING")
+  progress  Int      @default(0)
+  error     String?
+  metadata  String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@map("jobs")
+}
+
+model ActivityLog {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  action       String
+  resourceType String?  @map("resource_type")
+  resourceId   String?  @map("resource_id")
+  metadata     String?
+  ipAddress    String?  @map("ip_address")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
