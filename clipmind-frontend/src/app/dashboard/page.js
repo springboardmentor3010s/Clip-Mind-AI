@@ -4,6 +4,9 @@ import {
   FaSchool,
   FaUpload,
   FaBookOpen,
+  FaFileAlt,
+  FaRobot,
+  FaFilm,
 } from "react-icons/fa";
 
 import Link from "next/link";
@@ -13,13 +16,18 @@ import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { getCurrentUser } from "@/services/authService";
 import { getMyVideos } from "@/services/videoService";
+import { getUsageAnalytics } from "@/services/analyticsService";
 
 export default function DashboardPage() {
   const router = useRouter();
 
   const [user, setUser] = useState(null);
   const [videos, setVideos] = useState([]);
+
   const [activities, setActivities] = useState([]);
+
+  const [analytics, setAnalytics] = useState(null);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,12 +45,35 @@ export default function DashboardPage() {
         setUser(response.user);
 
         if (response.user.role !== "LEARNER") {
-          const myVideos = await getMyVideos();
-          setVideos(myVideos);
-        }
 
-        const activityData = await getActivityHistory();
-        setActivities(activityData.slice(0, 5));
+  const myVideos = await getMyVideos();
+
+  setVideos(myVideos);
+
+}
+
+if (response.user.role === "CONTENT_CREATOR") {
+
+  try {
+
+    const analyticsData = await getUsageAnalytics();
+
+    setAnalytics(analyticsData);
+
+  } catch (analyticsError) {
+
+    console.error(
+      "Failed to load dashboard analytics:",
+      analyticsError
+    );
+
+  }
+
+}
+
+const activityData = await getActivityHistory();
+
+setActivities(activityData.slice(0, 5));
 
         localStorage.setItem(
           "user",
@@ -114,11 +145,12 @@ case "KEY_MOMENTS_DETECTED":
   }
 };
 
-const canAccessVideoFeatures = [
-  "CONTENT_CREATOR",
-  "EDUCATOR",
-  "ADMIN",
-].includes(user?.role);
+const isContentCreator =
+  user?.role === "CONTENT_CREATOR";
+
+const isEducator =
+  user?.role === "EDUCATOR" ||
+  user?.role === "ADMIN";
 
   return (
     <DashboardLayout>
@@ -135,7 +167,7 @@ const canAccessVideoFeatures = [
 
         {/* Dashboard Cards */}
 
-{canAccessVideoFeatures && (
+{isEducator && (
   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
 
     {/* =====================================================
@@ -143,7 +175,7 @@ const canAccessVideoFeatures = [
     ====================================================== */}
 
     <Link
-      href="/videos"
+      href="/key-moments"
       className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
     >
       <div className="p-7">
@@ -282,6 +314,169 @@ const canAccessVideoFeatures = [
     </Link>
 
   </div>
+)}
+
+{/* ============================================================
+    CONTENT CREATOR DASHBOARD CARDS
+============================================================ */}
+
+{isContentCreator && (
+
+  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+
+    {/* =====================================================
+        UPLOADED VIDEOS
+    ====================================================== */}
+
+    <Link
+      href="/key-moments"
+      className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+    >
+
+      <div className="p-7">
+
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white text-2xl shadow-lg">
+          <FaVideo />
+        </div>
+
+        <h3 className="mt-6 text-xl font-bold text-slate-800">
+          Uploaded Videos
+        </h3>
+
+        <p className="mt-3 text-5xl font-extrabold text-violet-600">
+          {videos.length}
+        </p>
+
+        <p className="mt-2 text-slate-500">
+          Videos uploaded to ClipMind AI
+        </p>
+
+        <hr className="my-5" />
+
+        <p className="text-violet-600 font-semibold">
+          Manage Videos →
+        </p>
+
+      </div>
+
+    </Link>
+
+
+    {/* =====================================================
+        TRANSCRIPTS
+    ====================================================== */}
+
+    <Link
+      href="/transcripts"
+      className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+    >
+
+      <div className="p-7">
+
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-600 flex items-center justify-center text-white text-2xl shadow-lg">
+          <FaFileAlt />
+        </div>
+
+        <h3 className="mt-6 text-xl font-bold text-slate-800">
+          Transcript Segments
+        </h3>
+
+        <p className="mt-3 text-5xl font-extrabold text-sky-600">
+          {analytics?.total_transcript_segments ?? 0}
+        </p>
+
+        <p className="mt-2 text-slate-500">
+          AI-generated transcript segments
+        </p>
+
+        <hr className="my-5" />
+
+        <p className="text-sky-600 font-semibold">
+          View Transcripts →
+        </p>
+
+      </div>
+
+    </Link>
+
+
+    {/* =====================================================
+        AI SUMMARIES
+    ====================================================== */}
+
+    <Link
+      href="/summaries"
+      className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+    >
+
+      <div className="p-7">
+
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white text-2xl shadow-lg">
+          <FaRobot />
+        </div>
+
+        <h3 className="mt-6 text-xl font-bold text-slate-800">
+          AI Summaries
+        </h3>
+
+        <p className="mt-3 text-5xl font-extrabold text-emerald-600">
+          {analytics?.total_summaries ?? 0}
+        </p>
+
+        <p className="mt-2 text-slate-500">
+          AI-powered summaries
+        </p>
+
+        <hr className="my-5" />
+
+        <p className="text-emerald-600 font-semibold">
+          View Summaries →
+        </p>
+
+      </div>
+
+    </Link>
+
+
+    {/* =====================================================
+        KEY MOMENTS
+    ====================================================== */}
+
+    <Link
+      href="/key-moments"
+      className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+    >
+
+      <div className="p-7">
+
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-2xl shadow-lg">
+          <FaFilm />
+        </div>
+
+        <h3 className="mt-6 text-xl font-bold text-slate-800">
+          Key Moments
+        </h3>
+
+        <p className="mt-3 text-5xl font-extrabold text-amber-600">
+          {analytics?.total_key_moments ?? 0}
+        </p>
+
+        <p className="mt-2 text-slate-500">
+          Explore important moments detected in your videos.
+        </p>
+
+        <hr className="my-5" />
+
+        <p className="text-amber-600 font-semibold">
+          View Key Moments →
+        </p>
+
+      </div>
+
+    </Link>
+
+  </div>
+
 )}
 
         {/* Recent Activity */}

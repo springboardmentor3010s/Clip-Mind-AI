@@ -25,16 +25,24 @@ export default function Navbar() {
   };
 
   const getWelcomeMessage = () => {
-    if (user?.role === "LEARNER") {
-      return "View your recent activity and account information.";
-    }
+  if (user?.role === "LEARNER") {
+    return "View your recent activity and account information.";
+  }
 
-    if (user?.role === "ADMIN") {
-      return "Manage and monitor ClipMind AI activities and users.";
-    }
+  if (user?.role === "ADMIN") {
+    return "Manage and monitor ClipMind AI activities and users.";
+  }
 
-    return "Manage your lectures, classrooms and learning materials.";
-  };
+  if (user?.role === "CONTENT_CREATOR") {
+    return "Create, analyze and manage your video content.";
+  }
+
+  if (user?.role === "EDUCATOR") {
+    return "Manage your videos, classrooms and learning materials.";
+  }
+
+  return "Manage your ClipMind AI content and activities.";
+};
 
   return (
     <header className="bg-white border-b border-slate-200 px-8 py-6 flex justify-between items-center">

@@ -236,6 +236,25 @@ export const getKeyMoments = async (videoId) => {
   return response.data;
 };
 
+/**
+ * Get key moments overview for all videos
+ * Content Creator / Educator
+ */
+export const getMyKeyMoments = async () => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.get(
+    "/key-moments/my",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
 
 /**
  * Get highlight report of a video

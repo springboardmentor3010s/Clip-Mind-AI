@@ -10,8 +10,11 @@ from app.auth.oauth2 import get_current_user
 
 from app.crud.video import (
     get_video_by_id,
-    get_available_video_by_id
+    get_available_video_by_id,
+    get_user_videos
 )
+
+from app.models.key_moment import KeyMoment
 
 from app.crud.transcript_segment import get_transcript_segments_by_video
 from app.crud.summary import get_summary_by_type
@@ -142,6 +145,55 @@ def generate_video_key_moments(
     )
 
     return saved_moments
+
+
+# ============================================================
+# GET ALL KEY MOMENTS FOR CURRENT USER'S VIDEOS
+# Content Creator / Educator / Admin
+# ============================================================
+
+@router.get("/key-moments/my")
+def get_my_key_moments(
+    current_user=Depends(
+        require_roles(
+            UserRole.CONTENT_CREATOR,
+            UserRole.EDUCATOR,
+            UserRole.ADMIN
+        )
+    ),
+    db: Session = Depends(get_db)
+):
+
+    videos = get_user_videos(
+        db=db,
+        owner_id=current_user.id
+    )
+
+    results = []
+
+    for video in videos:
+
+        key_moments = (
+            db.query(KeyMoment)
+            .filter(
+                KeyMoment.video_id == video.id
+            )
+            .order_by(
+                KeyMoment.start_time
+            )
+            .all()
+        )
+
+        results.append(
+            {
+                "video_id": video.id,
+                "video_filename": video.filename,
+                "video_status": video.status,
+                "key_moments": key_moments
+            }
+        )
+
+    return results
 
 
 # ============================================================
