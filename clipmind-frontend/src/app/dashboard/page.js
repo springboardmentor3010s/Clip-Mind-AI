@@ -1,9 +1,9 @@
 "use client";
 import {
   FaVideo,
-  FaFileAlt,
-  FaRobot,
-  // FaUserCircle,
+  FaSchool,
+  FaUpload,
+  FaBookOpen,
 } from "react-icons/fa";
 
 import Link from "next/link";
@@ -135,148 +135,155 @@ const canAccessVideoFeatures = [
 
         {/* Dashboard Cards */}
 
-        {/* Dashboard Cards */}
 {canAccessVideoFeatures && (
-<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
 
-  {/* Uploaded Videos */}
+    {/* =====================================================
+        UPLOADED VIDEOS
+    ====================================================== */}
 
-<Link
-  href="/videos"
-  className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
->
-  <div className="p-7">
-  
+    <Link
+      href="/videos"
+      className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+    >
+      <div className="p-7">
 
-    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white text-2xl shadow-lg">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white text-2xl shadow-lg">
+          <FaVideo />
+        </div>
 
-      <FaVideo />
+        <h3 className="mt-6 text-xl font-bold text-slate-800">
+          Uploaded Videos
+        </h3>
 
-    </div>
+        <p className="mt-3 text-5xl font-extrabold text-violet-600">
+          {videos.length}
+        </p>
 
-    <h3 className="mt-6 text-xl font-bold text-slate-800">
-      Uploaded Videos
-    </h3>
+        <p className="mt-2 text-slate-500">
+          Videos uploaded to ClipMind AI
+        </p>
 
-    <p className="mt-3 text-5xl font-extrabold text-violet-600">
-      {videos.length}
-    </p>
+        <hr className="my-5" />
 
-    <p className="mt-2 text-slate-500">
-      Videos uploaded to ClipMind AI
-    </p>
+        <p className="text-violet-600 font-semibold">
+          Manage Videos →
+        </p>
 
-    <hr className="my-5" />
+      </div>
+    </Link>
 
-    <p className="text-violet-600 font-semibold">
-      View Uploads →
-    </p>
 
-    </div>
-</Link>
+    {/* =====================================================
+        MANAGE CLASSROOMS
+    ====================================================== */}
 
-  {/* Transcripts */}
+    <Link
+      href="/classrooms"
+      className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+    >
+      <div className="p-7">
 
-  <Link
-  href="/transcripts"
-  className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
->
-  <div className="p-7">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl shadow-lg">
+          <FaSchool />
+        </div>
 
-    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-600 flex items-center justify-center text-white text-2xl shadow-lg">
+        <h3 className="mt-6 text-xl font-bold text-slate-800">
+          Manage Classrooms
+        </h3>
 
-      <FaFileAlt />
+        <p className="mt-3 text-lg font-semibold text-blue-600">
+          Organize your classrooms
+        </p>
 
-    </div>
+        <p className="mt-2 text-slate-500">
+          Manage learners and classroom content.
+        </p>
 
-    <h3 className="mt-6 text-xl font-bold text-slate-800">
-      Transcripts
-    </h3>
+        <hr className="my-5" />
 
-    <p className="mt-3 text-5xl font-extrabold text-sky-600">
-      0
-    </p>
+        <p className="text-blue-600 font-semibold">
+          Open Classrooms →
+        </p>
 
-    <p className="mt-2 text-slate-500">
-      AI-generated transcripts
-    </p>
+      </div>
+    </Link>
 
-    <hr className="my-5" />
 
-    <p className="text-sky-600 font-semibold">
-      View Transcripts →
-    </p>
+    {/* =====================================================
+        UPLOAD LECTURE
+    ====================================================== */}
 
-    </div>
-</Link>
+    <Link
+      href="/upload"
+      className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+    >
+      <div className="p-7">
 
-  {/* AI Summaries */}
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white text-2xl shadow-lg">
+          <FaUpload />
+        </div>
 
-  <Link
-  href="/summaries"
-  className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
->
-  <div className="p-7">
+        <h3 className="mt-6 text-xl font-bold text-slate-800">
+          Upload Lecture
+        </h3>
 
-    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white text-2xl shadow-lg">
+        <p className="mt-3 text-lg font-semibold text-emerald-600">
+          Add a new lecture
+        </p>
 
-      <FaRobot />
+        <p className="mt-2 text-slate-500">
+          Upload educational videos for processing.
+        </p>
 
-    </div>
+        <hr className="my-5" />
 
-    <h3 className="mt-6 text-xl font-bold text-slate-800">
-      AI Summaries
-    </h3>
+        <p className="text-emerald-600 font-semibold">
+          Upload Lecture →
+        </p>
 
-    <p className="mt-3 text-5xl font-extrabold text-emerald-600">
-      0
-    </p>
+      </div>
+    </Link>
 
-    <p className="mt-2 text-slate-500">
-      AI-powered summaries
-    </p>
 
-    <hr className="my-5" />
+    {/* =====================================================
+        LEARNING MATERIALS
+    ====================================================== */}
 
-    <p className="text-emerald-600 font-semibold">
-      View Summaries →
-    </p>
+    <Link
+      href="/learning-materials"
+      className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+    >
+      <div className="p-7">
 
-    </div>
-</Link>
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-2xl shadow-lg">
+          <FaBookOpen />
+        </div>
 
-  {/* AI Processing */}
+        <h3 className="mt-6 text-xl font-bold text-slate-800">
+          Learning Materials
+        </h3>
 
-<div className="bg-white rounded-3xl shadow-lg p-7 border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+        <p className="mt-3 text-lg font-semibold text-amber-600">
+          Create study resources
+        </p>
 
-  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-2xl shadow-lg">
+        <p className="mt-2 text-slate-500">
+          Generate structured material from transcripts.
+        </p>
 
-    <FaRobot />
+        <hr className="my-5" />
+
+        <p className="text-amber-600 font-semibold">
+          Open Learning Materials →
+        </p>
+
+      </div>
+    </Link>
 
   </div>
-
-  <h3 className="mt-6 text-xl font-bold text-slate-800">
-    AI Processing
-  </h3>
-
-  <p className="mt-3 text-3xl font-bold text-amber-600">
-    Ready
-  </p>
-
-  <p className="mt-2 text-slate-500">
-    Whisper & AI Models
-  </p>
-
-  <hr className="my-5" />
-
-  <p className="text-amber-600 font-semibold">
-    Coming Soon
-  </p>
-
-</div>
-
-</div>
 )}
+
         {/* Recent Activity */}
 
 <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 mt-10">

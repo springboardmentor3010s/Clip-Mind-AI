@@ -281,9 +281,19 @@ export default function VideosPage() {
                         Status
                       </span>
 
-                      <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
-                        {video.status}
-                      </span>
+                      <span
+  className={`px-3 py-1 rounded-full text-sm font-semibold ${
+    video.status === "COMPLETED"
+      ? "bg-green-100 text-green-700"
+      : video.status === "PROCESSING"
+      ? "bg-amber-100 text-amber-700"
+      : video.status === "FAILED"
+      ? "bg-red-100 text-red-700"
+      : "bg-slate-100 text-slate-700"
+  }`}
+>
+  {video.status}
+</span>
                     </div>
 
                     <div className="flex justify-between items-center">

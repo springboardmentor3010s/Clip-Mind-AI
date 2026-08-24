@@ -256,31 +256,8 @@ export default function ClassroomDetailsPage() {
                     `/classrooms/${classroomId}/lectures`
                   )
                 }
-                className="mt-6 rounded-xl bg-slate-800 px-5 py-2.5 font-medium text-slate-200 transition hover:bg-slate-700"
-              >
+                className="mt-5 inline-block rounded-xl bg-violet-600 px-4 py-2 font-semibold text-white transition hover:bg-violet-700"              >
                 Manage Lectures
-              </button>
-
-            </div>
-
-
-            {/* SUMMARIES */}
-
-            <div className="rounded-2xl border border-slate-700 bg-slate-900 p-6">
-
-              <h2 className="text-xl font-semibold text-white">
-                Summaries
-              </h2>
-
-              <p className="mt-3 text-sm text-slate-400">
-                Generate and share AI-powered educational summaries.
-              </p>
-
-              <button
-                type="button"
-                className="mt-6 rounded-xl bg-slate-800 px-5 py-2.5 font-medium text-slate-200 transition hover:bg-slate-700"
-              >
-                Manage Summaries
               </button>
 
             </div>

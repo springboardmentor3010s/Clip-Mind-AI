@@ -156,15 +156,57 @@ useEffect(() => {
 
 
   async function loadVideo() {
-    try {
-      const data = await getVideoById(id);
-      setVideo(data);
-    } catch (error) {
-      console.error("Failed to load video:", error);
-    } finally {
-      setLoading(false);
+  try {
+    setLoading(true);
+
+    const data = await getVideoById(id);
+
+    setVideo(data);
+
+    // If processing is still running,
+    // keep checking the video status.
+    if (data.status === "PROCESSING") {
+      const pollInterval = setInterval(async () => {
+        try {
+          const updatedVideo = await getVideoById(id);
+
+          setVideo(updatedVideo);
+
+          // Stop polling once processing finishes
+          if (
+            updatedVideo.status === "COMPLETED" ||
+            updatedVideo.status === "FAILED"
+          ) {
+            clearInterval(pollInterval);
+          }
+
+        } catch (error) {
+          console.error(
+            "Failed to refresh video status:",
+            error
+          );
+        }
+      }, 5000);
+
+      // Safety cleanup after 10 minutes
+      setTimeout(() => {
+        clearInterval(pollInterval);
+      }, 10 * 60 * 1000);
     }
+
+  } catch (error) {
+
+    console.error(
+      "Failed to load video:",
+      error
+    );
+
+  } finally {
+
+    setLoading(false);
+
   }
+}
 
   async function loadTranscript() {
   try {
@@ -393,6 +435,17 @@ async function loadKeywords() {
 }
 
 async function handleSectionChange(section) {
+
+  if (video?.status === "PROCESSING") {
+    setActiveSection(null);
+    return;
+  }
+
+  if (video?.status === "FAILED") {
+    setActiveSection(null);
+    return;
+  }
+
   setActiveSection(section);
 
   if (section === "transcript") {
@@ -964,6 +1017,67 @@ async function loadOrGenerateHighlights() {
 
         </div>
 
+        {/* PROCESSING MESSAGE */}
+
+{video.status === "PROCESSING" && (
+  <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6">
+
+    <div className="flex items-start gap-4">
+
+      <div className="text-3xl">
+        ⏳
+      </div>
+
+      <div>
+
+        <h3 className="text-xl font-bold text-amber-900">
+          AI Processing in Progress
+        </h3>
+
+        <p className="mt-2 text-amber-700 leading-7">
+          Your video is currently being processed.
+          ClipMind AI is generating the transcript,
+          summaries and other learning resources.
+        </p>
+
+        <p className="mt-2 text-sm text-amber-600">
+          This page will automatically update when processing is complete.
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+
+{video.status === "FAILED" && (
+  <div className="rounded-3xl border border-red-200 bg-red-50 p-6">
+
+    <div className="flex items-start gap-4">
+
+      <div className="text-3xl">
+        ❌
+      </div>
+
+      <div>
+
+        <h3 className="text-xl font-bold text-red-900">
+          Video Processing Failed
+        </h3>
+
+        <p className="mt-2 text-red-700">
+          ClipMind AI could not process this video.
+          Please try uploading the video again.
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+
         {/* AI ANALYSIS NAVIGATION */}
 
 <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6">
@@ -979,12 +1093,17 @@ async function loadOrGenerateHighlights() {
   <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
 
     <button
-      onClick={() => handleSectionChange("transcript")}
+  disabled={video.status !== "COMPLETED"}
+  onClick={() => handleSectionChange("transcript")}
+  
       className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
-        activeSection === "transcript"
-          ? "bg-violet-600 text-white shadow-lg"
-          : "bg-violet-50 text-violet-700 hover:bg-violet-100"
-      }`}
+  video.status !== "COMPLETED"
+    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+    : activeSection === "transcript"
+    ? "bg-violet-600 text-white shadow-lg"
+    : "bg-violet-50 text-violet-700 hover:bg-violet-100"
+}`}
+      
     >
       📝 Transcript
     </button>
@@ -992,10 +1111,13 @@ async function loadOrGenerateHighlights() {
     <button
       onClick={() => handleSectionChange("summary")}
       className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
-        activeSection === "summary"
-          ? "bg-emerald-600 text-white shadow-lg"
-          : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-      }`}
+  video.status !== "COMPLETED"
+    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+    : activeSection === "summary"
+    ? "bg-violet-600 text-white shadow-lg"
+    : "bg-violet-50 text-violet-700 hover:bg-violet-100"
+}`}
+      
     >
       🤖 AI Summaries
     </button>
@@ -1003,10 +1125,12 @@ async function loadOrGenerateHighlights() {
     <button
       onClick={() => handleSectionChange("keyMoments")}
       className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
-        activeSection === "keyMoments"
-          ? "bg-purple-600 text-white shadow-lg"
-          : "bg-purple-50 text-purple-700 hover:bg-purple-100"
-      }`}
+  video.status !== "COMPLETED"
+    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+    : activeSection === "keyMoments"
+    ? "bg-violet-600 text-white shadow-lg"
+    : "bg-violet-50 text-violet-700 hover:bg-violet-100"
+}`}
     >
       ⭐ Key Moments
     </button>
@@ -1014,10 +1138,12 @@ async function loadOrGenerateHighlights() {
     <button
       onClick={() => handleSectionChange("highlights")}
       className={`px-5 py-4 rounded-2xl font-semibold transition-all ${
-        activeSection === "highlights"
-          ? "bg-sky-600 text-white shadow-lg"
-          : "bg-sky-50 text-sky-700 hover:bg-sky-100"
-      }`}
+  video.status !== "COMPLETED"
+    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+    : activeSection === "highlights"
+    ? "bg-violet-600 text-white shadow-lg"
+    : "bg-violet-50 text-violet-700 hover:bg-violet-100"
+}`}
     >
       🎯 Highlights
     </button>

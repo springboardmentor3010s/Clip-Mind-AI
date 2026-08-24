@@ -33,7 +33,7 @@ export default function Navbar() {
       return "Manage and monitor ClipMind AI activities and users.";
     }
 
-    return "Manage your videos, transcripts and AI summaries.";
+    return "Manage your lectures, classrooms and learning materials.";
   };
 
   return (

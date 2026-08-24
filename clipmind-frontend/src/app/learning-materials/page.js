@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
@@ -9,6 +9,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import {
   getMyVideos,
   generateLearningMaterial,
+  getMyLearningMaterials,
   shareLearningMaterial,
 } from "@/services/videoService";
 
@@ -25,6 +26,17 @@ export default function LearningMaterialsPage() {
 
   const [learningMaterial, setLearningMaterial] =
     useState(null);
+
+  const materialDetailsRef = useRef(null);
+
+    const [learningMaterials, setLearningMaterials] =
+    useState([]);
+
+    const [materialsLoading, setMaterialsLoading] =
+    useState(true);
+
+    const [materialsError, setMaterialsError] =
+    useState("");
 
   const [loading, setLoading] =
     useState(true);
@@ -51,6 +63,8 @@ export default function LearningMaterialsPage() {
   useEffect(() => {
 
     const loadVideos = async () => {
+
+        
 
       try {
 
@@ -82,6 +96,47 @@ export default function LearningMaterialsPage() {
     };
 
     loadVideos();
+
+  }, []);
+
+    // ============================================================
+  // LOAD PREVIOUSLY GENERATED LEARNING MATERIALS
+  // ============================================================
+
+  useEffect(() => {
+
+    const loadLearningMaterials = async () => {
+
+      try {
+
+        setMaterialsLoading(true);
+        setMaterialsError("");
+
+        const data = await getMyLearningMaterials();
+
+        setLearningMaterials(data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load learning materials:",
+          error
+        );
+
+        setMaterialsError(
+          error.response?.data?.detail ||
+          "Unable to load your learning materials."
+        );
+
+      } finally {
+
+        setMaterialsLoading(false);
+
+      }
+
+    };
+
+    loadLearningMaterials();
 
   }, []);
 
@@ -130,15 +185,20 @@ export default function LearningMaterialsPage() {
         setShareError("");
 
       const data =
-        await generateLearningMaterial(
-          selectedVideoId
-        );
+  await generateLearningMaterial(
+    selectedVideoId
+  );
 
-      setLearningMaterial(data);
+setLearningMaterial(data);
 
-      setSuccess(
-        "Learning material generated successfully."
-      );
+setLearningMaterials((previousMaterials) => [
+  data,
+  ...previousMaterials,
+]);
+
+setSuccess(
+  "Learning material generated successfully."
+);
 
     } catch (error) {
 
@@ -215,6 +275,25 @@ export default function LearningMaterialsPage() {
       setSharing(false);
 
     }
+  };
+
+    // ============================================================
+  // GET VIDEO FILENAME FOR LEARNING MATERIAL
+  // ============================================================
+
+  const getMaterialVideoFilename = (material) => {
+
+    const video = videos.find(
+      (video) =>
+        Number(video.id) === Number(material.video_id)
+    );
+
+    return (
+      material.video_filename ||
+      video?.filename ||
+      "Unknown Video"
+    );
+
   };
 
   // ============================================================
@@ -366,13 +445,156 @@ export default function LearningMaterialsPage() {
 
         </div>
 
+                {/* ====================================================
+            PREVIOUSLY GENERATED LEARNING MATERIALS
+        ==================================================== */}
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
+
+          <div className="flex items-center justify-between">
+
+            <div>
+
+              <h2 className="text-2xl font-bold text-slate-900">
+                Your Learning Materials
+              </h2>
+
+              <p className="mt-2 text-slate-500">
+                View learning materials you have already generated.
+              </p>
+
+            </div>
+
+            <span className="rounded-full bg-violet-100 px-4 py-2 text-sm font-semibold text-violet-700">
+              {learningMaterials.length} Materials
+            </span>
+
+          </div>
+
+          {/* ERROR */}
+
+          {materialsError && (
+
+            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+              {materialsError}
+            </div>
+
+          )}
+
+          {/* LOADING */}
+
+          {materialsLoading ? (
+
+            <div className="mt-6 text-slate-500">
+              Loading learning materials...
+            </div>
+
+          ) : learningMaterials.length === 0 ? (
+
+            /* NO MATERIALS */
+
+            <div className="mt-6 rounded-2xl bg-slate-50 p-6 text-center">
+
+              <p className="font-semibold text-slate-700">
+                No learning materials generated yet.
+              </p>
+
+              <p className="mt-2 text-sm text-slate-500">
+                Generate your first learning material using
+                the form above.
+              </p>
+
+            </div>
+
+          ) : (
+
+            /* MATERIAL LIST */
+
+            <div className="mt-6 space-y-4">
+
+              {learningMaterials.map((material) => (
+
+                <div
+                  key={material.id}
+                  className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 md:flex-row md:items-center md:justify-between"
+                >
+
+                  {/* MATERIAL INFORMATION */}
+
+                  <div className="min-w-0">
+
+                    <h3 className="text-lg font-bold text-slate-900">
+                      {getMaterialVideoFilename(material)}
+                    </h3>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      Created{" "}
+                      {material.created_at
+                        ? new Date(
+                            material.created_at
+                          ).toLocaleString()
+                        : "Unknown date"}
+                    </p>
+
+                    {material.overview && (
+
+                      <p className="mt-3 line-clamp-2 text-sm text-slate-600">
+                        {material.overview}
+                      </p>
+
+                    )}
+
+                  </div>
+
+                  {/* VIEW BUTTON */}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+
+                      setLearningMaterial({
+                        ...material,
+                        video_filename:
+                          getMaterialVideoFilename(material),
+                      });
+
+                      setSelectedClassroomId("");
+                      setShareMessage("");
+                      setShareError("");
+
+                      setTimeout(() => {
+  materialDetailsRef.current?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+}, 100);
+
+                    }}
+                    className="flex-shrink-0 rounded-xl bg-violet-600 px-5 py-3 font-semibold text-white transition hover:bg-violet-700"
+                  >
+                    View Material
+                  </button>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
+
         {/* ====================================================
             GENERATED MATERIAL
         ==================================================== */}
 
         {learningMaterial && (
 
-          <div className="space-y-6">
+  <div
+    ref={materialDetailsRef}
+    className="space-y-6"
+  >
 
             {/* TITLE */}
 

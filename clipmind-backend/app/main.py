@@ -11,6 +11,13 @@ from app.api.usage_analytics import router as usage_analytics_router
 from app.api.bookmark import router as bookmark_router
 from app.api.classroom import router as classroom_router
 from app.api.summary_share import router as summary_share_router
+from app.api.classroom_analytics import (
+    router as classroom_analytics_router
+)
+
+from app.api.student_engagement import (
+    router as student_engagement_router
+)
 
 from app.database.base import Base
 from app.database.connection import engine
@@ -111,4 +118,12 @@ app.include_router(summary_share_router)
 
 app.include_router(
     learning_material_router
+)
+
+app.include_router(
+    classroom_analytics_router
+)
+
+app.include_router(
+    student_engagement_router
 )

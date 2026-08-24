@@ -26,7 +26,7 @@ export default function RoleMenu({ role }) {
 
     {
     name: "Learning Materials",
-    path: "/learning-materials"
+    path: "/shared-learning-materials"
   },
     {
       name: "Learning History",
@@ -109,10 +109,7 @@ export default function RoleMenu({ role }) {
           name: "AI Summaries",
           path: "/summaries"
         },
-        {
-          name: "Edit Transcript",
-          path: "/transcripts"
-        },
+        
         {
           name: "Share Summaries",
           path: "/share-summaries"
@@ -123,7 +120,7 @@ export default function RoleMenu({ role }) {
         },
         {
           name: "Classroom Analytics",
-          path: "/analytics"
+          path: "/classroom-analytics"
         },
         {
           name: "Student Engagement",
