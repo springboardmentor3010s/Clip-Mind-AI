@@ -67,7 +67,7 @@ services:
       UPLOAD_DIR: /app/storage/uploads
       MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB}
 
-      CORS_ORIGINS: ${CORS_ORIGINS}
+      CORS_ORIGINS: "*"
 
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
@@ -96,7 +96,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_API_URL: https://harvard-nuke-type-subscriber.trycloudflare.com
     container_name: clipmind-frontend
     restart: unless-stopped
     depends_on:
