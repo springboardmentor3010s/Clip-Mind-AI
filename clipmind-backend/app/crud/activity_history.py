@@ -39,3 +39,14 @@ def get_user_activities(
         )
         .all()
     )
+
+def get_all_activities(
+    db: Session
+):
+    return (
+        db.query(ActivityHistory)
+        .order_by(
+            ActivityHistory.created_at.desc()
+        )
+        .all()
+    )

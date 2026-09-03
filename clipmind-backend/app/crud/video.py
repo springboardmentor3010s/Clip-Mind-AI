@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import Session
 
@@ -108,3 +110,100 @@ def get_available_video_by_id(
         )
         .first()
     )
+
+def get_all_videos_for_admin(
+    db: Session
+):
+    return (
+        db.query(Video)
+        .options(
+            joinedload(Video.owner),
+            joinedload(Video.classroom),
+            joinedload(Video.transcript),
+            joinedload(Video.summaries)
+        )
+        .order_by(
+            Video.created_at.desc()
+        )
+        .all()
+    )
+
+def delete_video(
+    db: Session,
+    video: Video
+):
+    """
+    Delete a video and its associated database records/files.
+    """
+
+    # --------------------------------------------------------
+    # Save physical file paths before deleting the DB record
+    # --------------------------------------------------------
+
+    file_paths = [
+        video.filepath,
+        video.audio_path,
+        video.thumbnail_path
+    ]
+
+    # --------------------------------------------------------
+    # Delete summaries
+    # --------------------------------------------------------
+
+    for summary in list(video.summaries):
+        db.delete(summary)
+
+    # --------------------------------------------------------
+    # Delete transcript segments
+    # --------------------------------------------------------
+
+    for segment in list(video.transcript_segments):
+        db.delete(segment)
+
+    # --------------------------------------------------------
+    # Delete transcript
+    # --------------------------------------------------------
+
+    if video.transcript:
+        db.delete(video.transcript)
+
+    # --------------------------------------------------------
+    # Delete key moments
+    # --------------------------------------------------------
+
+    for key_moment in list(video.key_moments):
+        db.delete(key_moment)
+
+    # --------------------------------------------------------
+    # Delete keywords
+    # --------------------------------------------------------
+
+    for keyword in list(video.keywords):
+        db.delete(keyword)
+
+    # --------------------------------------------------------
+    # Delete video
+    # --------------------------------------------------------
+
+    db.delete(video)
+
+    db.commit()
+
+    # --------------------------------------------------------
+    # Delete physical files
+    # --------------------------------------------------------
+
+    for file_path in file_paths:
+
+        if file_path and os.path.exists(file_path):
+
+            try:
+                os.remove(file_path)
+
+            except OSError as error:
+                print(
+                    f"Could not delete file "
+                    f"{file_path}: {error}"
+                )
+
+    return True

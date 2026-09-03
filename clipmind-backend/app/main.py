@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import router
+from app.api.admin import router as admin_router
 from app.api.key_moment import router as key_moment_router
 from app.api.highlight_report import router as highlight_report_router
 from app.api.keyword import router as keyword_router
@@ -18,6 +19,8 @@ from app.api.classroom_analytics import (
 from app.api.student_engagement import (
     router as student_engagement_router
 )
+
+
 
 from app.database.base import Base
 from app.database.connection import engine
@@ -99,6 +102,8 @@ app.mount(
 # Include API Routers
 # ---------------------------------------------------------
 app.include_router(router)
+
+app.include_router(admin_router)
 
 app.include_router(key_moment_router)
 
