@@ -142,10 +142,16 @@ def register(
     )
 
     if existing_username:
-        raise HTTPException(
+            raise HTTPException(
             status_code=400,
             detail="Username already registered"
-    )
+        )
+
+    if user.role == UserRole.ADMIN:
+        raise HTTPException(
+            status_code=403,
+            detail="Admin accounts cannot be created through public registration"
+        )
 
     new_user = create_user(
         db=db,
