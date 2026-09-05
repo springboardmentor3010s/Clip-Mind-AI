@@ -17,6 +17,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { getCurrentUser } from "@/services/authService";
 import { getMyVideos } from "@/services/videoService";
 import { getUsageAnalytics } from "@/services/analyticsService";
+import { getSystemAnalytics } from "@/services/adminService";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -27,6 +28,8 @@ export default function DashboardPage() {
   const [activities, setActivities] = useState([]);
 
   const [analytics, setAnalytics] = useState(null);
+
+  const [adminAnalytics, setAdminAnalytics] = useState(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -65,6 +68,28 @@ if (response.user.role === "CONTENT_CREATOR") {
     console.error(
       "Failed to load dashboard analytics:",
       analyticsError
+    );
+
+  }
+
+}
+
+if (response.user.role === "ADMIN") {
+
+  try {
+
+    const adminAnalyticsData =
+      await getSystemAnalytics();
+
+    setAdminAnalytics(
+      adminAnalyticsData
+    );
+
+  } catch (adminAnalyticsError) {
+
+    console.error(
+      "Failed to load administrator analytics:",
+      adminAnalyticsError
     );
 
   }
@@ -149,7 +174,9 @@ const isContentCreator =
   user?.role === "CONTENT_CREATOR";
 
 const isEducator =
-  user?.role === "EDUCATOR" ||
+  user?.role === "EDUCATOR";
+
+const isAdmin =
   user?.role === "ADMIN";
 
   return (
@@ -474,6 +501,241 @@ const isEducator =
       </div>
 
     </Link>
+
+  </div>
+
+)}
+
+{/* ============================================================
+    ADMINISTRATOR DASHBOARD
+============================================================ */}
+
+{isAdmin && (
+
+  <div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+
+      {/* TOTAL USERS */}
+
+      <Link
+        href="/admin/users"
+        className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+      >
+
+        <div className="p-7">
+
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl shadow-lg">
+            👥
+          </div>
+
+          <h3 className="mt-6 text-xl font-bold text-slate-800">
+            Total Users
+          </h3>
+
+          <p className="mt-3 text-5xl font-extrabold text-blue-600">
+            {adminAnalytics?.users?.total ?? 0}
+          </p>
+
+          <p className="mt-2 text-slate-500">
+            Users registered on ClipMind AI
+          </p>
+
+          <hr className="my-5" />
+
+          <p className="text-blue-600 font-semibold">
+            Manage Users →
+          </p>
+
+        </div>
+
+      </Link>
+
+
+      {/* TOTAL VIDEOS */}
+
+      <Link
+        href="/admin/content"
+        className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+      >
+
+        <div className="p-7">
+
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white text-2xl shadow-lg">
+            🎥
+          </div>
+
+          <h3 className="mt-6 text-xl font-bold text-slate-800">
+            Uploaded Videos
+          </h3>
+
+          <p className="mt-3 text-5xl font-extrabold text-violet-600">
+            {adminAnalytics?.videos?.total ?? 0}
+          </p>
+
+          <p className="mt-2 text-slate-500">
+            Videos uploaded across the platform
+          </p>
+
+          <hr className="my-5" />
+
+          <p className="text-violet-600 font-semibold">
+            Manage Content →
+          </p>
+
+        </div>
+
+      </Link>
+
+
+      {/* STORAGE */}
+
+      <Link
+        href="/admin/storage"
+        className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+      >
+
+        <div className="p-7">
+
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white text-2xl shadow-lg">
+            💾
+          </div>
+
+          <h3 className="mt-6 text-xl font-bold text-slate-800">
+            Storage Used
+          </h3>
+
+          <p className="mt-3 text-5xl font-extrabold text-emerald-600">
+            {adminAnalytics?.storage?.total_gb ?? 0}
+          </p>
+
+          <p className="mt-2 text-slate-500">
+            GB of platform storage
+          </p>
+
+          <hr className="my-5" />
+
+          <p className="text-emerald-600 font-semibold">
+            View Storage →
+          </p>
+
+        </div>
+
+      </Link>
+
+
+      {/* AI PROCESSING */}
+
+<Link
+  href="/admin/ai-jobs"
+  className="block bg-white rounded-3xl shadow-lg border border-slate-200 hover:-translate-y-2 hover:shadow-2xl transition-all duration-300"
+>
+
+  <div className="p-7">
+
+    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-2xl shadow-lg">
+      🤖
+    </div>
+
+    <h3 className="mt-6 text-xl font-bold text-slate-800">
+      AI Processing Jobs
+    </h3>
+
+    <p className="mt-3 text-5xl font-extrabold text-amber-600">
+      {(adminAnalytics?.videos?.processing ?? 0) +
+        (adminAnalytics?.videos?.completed ?? 0) +
+        (adminAnalytics?.videos?.failed ?? 0)}
+    </p>
+
+    <p className="mt-2 text-slate-500">
+      Total AI processing jobs
+    </p>
+
+    <hr className="my-5" />
+
+    <p className="text-amber-600 font-semibold">
+      Monitor AI Jobs →
+    </p>
+
+  </div>
+
+</Link>
+
+    </div>
+
+
+    {/* ADMINISTRATION QUICK ACTIONS */}
+
+    <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 mt-10">
+
+      <h2 className="text-3xl font-bold text-slate-900">
+        Administration
+      </h2>
+
+      <p className="text-slate-500 mt-2 mb-8">
+        Manage and monitor the ClipMind AI platform.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+
+        <Link
+          href="/admin/users"
+          className="p-5 rounded-2xl bg-blue-50 hover:bg-blue-100 transition-all"
+        >
+          <h3 className="font-bold text-blue-700">
+            Manage Users & Roles
+          </h3>
+
+          <p className="text-sm text-slate-500 mt-2">
+            Manage accounts, roles and status.
+          </p>
+        </Link>
+
+
+        <Link
+          href="/admin/activity"
+          className="p-5 rounded-2xl bg-violet-50 hover:bg-violet-100 transition-all"
+        >
+          <h3 className="font-bold text-violet-700">
+            Platform Activity
+          </h3>
+
+          <p className="text-sm text-slate-500 mt-2">
+            Monitor platform activity.
+          </p>
+        </Link>
+
+
+        <Link
+          href="/admin/analytics"
+          className="p-5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 transition-all"
+        >
+          <h3 className="font-bold text-emerald-700">
+            System Analytics
+          </h3>
+
+          <p className="text-sm text-slate-500 mt-2">
+            View system statistics.
+          </p>
+        </Link>
+
+
+        <Link
+          href="/admin/settings"
+          className="p-5 rounded-2xl bg-amber-50 hover:bg-amber-100 transition-all"
+        >
+          <h3 className="font-bold text-amber-700">
+            Platform Settings
+          </h3>
+
+          <p className="text-sm text-slate-500 mt-2">
+            Configure platform behavior.
+          </p>
+        </Link>
+
+      </div>
+
+    </div>
 
   </div>
 

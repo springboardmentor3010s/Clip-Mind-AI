@@ -5,6 +5,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from sqlalchemy.orm import joinedload
+
 from app.schemas.platform_setting import (
     PlatformSettingResponse,
     PlatformSettingUpdate
@@ -557,6 +559,7 @@ def get_ai_processing_jobs(
 
     processing_videos = (
         db.query(Video)
+        .options(joinedload(Video.owner))
         .filter(
             Video.status == VideoStatus.PROCESSING.value
         )
@@ -568,6 +571,7 @@ def get_ai_processing_jobs(
 
     completed_videos = (
         db.query(Video)
+        .options(joinedload(Video.owner))
         .filter(
             Video.status == VideoStatus.COMPLETED.value
         )
@@ -579,6 +583,7 @@ def get_ai_processing_jobs(
 
     failed_videos = (
         db.query(Video)
+        .options(joinedload(Video.owner))
         .filter(
             Video.status == VideoStatus.FAILED.value
         )
@@ -588,41 +593,43 @@ def get_ai_processing_jobs(
         .all()
     )
 
+    def serialize_video(video):
+        return {
+            "id": video.id,
+            "filename": video.filename,
+            "owner_id": video.owner_id,
+            "owner_username": (
+                video.owner.username
+                if video.owner
+                else None
+            ),
+            "duration": video.duration,
+            "status": video.status,
+            "created_at": video.created_at
+        }
+
     return {
         "processing": [
-            {
-                "id": video.id,
-                "filename": video.filename,
-                "owner_id": video.owner_id,
-                "status": video.status,
-                "created_at": video.created_at
-            }
+            serialize_video(video)
             for video in processing_videos
         ],
         "completed": [
-            {
-                "id": video.id,
-                "filename": video.filename,
-                "owner_id": video.owner_id,
-                "status": video.status,
-                "created_at": video.created_at
-            }
+            serialize_video(video)
             for video in completed_videos
         ],
         "failed": [
-            {
-                "id": video.id,
-                "filename": video.filename,
-                "owner_id": video.owner_id,
-                "status": video.status,
-                "created_at": video.created_at
-            }
+            serialize_video(video)
             for video in failed_videos
         ],
         "counts": {
             "processing": len(processing_videos),
             "completed": len(completed_videos),
-            "failed": len(failed_videos)
+            "failed": len(failed_videos),
+            "total": (
+                len(processing_videos)
+                + len(completed_videos)
+                + len(failed_videos)
+            )
         }
     }
 
@@ -713,6 +720,9 @@ def get_storage_utilization(
 
     videos = (
         db.query(Video)
+        .order_by(
+            Video.created_at.desc()
+        )
         .all()
     )
 
@@ -720,6 +730,8 @@ def get_storage_utilization(
     total_bytes = 0
     existing_files = 0
     missing_files = 0
+
+    missing_file_list = []
 
     for video in videos:
 
@@ -732,8 +744,17 @@ def get_storage_utilization(
             video.filepath
         ):
             existing_files += 1
+
         else:
             missing_files += 1
+
+            missing_file_list.append({
+                "id": video.id,
+                "filename": video.filename,
+                "filepath": video.filepath,
+                "owner_id": video.owner_id,
+                "created_at": video.created_at
+            })
 
     total_mb = total_bytes / (
         1024 * 1024
@@ -756,6 +777,7 @@ def get_storage_utilization(
             "total_gb": round(
                 total_gb,
                 2
-            )
+            ),
+            "missing_file_list": missing_file_list
         }
     }

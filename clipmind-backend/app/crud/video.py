@@ -1,5 +1,6 @@
 import os
 
+from sqlalchemy import text
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import Session
 
@@ -147,10 +148,21 @@ def delete_video(
     ]
 
     # --------------------------------------------------------
-    # Delete summaries
+    # Delete summary shares before deleting summaries
     # --------------------------------------------------------
 
     for summary in list(video.summaries):
+
+        db.execute(
+            text(
+                "DELETE FROM summary_shares "
+                "WHERE summary_id = :summary_id"
+            ),
+            {
+                "summary_id": summary.id
+            }
+        )
+
         db.delete(summary)
 
     # --------------------------------------------------------
@@ -166,6 +178,41 @@ def delete_video(
 
     if video.transcript:
         db.delete(video.transcript)
+
+
+    # --------------------------------------------------------
+    # Delete learning material shares before learning materials
+    # --------------------------------------------------------
+
+    db.execute(
+        text(
+            """
+            DELETE FROM learning_material_shares
+            WHERE learning_material_id IN (
+                SELECT id
+                FROM learning_materials
+                WHERE video_id = :video_id
+            )
+            """
+        ),
+        {
+            "video_id": video.id
+        }
+    )
+
+    # --------------------------------------------------------
+    # Delete learning materials
+    # --------------------------------------------------------
+
+    db.execute(
+        text(
+            "DELETE FROM learning_materials "
+            "WHERE video_id = :video_id"
+        ),
+        {
+            "video_id": video.id
+        }
+    )
 
     # --------------------------------------------------------
     # Delete key moments
