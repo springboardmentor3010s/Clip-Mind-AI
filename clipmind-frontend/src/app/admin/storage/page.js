@@ -14,7 +14,10 @@ import {
 
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { getCurrentUser } from "@/services/authService";
-import { getStorageUtilization } from "@/services/adminService";
+import {
+  getStorageUtilization,
+  cleanupMissingFiles,
+} from "@/services/adminService";
 
 export default function AdminStoragePage() {
   const router = useRouter();
@@ -29,8 +32,10 @@ export default function AdminStoragePage() {
     missing_file_list: [],
 });
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+ const [loading, setLoading] = useState(true);
+const [cleaning, setCleaning] = useState(false);
+const [error, setError] = useState("");
+const [success, setSuccess] = useState("");
 
   // --------------------------------------------------
   // Load storage information
@@ -81,6 +86,58 @@ export default function AdminStoragePage() {
       setLoading(false);
     }
   };
+
+  // --------------------------------------------------
+// Clean missing file records
+// --------------------------------------------------
+
+const handleCleanupMissingFiles = async () => {
+  const missingCount = storage.missing_files;
+
+  if (!missingCount) {
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Are you sure you want to clean ${missingCount} missing file record(s)?\n\n` +
+    "This will permanently remove the database records for videos " +
+    "whose physical files cannot be found.\n\n" +
+    "This action cannot be undone."
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    setCleaning(true);
+    setError("");
+    setSuccess("");
+
+    const response = await cleanupMissingFiles();
+
+    setSuccess(
+      response?.message ||
+        `${response?.cleaned_count || 0} missing file record(s) cleaned successfully.`
+    );
+
+    await loadStorage();
+
+  } catch (err) {
+    console.error(
+      "Failed to clean missing files:",
+      err
+    );
+
+    setError(
+      err?.response?.data?.detail ||
+        "Unable to clean missing file records."
+    );
+
+  } finally {
+    setCleaning(false);
+  }
+};
 
   useEffect(() => {
     loadStorage();
@@ -226,6 +283,12 @@ export default function AdminStoragePage() {
         {error && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            {success}
           </div>
         )}
 
@@ -544,28 +607,44 @@ export default function AdminStoragePage() {
 
     <div className="px-6 py-5 border-b border-slate-200">
 
-      <div className="flex items-center gap-3">
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-        <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
-          <FaExclamationTriangle />
-        </div>
+    <div className="flex items-center gap-3">
 
-        <div>
+      <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+        <FaExclamationTriangle />
+      </div>
 
-          <h2 className="text-xl font-semibold text-slate-900">
-            Missing Files
-          </h2>
+      <div>
 
-          <p className="text-sm text-slate-500 mt-1">
-            These video records exist in the database,
-            but their physical files could not be found.
-          </p>
+        <h2 className="text-xl font-semibold text-slate-900">
+          Missing Files
+        </h2>
 
-        </div>
+        <p className="text-sm text-slate-500 mt-1">
+          These video records exist in the database,
+          but their physical files could not be found.
+        </p>
 
       </div>
 
     </div>
+
+    <button
+      onClick={handleCleanupMissingFiles}
+      disabled={cleaning}
+      className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <FaExclamationTriangle />
+
+      {cleaning
+        ? "Cleaning..."
+        : "Clean Missing Files"}
+    </button>
+
+  </div>
+
+</div>
 
     <div className="overflow-x-auto">
 

@@ -10,6 +10,7 @@ import {
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { uploadVideo } from "@/services/videoService";
 import { getEducatorClassrooms } from "@/services/classroomService";
+import { getCurrentUser } from "@/services/authService";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -22,14 +23,30 @@ export default function UploadPage() {
 
   const [uploadedVideo, setUploadedVideo] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [userRole, setUserRole] = useState("");
 
   const [classrooms, setClassrooms] = useState([]);
   const [selectedClassroomId, setSelectedClassroomId] = useState("");
   const [classroomsLoading, setClassroomsLoading] = useState(true);
 
   useEffect(() => {
-  const loadClassrooms = async () => {
+  const loadUserAndClassrooms = async () => {
     try {
+      const currentUser = await getCurrentUser();
+
+      if (!currentUser?.user) {
+        return;
+      }
+
+      const role = currentUser.user.role?.toLowerCase();
+
+      setUserRole(role);
+
+      // Only educators need classroom data
+      if (role !== "educator") {
+        return;
+      }
+
       setClassroomsLoading(true);
 
       const data = await getEducatorClassrooms();
@@ -37,7 +54,7 @@ export default function UploadPage() {
 
     } catch (error) {
       console.error(
-        "Failed to load classrooms:",
+        "Failed to load user/classrooms:",
         error
       );
 
@@ -48,7 +65,7 @@ export default function UploadPage() {
     }
   };
 
-  loadClassrooms();
+  loadUserAndClassrooms();
 }, []);
 
  
@@ -183,6 +200,8 @@ export default function UploadPage() {
             <>
 
             {/* Classroom Selection */}
+
+{userRole === "educator" && (
 <div className="mb-8">
 
   <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -219,6 +238,7 @@ export default function UploadPage() {
   </p>
 
 </div>
+)}
               <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}

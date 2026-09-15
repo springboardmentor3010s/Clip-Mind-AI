@@ -20,14 +20,32 @@ export const loginUser = async (email, password) => {
   return response.data;
 };
 
-export const getCurrentUser = async (token) => {
-  const response = await api.get("/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const getCurrentUser = async () => {
+  // Check whether the user is authenticated first
+  if (typeof window === "undefined") {
+    return null;
+  }
 
-  return response.data;
+  const token = localStorage.getItem("access_token");
+
+  // No token means the user is simply not logged in.
+  // Do NOT call /me.
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const response = await api.get("/me");
+    return response.data;
+  } catch (error) {
+    // An expired/invalid token means the user is no longer authenticated.
+    if (error.response?.status === 401) {
+      localStorage.removeItem("access_token");
+      return null;
+    }
+
+    throw error;
+  }
 };
 
 export const getActivityHistory = async () => {

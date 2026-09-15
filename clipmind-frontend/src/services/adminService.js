@@ -215,3 +215,18 @@ export const getStorageUtilization = async () => {
 
   return response.data;
 };
+
+export const cleanupMissingFiles = async () => {
+  const token = localStorage.getItem("access_token");
+
+  const response = await api.delete(
+    "/admin/storage/missing",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};

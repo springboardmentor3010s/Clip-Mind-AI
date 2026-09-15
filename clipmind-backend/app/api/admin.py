@@ -781,3 +781,85 @@ def get_storage_utilization(
             "missing_file_list": missing_file_list
         }
     }
+
+# ============================================================
+# CLEAN MISSING VIDEO FILES
+# Administrator only
+#
+# Removes database records for videos whose physical
+# video file no longer exists.
+# ============================================================
+
+@router.delete(
+    "/storage/missing"
+)
+def cleanup_missing_files(
+    current_user=Depends(
+        require_roles(UserRole.ADMIN)
+    ),
+    db: Session = Depends(get_db)
+):
+
+    videos = (
+        db.query(Video)
+        .order_by(
+            Video.created_at.desc()
+        )
+        .all()
+    )
+
+    cleaned_count = 0
+    cleaned_files = []
+
+    for video in videos:
+
+        # ----------------------------------------------------
+        # Identify orphaned video records
+        # ----------------------------------------------------
+
+        if not video.filepath or not os.path.exists(
+            video.filepath
+        ):
+
+            video_id = video.id
+            video_filename = video.filename
+
+            # ------------------------------------------------
+            # Use the existing deletion workflow
+            # ------------------------------------------------
+
+            delete_video(
+                db=db,
+                video=video
+            )
+
+            cleaned_count += 1
+
+            cleaned_files.append({
+                "id": video_id,
+                "filename": video_filename
+            })
+
+    # --------------------------------------------------------
+    # Log administrator action
+    # --------------------------------------------------------
+
+    if cleaned_count > 0:
+
+        log_activity(
+            db=db,
+            user=current_user,
+            activity_type=ActivityType.PROFILE_UPDATED,
+            entity_name=(
+                f"Admin cleaned {cleaned_count} "
+                f"missing video file record(s)"
+            )
+        )
+
+    return {
+        "message": (
+            "Missing file cleanup completed successfully."
+        ),
+        "cleaned_count": cleaned_count,
+        "cleaned_files": cleaned_files
+    }
