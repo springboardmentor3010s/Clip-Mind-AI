@@ -43,11 +43,18 @@ export default function DashboardPage() {
       }
 
       try {
-        const response = await getCurrentUser(token);
+        const response = await getCurrentUser();
 
-        setUser(response.user);
+        if (!response) {
+          router.replace("/login");
+          return;
+        }
 
-        if (response.user.role !== "LEARNER") {
+        const currentUser = response.user ?? response;
+
+        setUser(currentUser);
+
+        if (currentUser.role !== "LEARNER") {
 
   const myVideos = await getMyVideos();
 
@@ -55,7 +62,7 @@ export default function DashboardPage() {
 
 }
 
-if (response.user.role === "CONTENT_CREATOR") {
+if (currentUser.role === "CONTENT_CREATOR") {
 
   try {
 
@@ -74,8 +81,7 @@ if (response.user.role === "CONTENT_CREATOR") {
 
 }
 
-if (response.user.role === "ADMIN") {
-
+if (currentUser.role === "ADMIN") {
   try {
 
     const adminAnalyticsData =
@@ -102,12 +108,12 @@ setActivities(activityData.slice(0, 5));
 
         localStorage.setItem(
           "user",
-          JSON.stringify(response.user)
+          JSON.stringify(currentUser)
         );
 
         localStorage.setItem(
           "role",
-          response.user.role
+          currentUser.role
         );
 
       } catch (error) {
