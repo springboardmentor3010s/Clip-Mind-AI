@@ -57,6 +57,12 @@ clipmind-frontend/node_modules/
 # Frontend environment files
 clipmind-frontend/.env.local
 
+
+# Docker environment file
+docker.env
+clipmind-backend/docker.env
+
+
 # =========================
 # OS / IDE
 # =========================

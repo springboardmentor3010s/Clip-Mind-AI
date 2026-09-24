@@ -1,0 +1,17 @@
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.git
+.gitignore
+.env
+
+uploads/*
+audio/*
+thumbnails/*
+transcripts/*
+summaries/*
+
+docs
+tests
+docker.env
