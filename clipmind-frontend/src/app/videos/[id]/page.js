@@ -18,6 +18,7 @@ import {
   getKeywords,
   generateKeywords,
   createBookmark,
+  getBookmarks,
 } from "@/services/videoService";
 
 import { getEducatorClassrooms } from "@/services/classroomService";
@@ -79,6 +80,7 @@ export default function VideoDetailsPage() {
 
   const [role, setRole] = useState("");
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
+  const [bookmarkedItems, setBookmarkedItems] = useState([]);
 
   const [classrooms, setClassrooms] = useState([]);
   const [selectedClassroomId, setSelectedClassroomId] = useState("");
@@ -92,6 +94,40 @@ export default function VideoDetailsPage() {
   const storedRole = localStorage.getItem("role") || "";
   setRole(storedRole);
 }, []);
+
+// ============================================================
+// LOAD EXISTING BOOKMARKS
+// Learner only
+// ============================================================
+
+useEffect(() => {
+  const loadBookmarks = async () => {
+    if (role !== "LEARNER") {
+      return;
+    }
+
+    try {
+      const bookmarks = await getBookmarks();
+      setBookmarkedItems(bookmarks || []);
+    } catch (error) {
+      console.error(
+        "Failed to load bookmarks:",
+        error
+      );
+      setBookmarkedItems([]);
+    }
+  };
+
+  loadBookmarks();
+}, [role]);
+
+const isBookmarked = (contentType, contentId) => {
+  return bookmarkedItems.some(
+    (bookmark) =>
+      bookmark.content_type === contentType &&
+      Number(bookmark.content_id) === Number(contentId)
+  );
+};
 
 // ============================================================
 // LOAD EDUCATOR CLASSROOMS
@@ -673,13 +709,24 @@ const handleBookmarkSummary = async (summary) => {
     return;
   }
 
+  // Prevent duplicate bookmark request
+  if (isBookmarked("SUMMARY", summary.id)) {
+    return;
+  }
+
   try {
     setBookmarkLoading(true);
 
-    await createBookmark(
+    const newBookmark = await createBookmark(
       "SUMMARY",
       summary.id
     );
+
+    // Update local bookmark state immediately
+    setBookmarkedItems((prev) => [
+      ...prev,
+      newBookmark
+    ]);
 
     alert("Summary bookmarked successfully.");
 
@@ -706,19 +753,36 @@ const handleBookmarkHighlights = async () => {
   }
 
   if (!highlightReport) {
-    alert("No highlight report available to bookmark.");
+    alert(
+      "No highlight report available to bookmark."
+    );
+    return;
+  }
+
+  const videoId = Number(id);
+
+  // Prevent duplicate bookmark request
+  if (isBookmarked("HIGHLIGHT", videoId)) {
     return;
   }
 
   try {
     setBookmarkLoading(true);
 
-    await createBookmark(
+    const newBookmark = await createBookmark(
       "HIGHLIGHT",
-      Number(id)
+      videoId
     );
 
-    alert("Highlights bookmarked successfully.");
+    // Update local bookmark state immediately
+    setBookmarkedItems((prev) => [
+      ...prev,
+      newBookmark
+    ]);
+
+    alert(
+      "Highlights bookmarked successfully."
+    );
 
   } catch (error) {
     console.error(
@@ -1520,10 +1584,22 @@ async function loadOrGenerateHighlights() {
                   onClick={() =>
                     handleBookmarkSummary(shortSummary)
                   }
-                  disabled={bookmarkLoading}
-                  className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 transition"
+                  disabled={
+                    bookmarkLoading ||
+                    isBookmarked(
+                      "SUMMARY",
+                      shortSummary.id
+                    )
+                  }
+                  className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  🔖 {bookmarkLoading
+                  🔖{" "}
+                  {isBookmarked(
+                    "SUMMARY",
+                    shortSummary.id
+                  )
+                    ? "Already Bookmarked"
+                    : bookmarkLoading
                     ? "Saving..."
                     : "Bookmark Summary"}
                 </button>
@@ -1586,10 +1662,22 @@ async function loadOrGenerateHighlights() {
                   onClick={() =>
                     handleBookmarkSummary(detailedSummary)
                   }
-                  disabled={bookmarkLoading}
-                  className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 transition"
+                  disabled={
+                    bookmarkLoading ||
+                    isBookmarked(
+                      "SUMMARY",
+                      detailedSummary.id
+                    )
+                  }
+                  className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
-                  🔖 {bookmarkLoading
+                  🔖{" "}
+                  {isBookmarked(
+                    "SUMMARY",
+                    detailedSummary.id
+                  )
+                    ? "Already Bookmarked"
+                    : bookmarkLoading
                     ? "Saving..."
                     : "Bookmark Summary"}
                 </button>
@@ -1654,11 +1742,22 @@ async function loadOrGenerateHighlights() {
               educationalSummary
             )
           }
-          disabled={bookmarkLoading}
-          className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 transition"
+          disabled={
+            bookmarkLoading ||
+            isBookmarked(
+              "SUMMARY",
+              educationalSummary.id
+            )
+          }
+          className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           🔖{" "}
-          {bookmarkLoading
+          {isBookmarked(
+            "SUMMARY",
+            educationalSummary.id
+          )
+            ? "Already Bookmarked"
+            : bookmarkLoading
             ? "Saving..."
             : "Bookmark Educational Summary"}
         </button>
@@ -1878,16 +1977,28 @@ async function loadOrGenerateHighlights() {
   </div>
 
   {role === "LEARNER" && highlightReport && (
-    <button
-      onClick={handleBookmarkHighlights}
-      disabled={bookmarkLoading}
-      className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 transition"
-    >
-      🔖 {bookmarkLoading
-        ? "Saving..."
-        : "Bookmark Highlights"}
-    </button>
-  )}
+  <button
+    onClick={handleBookmarkHighlights}
+    disabled={
+      bookmarkLoading ||
+      isBookmarked(
+        "HIGHLIGHT",
+        Number(id)
+      )
+    }
+    className="px-5 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+  >
+    🔖{" "}
+    {isBookmarked(
+      "HIGHLIGHT",
+      Number(id)
+    )
+      ? "Already Bookmarked"
+      : bookmarkLoading
+      ? "Saving..."
+      : "Bookmark Highlights"}
+  </button>
+)}
 
 </div>
 
